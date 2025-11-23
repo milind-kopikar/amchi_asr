@@ -1,0 +1,51 @@
+# Minimal test configuration for Konkani ASR
+# Use this for testing with very small datasets (1-5 minutes)
+
+name: "Konkani_ASR_Minimal_Test"
+
+model:
+  tokenizertype: "bpe"
+
+  # Smaller model for faster testing
+  encoder:
+    n_layers: 6  # Reduced from 12 for speed
+    d_model: 256  # Smaller hidden dimension
+
+  decoder:
+    vocabulary: null  # Auto-detected from data
+    d_model: 256
+
+  joint:
+    jointnet:
+      d_model: 256
+
+trainer:
+  devices: 1  # Use GPU if available
+  max_epochs: 3  # Very few epochs for testing
+  accumulate_grad_batches: 1
+  enable_progress_bar: true
+  log_every_n_steps: 1
+
+  # Validate frequently
+  val_check_interval: 1.0
+
+  # Optimizer settings
+  optim:
+    name: adamw
+    lr: 0.001
+    weight_decay: 0.0001
+
+exp_manager:
+  exp_dir: "minimal_test/results"
+  name: "konkani_asr_minimal"
+  create_checkpoint_callback: true
+  checkpoint_callback_params:
+    save_top_k: 3
+    monitor: "val_wer"
+    mode: "min"
+
+# Data settings
+model_defaults:
+  enc_hidden: 256
+  pred_hidden: 256
+  joint_hidden: 256

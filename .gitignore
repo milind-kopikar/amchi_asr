@@ -1,0 +1,118 @@
+# Konkani ASR Fine-tuning Project
+# Git ignore file for ASR model training
+
+# Large model files
+*.nemo
+*.onnx
+*.pth
+*.pt
+*.bin
+
+# Audio files (large binary files)
+*.wav
+*.mp3
+*.flac
+*.ogg
+*.m4a
+*.aac
+
+# Large tool files
+tools/ffmpeg.zip
+tools/ffmpeg-8.0.1-essentials_build/bin/*.exe
+
+# Data folders (large audio/text data)
+story0_corpus/
+story1_corpus/
+enhanced_corpus/
+enhanced_corpus_v2/
+enhanced_corpus_v3/
+final_corpus/
+data/
+results/
+
+# Log files
+*.log
+logs/
+lightning_logs/
+
+# Checkpoints and results
+checkpoints/
+*.ckpt
+
+# Temporary files
+*.tmp
+*.temp
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Hugging Face cache
+.huggingface/
+
+# TensorBoard
+runs/
+tensorboard/
+
+# Weights & Biases
+wandb/
+
+# MLflow
+mlruns/
+mlartifacts/
+
+# DVC
+.dvc/
+
+# Data files (uncomment if you want to track data)
+# data/audio/
+# data/transcripts/
+# *.tsv
+# *.json
+
+# Keep these (small files)
+!.gitkeep
+!README.md
+!requirements.txt

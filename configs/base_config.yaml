@@ -1,0 +1,112 @@
+# Base NeMo Configuration for ASR Fine-tuning
+# This file contains common settings that can be overridden
+
+# Model settings
+model:
+  # Will be set by specific config (e.g., konkani_finetune.yaml)
+  nemo_model: null
+
+  # Tokenizer settings
+  tokenizer:
+    dir: "models/tokenizer_spe_bpe_v128"
+    type: "bpe"
+
+  # Audio preprocessing
+  preprocessor:
+    _target_: nemo.collections.asr.modules.AudioToMelSpectrogramPreprocessor
+    sample_rate: 16000
+    normalize: "per_feature"
+    window_size: 0.025
+    window_stride: 0.01
+    window: "hann"
+    features: 80
+    n_fft: 512
+    frame_splicing: 1
+    dither: 0.00001
+    pad_to: 16
+    stft_conv: false
+
+# Training settings
+trainer:
+  devices: 1
+  accelerator: "auto"  # auto, gpu, cpu
+  max_epochs: 50
+  max_steps: -1
+  num_nodes: 1
+  accumulate_grad_batches: 1
+  enable_checkpointing: true
+  logger: false
+  log_every_n_steps: 10
+  check_val_every_n_epoch: 1
+
+# Data settings (will be overridden)
+data:
+  train_ds:
+    manifest_filepath: "data/train.tsv"
+    sample_rate: 16000
+    batch_size: 8
+    shuffle: true
+    num_workers: 4
+    pin_memory: true
+    max_duration: 16.7
+    min_duration: 0.1
+    trim_silence: true
+    load_audio: true
+    use_start_end_token: false
+
+  validation_ds:
+    manifest_filepath: "data/dev.tsv"
+    sample_rate: 16000
+    batch_size: 8
+    shuffle: false
+    num_workers: 4
+    pin_memory: true
+    max_duration: 16.7
+    min_duration: 0.1
+    trim_silence: true
+    load_audio: true
+    use_start_end_token: false
+
+  test_ds:
+    manifest_filepath: "data/test.tsv"
+    sample_rate: 16000
+    batch_size: 8
+    shuffle: false
+    num_workers: 4
+    pin_memory: true
+    max_duration: 16.7
+    min_duration: 0.1
+    trim_silence: true
+    load_audio: true
+    use_start_end_token: false
+
+# Optimizer settings
+optim:
+  name: adamw
+  lr: 0.0001
+  weight_decay: 0.001
+  sched:
+    name: "cosine"
+    warmup_steps: 1000
+    warmup_ratio: null
+    min_lr: 0.000001
+    last_epoch: -1
+
+# Experiment management
+exp_manager:
+  exp_dir: "results/"
+  name: "konkani_asr_finetune"
+  create_tensorboard_logger: true
+  create_checkpoint_callback: true
+  checkpoint_callback_params:
+    monitor: "val_wer"
+    mode: "min"
+    save_top_k: 5
+    save_last: true
+    filename: "konkani_asr-{epoch:02d}-{val_wer:.3f}"
+
+# Custom settings
+custom_config:
+  language: "konkani"
+  base_model: "indicconformer_marathi"
+  fine_tune_strategy: "full_finetune"
