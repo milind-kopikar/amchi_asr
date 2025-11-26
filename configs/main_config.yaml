@@ -1,0 +1,43 @@
+# Main ASR Configuration
+# This file controls which ASR framework to use for Konkani speech recognition
+
+# Framework selection
+framework: "huggingface"  # Options: "nemo", "huggingface", "ai4bharat"
+
+# Framework-specific configurations
+frameworks:
+  nemo:
+    # NeMo-based fine-tuning (works on Unix/Mac, not Windows)
+    config_file: "configs/nemo_config.yaml"
+    model_dir: "models/nemo_konkani"
+    base_model: "stt_mr_conformer_ctc_medium"
+
+  huggingface:
+    # Hugging Face transformers (works on Windows)
+    config_file: "configs/huggingface_config.yaml"
+    model_dir: "models/huggingface_konkani"
+    base_model: "hriteshMaikap/marathi-asr-model"
+
+  ai4bharat:
+    # AI4Bharat IndicConformer (requires authentication, Unix/Mac preferred)
+    config_file: "configs/ai4bharat_config.yaml"
+    model_dir: "models/ai4bharat_konkani"
+    base_model: "ai4bharat/indicconformer_marathi"
+
+# Common settings across all frameworks
+common:
+  # Data paths
+  data_dir: "data/test_run"
+  audio_dir: "data/audio"
+
+  # Training parameters
+  max_epochs: 50
+  batch_size: 2
+  learning_rate: 3e-5
+
+  # Evaluation
+  test_samples: 3
+
+  # Language settings
+  source_language: "marathi"  # Base model language
+  target_language: "konkani"  # Target language for fine-tuning

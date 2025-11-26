@@ -17,25 +17,23 @@ def uname():
             self.release = sys.getwindowsversion().major.__str__()
             self.version = sys.getwindowsversion().service_pack or ""
             self.machine = os.environ.get('PROCESSOR_ARCHITECTURE', 'x86_64')
+            # Add aliases for platform module
+            self.system = self.sysname
+            self.node = self.nodename
+            self.processor = self.machine
 
-        # Add the attributes that platform.system() expects
-        @property
-        def system(self):
-            return self.sysname
-
-        @property
-        def node(self):
-            return self.nodename
-
-        @property
-        def processor(self):
-            return self.machine
+        def __iter__(self):
+            # Make it iterable for unpacking
+            yield self.sysname
+            yield self.nodename
+            yield self.release
+            yield self.version
+            yield self.machine
 
     return UnameResult()
 
 # Apply the patch before importing NeMo
-if not hasattr(os, 'uname'):
-    os.uname = uname
+os.uname = uname
 
 # Also patch platform.uname if it exists
 try:
@@ -44,7 +42,25 @@ try:
 except:
     pass
 
-# Fix ml_dtypes compatibility issue with ONNX
+# Patch signal module for Windows compatibility
+try:
+    import signal
+    if not hasattr(signal, 'SIGKILL'):
+        signal.SIGKILL = signal.SIGTERM  # Use SIGTERM as equivalent
+        print("Added signal.SIGKILL alias for Windows")
+except:
+    pass
+
+#!/usr/bin/env python3
+"""
+Windows compatibility patch for NeMo/lhotse os.uname issue
+"""
+
+import os
+import sys
+import platform
+
+# Fix ml_dtypes compatibility issue with ONNX BEFORE any other imports
 try:
     import ml_dtypes
     import numpy as np

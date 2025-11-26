@@ -4,6 +4,7 @@
 name: "Konkani_ASR_Minimal_Test"
 
 model:
+  nemo_model: "models/indicconformer_mr/indicconformer_stt_mr_hybrid_rnnt_large.nemo"
   tokenizertype: "bpe"
 
   # Smaller model for faster testing

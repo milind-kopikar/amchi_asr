@@ -1,0 +1,49 @@
+# Hugging Face ASR Configuration
+# Configuration for fine-tuning Marathi ASR models with Konkani data
+
+# Model settings
+model:
+  base_model: "hriteshMaikap/marathi-asr-model"
+  model_type: "wav2vec2-bert"  # wav2vec2, wav2vec2-bert, etc.
+  freeze_feature_encoder: true
+  freeze_feature_projection: true
+
+# Training settings
+training:
+  output_dir: "D:/konkani_asr_models/huggingface_konkani"
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 1
+  gradient_accumulation_steps: 4
+  learning_rate: 3e-5
+  warmup_steps: 10
+  max_steps: 5
+  logging_steps: 1
+  save_steps: 5  # Save at the end
+  eval_steps: 5
+  eval_strategy: "steps"
+  save_strategy: "steps"
+  save_total_limit: 1  # Only keep 1 checkpoint
+  save_only_model: true  # Don't save optimizer state
+  load_best_model_at_end: true
+  metric_for_best_model: "wer"
+  greater_is_better: false
+  push_to_hub: false
+
+# Data settings
+data:
+  train_manifest: "data/test_run/train.tsv"
+  dev_manifest: "data/test_run/dev.tsv"
+  test_manifest: "data/test_run/test.tsv"
+  audio_dir: "data/audio"
+  sampling_rate: 16000
+
+# Processing settings
+processing:
+  max_duration: 30.0  # Maximum audio duration in seconds
+  min_duration: 0.1   # Minimum audio duration in seconds
+  pad_to_multiple_of: 8
+
+# Testing settings
+testing:
+  num_test_samples: 3
+  display_results: true

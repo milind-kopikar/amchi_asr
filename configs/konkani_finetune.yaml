@@ -7,7 +7,7 @@ model:
 
   # Tokenizer configuration
   tokenizer:
-    dir: "models/tokenizer_spe_bpe_v128"  # SentencePiece tokenizer
+    dir: "models/indicconformer_mr"  # Directory containing the model
     type: "bpe"
 
   # Preprocessor configuration

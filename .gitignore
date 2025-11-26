@@ -17,8 +17,10 @@
 *.aac
 
 # Large tool files
-tools/ffmpeg.zip
-tools/ffmpeg-8.0.1-essentials_build/bin/*.exe
+tools/
+research_docs/
+ffmpeg/
+ffmpeg.zip
 
 # Data folders (large audio/text data)
 story0_corpus/
@@ -29,6 +31,7 @@ enhanced_corpus_v3/
 final_corpus/
 data/
 results/
+models/
 
 # Log files
 *.log

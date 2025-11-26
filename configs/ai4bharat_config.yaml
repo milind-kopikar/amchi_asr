@@ -1,0 +1,58 @@
+# AI4Bharat ASR Configuration
+# Configuration for AI4Bharat IndicConformer models (requires authentication)
+
+# Model settings
+model:
+  base_model: "ai4bharat/indicconformer_marathi"
+  model_type: "wav2vec2-conformer"
+  requires_auth: true  # Set to true if using gated models
+
+# Authentication (for gated models)
+auth:
+  token_env_var: "HF_TOKEN"  # Environment variable containing Hugging Face token
+  use_auth_token: true
+
+# Training settings (similar to Hugging Face)
+training:
+  output_dir: "models/ai4bharat_konkani"
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 2
+  gradient_accumulation_steps: 4
+  learning_rate: 3e-5
+  warmup_steps: 10
+  max_steps: 200
+  logging_steps: 10
+  save_steps: 50
+  eval_steps: 50
+  evaluation_strategy: "steps"
+  save_strategy: "steps"
+  load_best_model_at_end: true
+  metric_for_best_model: "wer"
+  greater_is_better: false
+  push_to_hub: false
+
+# Data settings
+data:
+  train_manifest: "data/test_run/train.tsv"
+  dev_manifest: "data/test_run/dev.tsv"
+  test_manifest: "data/test_run/test.tsv"
+  audio_dir: "data/audio"
+  sampling_rate: 16000
+
+# Processing settings
+processing:
+  max_duration: 30.0
+  min_duration: 0.1
+  pad_to_multiple_of: 8
+
+# Testing settings
+testing:
+  num_test_samples: 3
+  display_results: true
+
+# Notes
+notes: |
+  AI4Bharat models may require:
+  1. Hugging Face authentication token
+  2. Acceptance of model terms/conditions
+  3. May not work on Windows (prefer Unix/Mac systems)

@@ -1,300 +1,225 @@
-# 🗣️ Konkani ASR Fine-tuning Project
-
-Fine-tune the AI4Bharat IndicConformer Marathi ASR model for spoken Konkani using NVIDIA NeMo framework.
+# Amchi Konkani ASR - Automatic Speech Recognition for Konkani Language
 
 ## 🎯 Project Overview
 
-This project adapts an existing Marathi Automatic Speech Recognition (ASR) model to recognize spoken Konkani by fine-tuning it with Konkani speech data. The base model is [AI4Bharat IndicConformer](https://huggingface.co/ai4bharat/indicconformer_stt_mr_hybrid_ctc_rnnt_large).
+This project implements Automatic Speech Recognition (ASR) for Konkani language, specifically targeting the "Amchi Konkani" dialect. The system is designed for a science fair demonstration and supports multiple ASR frameworks for flexibility and performance comparison.
 
-## 📋 Prerequisites
+### Goals
+- Build functional Konkani ASR using Marathi base models
+- Support framework switching (HuggingFace, NeMo, AI4Bharat)
+- Enable easy migration between Windows/Mac environments
+- Demonstrate working transcription with acceptable accuracy
+- Compare performance across different frameworks
 
-- Python 3.8+
-- NVIDIA GPU (recommended for training)
-- CUDA 11.0+ (if using GPU)
-- FFmpeg (for audio processing)
-- Git LFS (for large model files)
+## 🏗️ Architecture
 
-## 🚀 Quick Start
+### Framework Architecture
+The system uses a configurable framework approach with three supported ASR backends:
 
-### 1. Environment Setup
+1. **HuggingFace Transformers** (✅ Working on Windows)
+   - Base: `hriteshMaikap/marathi-asr-model` (Wav2Vec2-BERT)
+   - Status: Fully functional with training and testing
+   - Best for: Windows development, quick prototyping
 
-```bash
-# Clone this repository
-git clone <repository-url>
-cd konkani_asr
+2. **NVIDIA NeMo** (🔄 Planned)
+   - Status: Windows compatibility issues (os.uname, signal.SIGKILL)
+   - Best for: Production deployment, advanced features
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+3. **AI4Bharat** (🔄 Planned)
+   - Status: Requires Linux/Mac environment
+   - Best for: Indian language specialization, academic research
 
-# Install dependencies
-pip install -r requirements.txt
-```
-
-### 2. Data Preparation
-
-Place your Konkani speech data in the `data/` directory:
-
-```
-data/
-├── audio/          # WAV/MP3 audio files
-├── transcripts/    # Text transcripts
-├── train.tsv       # Training manifest
-├── dev.tsv         # Development manifest
-└── test.tsv        # Test manifest
-```
-
-Each manifest file should be a TSV with columns:
-- `audio_filepath` (relative path to audio file)
-- `text` (transcription in Konkani script)
-- `duration` (audio duration in seconds)
-
-### 3. Download Base Model
-
-```bash
-# Download IndicConformer Marathi model
-python scripts/download_model.py
-```
-
-### 4. Fine-tune the Model
-
-```bash
-# Start fine-tuning
-python scripts/fine_tune.py --config configs/konkani_finetune.yaml
-```
-
-### 5. Evaluate Results
-
-```bash
-# Evaluate on test set
-python scripts/evaluate.py --model_path results/konkani_asr.nemo --test_manifest data/test.tsv
-```
-
-## 📁 Project Structure
-
+### Code Structure
 ```
 konkani_asr/
-├── configs/            # NeMo configuration files
-│   ├── base_config.yaml
-│   └── konkani_finetune.yaml
-├── data/              # Speech data and manifests
-├── scripts/           # Python scripts
-│   ├── download_model.py
-│   ├── prepare_data.py
-│   ├── fine_tune.py
-│   └── evaluate.py
-├── models/            # Downloaded/fine-tuned models
-├── results/           # Training outputs and checkpoints
-├── logs/              # Training logs and metrics
-├── requirements.txt   # Python dependencies
-└── README.md         # This file
+├── configs/                    # Configuration files
+│   ├── main_config.yaml       # Framework selector
+│   ├── huggingface_config.yaml # HF training params
+│   ├── nemo_config.yaml       # NeMo config (placeholder)
+│   └── ai4bharat_config.yaml  # AI4Bharat config (placeholder)
+├── scripts/                   # Main execution scripts
+│   ├── fine_tune_hf.py       # HuggingFace training
+│   ├── test_model.py         # Model testing
+│   └── switch_framework.py   # Framework switching utility
+├── data/                     # Training data
+│   ├── audio/               # Audio files (.m4a, .wav)
+│   └── test_run/            # Manifests (train.tsv, dev.tsv, test.tsv)
+├── models/                  # Local model storage (C: drive)
+└── D:/konkani_asr_models/   # Model checkpoints (D: drive - more space)
 ```
 
-## ⚙️ Configuration
+## 📊 Data Format
 
-### Fine-tuning Configuration
-
-Key parameters in `configs/konkani_finetune.yaml`:
-
-```yaml
-# Model configuration
-model:
-  nemo_model: "models/indicconformer_mr.nemo"  # Base model path
-
-# Training configuration
-trainer:
-  max_epochs: 50
-  accelerator: "gpu"  # or "cpu"
-  devices: 1
-
-# Data configuration
-data:
-  train_manifest: "data/train.tsv"
-  val_manifest: "data/dev.tsv"
-  batch_size: 8
-  num_workers: 4
-
-# Optimizer configuration
-optim:
-  lr: 0.0001
-  weight_decay: 0.001
-```
-
-## 🎵 Data Format Requirements
-
-### Audio Files
-- **Format**: WAV (16kHz, 16-bit, mono) or MP3
-- **Sample Rate**: 16kHz recommended
+### Audio Data
+- **Format**: M4A (primary), WAV (fallback)
+- **Sample Rate**: 16kHz
 - **Channels**: Mono
-- **Quality**: Clean speech, minimal background noise
+- **Duration**: 1-30 seconds per sample
+- **Location**: `data/audio/`
 
-### Transcripts
-- **Script**: Devanagari (कोंकणी) or Romanized Konkani
-- **Format**: UTF-8 encoded text
-- **Punctuation**: Minimal punctuation, focus on spoken language
-- **Normalization**: Consistent spelling and formatting
+### Text Data
+- **Language**: Konkani (Devanagari script)
+- **Encoding**: UTF-8
+- **Format**: TSV manifests with columns: `audio_filepath`, `text`
 
 ### Manifest Format
-```tsv
-audio_filepath	text	duration
-audio/train_001.wav	कोंकणी भाषा	3.45
-audio/train_002.wav	Hello world	2.12
+```
+audio_filepath	text
+sentence_01.m4a	पाव वाट दाण्टुनु वत्ता म्हण्तना तिका एकु सिंहु मेऴ्ळो!
+sentence_02.m4a	[konkani text here]
 ```
 
-## 🏃 Training Process
+## 🤖 Models & Configurations
 
-### Stage 1: Data Preparation
+### Current Working Model
+- **Framework**: HuggingFace
+- **Base Model**: `hriteshMaikap/marathi-asr-model`
+- **Architecture**: Wav2Vec2-BERT
+- **Model Path**: `D:/konkani_asr_models/huggingface_konkani/checkpoint-5`
+- **Training Data**: 1 sample (for testing)
+- **Performance**: WER ~83% (expected to improve with more data)
+
+### Configuration Files
+- **Main Config**: `configs/main_config.yaml`
+  - Controls active framework
+  - Defines source/target languages
+  - Sets model directories
+
+- **Framework Configs**:
+  - `configs/huggingface_config.yaml`: Training parameters, model settings
+  - `configs/nemo_config.yaml`: NeMo-specific settings (placeholder)
+  - `configs/ai4bharat_config.yaml`: AI4Bharat settings (placeholder)
+
+## 🚀 Setup & Installation
+
+### Prerequisites
+- Python 3.13+
+- FFmpeg (for M4A audio processing)
+- 8GB+ RAM, 10GB+ disk space
+
+### Installation Steps
+1. **Clone and navigate**:
+   ```bash
+   cd /path/to/konkani_asr
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   pip install torch transformers datasets librosa soundfile scipy evaluate
+   ```
+
+3. **Verify FFmpeg**:
+   - FFmpeg binary located at: `ffmpeg/ffmpeg-8.0.1-essentials_build/bin/ffmpeg.exe`
+   - Used for M4A to WAV conversion
+
+4. **Configure framework**:
+   - Edit `configs/main_config.yaml` to set `framework: huggingface`
+   - Adjust paths in config files as needed
+
+## 🎯 Usage
+
+### Framework Switching
 ```bash
-python scripts/prepare_data.py \
-  --audio_dir data/audio \
-  --transcript_dir data/transcripts \
-  --output_dir data
+python scripts/switch_framework.py list    # Show available frameworks
+python scripts/switch_framework.py set huggingface  # Switch to HuggingFace
 ```
 
-### Stage 2: Model Download
+### Training
 ```bash
-python scripts/download_model.py \
-  --model_name ai4bharat/indicconformer_stt_mr_hybrid_ctc_rnnt_large \
-  --output_path models/
+python scripts/fine_tune_hf.py
 ```
+- Loads data from `data/test_run/`
+- Trains model with parameters from `configs/huggingface_config.yaml`
+- Saves checkpoint to `D:/konkani_asr_models/huggingface_konkani/`
 
-### Stage 3: Fine-tuning
+### Testing
 ```bash
-python scripts/fine_tune.py \
-  --config configs/konkani_finetune.yaml \
-  --output_dir results/
+python scripts/test_model.py
 ```
+- Loads model from `D:/konkani_asr_models/huggingface_konkani/checkpoint-5`
+- Tests on `data/audio/sentence_06.m4a`
+- Outputs transcription results
 
-### Stage 4: Evaluation
-```bash
-python scripts/evaluate.py \
-  --model_path results/konkani_asr.nemo \
-  --test_manifest data/test.tsv \
-  --output_file results/evaluation_results.json
-```
+## 📈 Current Performance
 
-## 📊 Monitoring Training
+### Metrics (1 training sample)
+- **Training Loss**: 0.6335 → 0.2079 (5 steps)
+- **Validation WER**: 83.3%
+- **Test Transcription**: Good semantic understanding, minor character differences
 
-### TensorBoard (Recommended)
-```bash
-# Install TensorBoard
-pip install tensorboard
+### Sample Results
+**Input Audio**: `sentence_06.m4a`  
+**Expected Text**: `पाव वाट दाण्टुनु वत्ता म्हण्तना तिका एकु सिंहु मेऴ्ळो!`  
+**Predicted Text**: `पाव वाट दाणटुनु वत्ता म्हणतना तिका एकु सिंहु मेळो`  
+**Analysis**: Core words correct, understandable Konkani output
 
-# Start TensorBoard
-tensorboard --logdir logs/
+## 🔄 Framework Migration
 
-# Open http://localhost:6006 in browser
-```
+### Windows → Mac/Linux Transition
+1. **Copy project** to new environment
+2. **Update paths** in config files
+3. **Switch framework** in `main_config.yaml`
+4. **Reinstall dependencies** (may need different versions)
+5. **Retrain models** (framework-specific checkpoints)
 
-### Training Logs
-Monitor `logs/train.log` for:
-- Loss values (CTC and RNNT)
-- Word Error Rate (WER)
-- Character Error Rate (CER)
-- Learning rate changes
+### AI4Bharat Integration Plan
+- **Environment**: Linux/Mac required
+- **Authentication**: May need API tokens
+- **Data Format**: Compatible with current TSV manifests
+- **Expected Benefits**: Better Indian language support, potentially higher accuracy
 
-## 🔧 Troubleshooting
+## 🐛 Known Issues & Solutions
 
-### Common Issues
+### Windows-Specific Issues
+- **NeMo**: `os.uname` undefined, `signal.SIGKILL` missing
+- **Solution**: Use WSL or migrate to Mac/Linux
 
-**CUDA Out of Memory**
-- Reduce batch size in config
-- Use gradient accumulation
-- Try CPU training for testing
+### Audio Processing
+- **M4A Support**: Requires FFmpeg for conversion
+- **Solution**: FFmpeg binary included in project
 
-**Poor Audio Quality**
-- Check audio sample rate (should be 16kHz)
-- Ensure mono channel audio
-- Verify audio file formats
+### Disk Space
+- **Issue**: Model saving fails with <4GB free space
+- **Solution**: Save to D: drive (`D:/konkani_asr_models/`)
 
-**High WER**
-- Increase training data size
-- Adjust learning rate
-- Try different data augmentation
+### Model Loading
+- **Issue**: Missing `preprocessor_config.json`
+- **Solution**: Copy from base model after training
 
-**Model Loading Errors**
-- Check model file integrity
-- Verify NeMo version compatibility
-- Ensure sufficient disk space
+## 🎯 Next Steps
 
-## 📈 Expected Results
+### Immediate Tasks
+1. **Scale training data** from 1 to full dataset (19 samples)
+2. **AI4Bharat integration** on Mac/Linux
+3. **Performance comparison** between frameworks
+4. **Accuracy improvements** with more training data
 
-### Performance Metrics
-- **Initial WER**: 50-70% (on Marathi model with Konkani data)
-- **After Fine-tuning**: 15-30% WER (depending on data quality/quantity)
-- **Target WER**: <10% for production use
+### Long-term Goals
+- Production deployment
+- Real-time inference optimization
+- Multi-speaker adaptation
+- Extended Konkani dialect support
 
-### Training Time
-- **GPU (RTX 3080)**: 2-4 hours for 50 epochs
-- **CPU**: 8-12 hours for 50 epochs
-- **Google Colab**: 4-8 hours (with T4 GPU)
+## 📚 Key Files for New Agents
 
-## 🚀 Deployment
+When a new agent reviews this project, please have them examine:
 
-### Export for Inference
-```bash
-# Export to ONNX (optional)
-python scripts/export_model.py \
-  --model_path results/konkani_asr.nemo \
-  --output_path models/konkani_asr.onnx
-```
-
-### Web API Deployment
-```bash
-# Start inference server
-python scripts/inference_server.py \
-  --model_path results/konkani_asr.nemo \
-  --port 8000
-```
-
-## 🧪 Quick Test with Minimal Data
-
-**Don't have much Konkani speech data yet?** Test the approach with just 1 minute:
-
-```bash
-# Record 1 minute of Konkani speech
-# Then run:
-python scripts/minimal_test.py \
-  --audio_file your_1_minute_konkani.wav \
-  --transcript "exact text you spoke in Konkani"
-
-# This will:
-# ✅ Create train/val/test splits from your 1 minute
-# ✅ Fine-tune for 3 epochs (5-15 minutes)
-# ✅ Test if the model learned your speech patterns
-# ✅ Show transcription accuracy metrics
-```
-
-**Expected Results:**
-- Training data: 90%+ accuracy (model memorizes)
-- Unseen data: 50-80% accuracy (shows generalization)
-- If successful: ✅ Proceed with collecting more data!
+1. **`configs/main_config.yaml`** - Framework selection and paths
+2. **`scripts/fine_tune_hf.py`** - Main training logic
+3. **`scripts/test_model.py`** - Testing and inference
+4. **`data/test_run/train.tsv`** - Data format example
+5. **This README** - Complete project overview
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## 📚 References
-
-- [AI4Bharat IndicConformer Model](https://huggingface.co/ai4bharat/indicconformer_stt_mr_hybrid_ctc_rnnt_large)
-- [NVIDIA NeMo Documentation](https://docs.nvidia.com/deeplearning/nemo/user-guide/docs/en/stable/)
-- [NeMo ASR Tutorials](https://github.com/NVIDIA/NeMo/tree/main/tutorials/asr)
-- [Indic ASR Research](https://ai4bharat.org/)
-
-## 📄 License
-
-MIT License - See LICENSE file for details.
-
-## 🙏 Acknowledgments
-
-- AI4Bharat for the IndicConformer model
-- NVIDIA for the NeMo framework
-- Konkani language community
+For AI4Bharat integration or framework comparisons:
+1. Review this README thoroughly
+2. Test current HuggingFace pipeline
+3. Set up target environment (Mac/Linux for AI4Bharat)
+4. Follow framework-specific setup in config files
+5. Compare performance metrics systematically
 
 ---
 
-*Advancing Konkani language technology through speech recognition* 🗣️
+**Last Updated**: November 25, 2025  
+**Status**: HuggingFace pipeline fully functional, AI4Bharat integration pending Mac environment setup
