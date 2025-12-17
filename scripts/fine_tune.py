@@ -4,13 +4,15 @@ Fine-tune AI4Bharat IndicConformer Marathi ASR model for Konkani
 Using NVIDIA NeMo framework
 """
 
-# Apply Windows compatibility patch first
 import sys
 import os
-sys.path.insert(0, os.path.dirname(__file__))
-import windows_patch
+import platform
 
-import os
+# Only apply Windows patch if running on Windows
+if platform.system() == 'Windows':
+    sys.path.insert(0, os.path.dirname(__file__))
+    import windows_patch
+
 import argparse
 import logging
 from pathlib import Path

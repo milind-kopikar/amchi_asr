@@ -82,7 +82,7 @@ model:
 # Training configuration
 trainer:
   devices: 1
-  accelerator: "cpu"  # Changed to CPU for Windows compatibility
+  accelerator: "gpu"  # Use GPU on RunPod (auto-detects, falls back to CPU)
   max_epochs: 50
   max_steps: -1  # -1 means no limit
   num_nodes: 1
@@ -115,7 +115,7 @@ optim:
 data:
   # Training data
   train_ds:
-    manifest_filepath: "data/test_run/train_wav.tsv"
+    manifest_filepath: "data/train/manifest.jsonl"
     sample_rate: 16000
     batch_size: 8
     shuffle: true
@@ -129,7 +129,7 @@ data:
 
   # Validation data
   validation_ds:
-    manifest_filepath: "data/test_run/dev_wav.tsv"
+    manifest_filepath: "data/dev/manifest.jsonl"
     sample_rate: 16000
     batch_size: 8
     shuffle: false
@@ -143,7 +143,7 @@ data:
 
   # Test data (optional)
   test_ds:
-    manifest_filepath: "data/test_run/test_wav.tsv"
+    manifest_filepath: "data/test/manifest.jsonl"
     sample_rate: 16000
     batch_size: 8
     shuffle: false
