@@ -33,6 +33,14 @@ data/
 results/
 models/
 
+# Python virtual environments
+venv/
+.venv/
+env/
+.env/
+ENV/
+konkani_env/
+
 # Log files
 *.log
 logs/

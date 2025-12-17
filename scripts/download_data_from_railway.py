@@ -9,6 +9,7 @@ import sys
 import argparse
 import logging
 import json
+import random
 from pathlib import Path
 import requests
 from tqdm import tqdm
@@ -97,17 +98,41 @@ def main():
     parser.add_argument(
         "--output_dir",
         type=str,
-        default="data/train",
-        help="Output directory for downloaded data"
+        default="data",
+        help="Base output directory (will create train/dev/test subdirs)"
     )
     parser.add_argument(
         "--train_split",
         type=float,
-        default=0.8,
-        help="Fraction of data for training (rest goes to dev)"
+        default=0.7,
+        help="Fraction of data for training (default: 0.7 = 70%%)"
+    )
+    parser.add_argument(
+        "--dev_split",
+        type=float,
+        default=0.15,
+        help="Fraction of data for validation (default: 0.15 = 15%%)"
+    )
+    parser.add_argument(
+        "--test_split",
+        type=float,
+        default=0.15,
+        help="Fraction of data for testing (default: 0.15 = 15%%)"
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=42,
+        help="Random seed for reproducible shuffling (default: 42)"
     )
     
     args = parser.parse_args()
+    
+    # Validate splits sum to 1.0
+    total_split = args.train_split + args.dev_split + args.test_split
+    if abs(total_split - 1.0) > 0.001:
+        logger.error(f"Splits must sum to 1.0, got {total_split}")
+        return 1
     
     try:
         # Fetch recordings
@@ -117,30 +142,59 @@ def main():
             logger.error("No approved recordings found")
             return 1
         
-        # Split into train/dev
-        split_idx = int(len(recordings) * args.train_split)
-        train_recordings = recordings[:split_idx]
-        dev_recordings = recordings[split_idx:]
+        # IMPORTANT: Shuffle recordings randomly to mix speakers
+        logger.info(f"🔀 Shuffling {len(recordings)} recordings (seed={args.seed})...")
+        random.seed(args.seed)
+        random.shuffle(recordings)
+        logger.info("✓ Recordings shuffled to mix speakers across splits")
         
-        logger.info(f"Split: {len(train_recordings)} train, {len(dev_recordings)} dev")
+        # Calculate split indices
+        n_train = int(len(recordings) * args.train_split)
+        n_dev = int(len(recordings) * args.dev_split)
+        # Remaining goes to test (handles rounding)
+        
+        train_recordings = recordings[:n_train]
+        dev_recordings = recordings[n_train:n_train + n_dev]
+        test_recordings = recordings[n_train + n_dev:]
+        
+        logger.info("="*80)
+        logger.info(f"📊 Data Split (Total: {len(recordings)} samples)")
+        logger.info("="*80)
+        logger.info(f"  Train: {len(train_recordings)} samples ({len(train_recordings)/len(recordings)*100:.1f}%)")
+        logger.info(f"  Dev:   {len(dev_recordings)} samples ({len(dev_recordings)/len(recordings)*100:.1f}%)")
+        logger.info(f"  Test:  {len(test_recordings)} samples ({len(test_recordings)/len(recordings)*100:.1f}%)")
+        logger.info("="*80)
+        
+        base_dir = Path(args.output_dir)
         
         # Download train data
-        train_dir = Path(args.output_dir)
-        logger.info(f"Downloading training data to {train_dir}...")
-        download_recordings(args.base_url, train_recordings, str(train_dir))
-        create_manifest(train_recordings, str(train_dir / "manifest.jsonl"), "train")
+        if train_recordings:
+            train_dir = base_dir / "train"
+            logger.info(f"📥 Downloading training data to {train_dir}...")
+            download_recordings(args.base_url, train_recordings, str(train_dir))
+            create_manifest(train_recordings, str(train_dir / "manifest.jsonl"), "train")
         
         # Download dev data
         if dev_recordings:
-            dev_dir = Path(args.output_dir).parent / "dev"
-            logger.info(f"Downloading dev data to {dev_dir}...")
+            dev_dir = base_dir / "dev"
+            logger.info(f"📥 Downloading validation data to {dev_dir}...")
             download_recordings(args.base_url, dev_recordings, str(dev_dir))
             create_manifest(dev_recordings, str(dev_dir / "manifest.jsonl"), "dev")
         
-        logger.info("✓ Data download complete!")
-        logger.info(f"Train manifest: {train_dir / 'manifest.jsonl'}")
-        if dev_recordings:
-            logger.info(f"Dev manifest: {dev_dir / 'manifest.jsonl'}")
+        # Download test data
+        if test_recordings:
+            test_dir = base_dir / "test"
+            logger.info(f"📥 Downloading test data to {test_dir}...")
+            download_recordings(args.base_url, test_recordings, str(test_dir))
+            create_manifest(test_recordings, str(test_dir / "manifest.jsonl"), "test")
+        
+        logger.info("="*80)
+        logger.info("✅ Data download complete!")
+        logger.info("="*80)
+        logger.info(f"📁 Train manifest: {train_dir / 'manifest.jsonl'} ({len(train_recordings)} samples)")
+        logger.info(f"📁 Dev manifest:   {dev_dir / 'manifest.jsonl'} ({len(dev_recordings)} samples)")
+        logger.info(f"📁 Test manifest:  {test_dir / 'manifest.jsonl'} ({len(test_recordings)} samples)")
+        logger.info("="*80)
         
         return 0
         
