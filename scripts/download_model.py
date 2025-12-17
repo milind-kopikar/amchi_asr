@@ -62,40 +62,107 @@ def download_model(model_name: str, output_path: str, token: str = None):
         raise
 
 def main():
-    parser = argparse.ArgumentParser(description="Download AI4Bharat IndicConformer model")
+    parser = argparse.ArgumentParser(
+        description="Download AI4Bharat IndicConformer model",
+        epilog="""
+Examples:
+  # Download Marathi model
+  python download_model.py --model marathi
+  
+  # Download Konkani model  
+  python download_model.py --model konkani
+  
+  # Custom model
+  python download_model.py --model_name ai4bharat/some_other_model --output_path models/custom
+        """
+    )
+    
+    # Shorthand for common models
+    parser.add_argument(
+        "--model",
+        type=str,
+        choices=['marathi', 'konkani'],
+        help="Shorthand: 'marathi' or 'konkani' (auto-sets model_name and output_path)"
+    )
+    
     parser.add_argument(
         "--model_name",
         type=str,
-        default="facebook/wav2vec2-large-xlsr-53",
-        help="Hugging Face model name"
+        default=None,
+        help="Hugging Face model name (e.g., ai4bharat/indicconformer_stt_mr_hybrid_ctc_rnnt_large)"
     )
     parser.add_argument(
         "--output_path",
         type=str,
-        default="models/indicconformer_mr",
+        default=None,
         help="Output directory for downloaded model"
     )
     parser.add_argument(
         "--auth_token",
         type=str,
         default=None,
-        help="Hugging Face authentication token (if not set, uses HF_TOKEN from .env)"
+        help="Hugging Face authentication token (if not set, uses HF_TOKEN from .env or huggingface-cli login)"
     )
 
     args = parser.parse_args()
+    
+    # Handle shorthand model names
+    if args.model == 'marathi':
+        model_name = "ai4bharat/indicconformer_stt_mr_hybrid_ctc_rnnt_large"
+        output_path = "models/indicconformer_mr"
+    elif args.model == 'konkani':
+        model_name = "ai4bharat/indicconformer_stt_kok_hybrid_ctc_rnnt_large"
+        output_path = "models/indicconformer_kok"
+    else:
+        model_name = args.model_name
+        output_path = args.output_path
+    
+    # Validate arguments
+    if not model_name:
+        logger.error("Please provide --model marathi/konkani OR --model_name <huggingface_model>")
+        parser.print_help()
+        exit(1)
+    
+    if not output_path:
+        logger.error("Please provide --model marathi/konkani OR --output_path <directory>")
+        parser.print_help()
+        exit(1)
 
     # Use token from args or environment
     token = args.auth_token or os.getenv('HF_TOKEN')
 
     if not token:
-        logger.error("No authentication token provided. Set HF_TOKEN in .env file or pass --auth_token")
-        exit(1)
+        logger.warning("⚠️  No HF_TOKEN found - will use huggingface-cli login credentials")
+        logger.info("💡 If download fails, run: huggingface-cli login")
+        token = None  # huggingface_hub will use CLI credentials
+
+        token = None  # huggingface_hub will use CLI credentials
 
     try:
-        download_model(args.model_name, args.output_path, token)
-        logger.info("Model download completed successfully!")
+        download_model(model_name, output_path, token)
+        logger.info("="*80)
+        logger.info("✅ Model download completed successfully!")
+        logger.info(f"📂 Model saved to: {output_path}")
+        logger.info("="*80)
+        logger.info("")
+        logger.info("Next steps:")
+        logger.info("  1. Verify model files:")
+        logger.info(f"     ls -lh {output_path}/*.nemo")
+        logger.info("  2. Run smoke tests:")
+        logger.info("     python scripts/download_smoke_test_data.py")
+        logger.info("     python tests/test_e2e_pipeline.py --test all")
+        logger.info("  3. If tests pass, train on full data:")
+        logger.info("     python scripts/download_data_from_railway.py")
+        logger.info("     python scripts/nemo_train.py --config configs/konkani_finetune.yaml")
     except Exception as e:
-        logger.error(f"Model download failed: {e}")
+        logger.error(f"❌ Model download failed: {e}")
+        logger.info("")
+        logger.info("Troubleshooting:")
+        logger.info("  1. Accept model conditions on Hugging Face:")
+        logger.info(f"     https://huggingface.co/{model_name}")
+        logger.info("  2. Authenticate:")
+        logger.info("     huggingface-cli login")
+        logger.info("  3. Check your internet connection")
         exit(1)
 
 if __name__ == "__main__":
