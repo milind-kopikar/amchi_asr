@@ -119,6 +119,12 @@ def main():
         default=42,
         help="Random seed for sampling (default: 42)"
     )
+    parser.add_argument(
+        "--output_dir",
+        type=str,
+        default="data_smoke",
+        help="Output directory for downloaded data (default: data_smoke)"
+    )
     
     args = parser.parse_args()
     
@@ -152,7 +158,7 @@ def main():
         logger.info(f"  Test:  {len(test_recordings)} samples")
         logger.info("="*80)
         
-        base_dir = Path("data_smoke")
+        base_dir = Path(args.output_dir)
         
         # Download train data
         if train_recordings:
@@ -175,9 +181,9 @@ def main():
         logger.info("="*80)
         logger.info("✅ Smoke test data ready!")
         logger.info("="*80)
-        logger.info(f"📁 data_smoke/train/manifest.jsonl ({len(train_recordings)} samples)")
-        logger.info(f"📁 data_smoke/dev/manifest.jsonl ({len(dev_recordings)} samples)")
-        logger.info(f"📁 data_smoke/test/manifest.jsonl ({len(test_recordings)} samples)")
+        logger.info(f"📁 {args.output_dir}/train/manifest.jsonl ({len(train_recordings)} samples)")
+        logger.info(f"📁 {args.output_dir}/dev/manifest.jsonl ({len(dev_recordings)} samples)")
+        logger.info(f"📁 {args.output_dir}/test/manifest.jsonl ({len(test_recordings)} samples)")
         logger.info("="*80)
         
         return 0
