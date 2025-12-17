@@ -223,3 +223,72 @@ For AI4Bharat integration or framework comparisons:
 
 **Last Updated**: November 25, 2025  
 **Status**: HuggingFace pipeline fully functional, AI4Bharat integration pending Mac environment setup
+
+## **Work In Progress**
+
+- **Date:** November 29, 2025
+- **Current State:** Most of the HuggingFace pipeline runs in WSL. I created a fresh venv named `.venv_nemo` and installed a pinned NeMo stack (`nemo-toolkit==2.5.3` + matching `hydra-core`, `omegaconf`, `antlr4-python3-runtime`, `dill`, etc.). I also added an 8 GB swapfile to WSL so large pip builds won't OOM.
+- **Blocked On:** WSL is currently failing to start on this machine with `Error code: 6 (Wsl/Service/CreateInstance/E_FAIL)`. Until WSL is running again the final step (installing `lightning` and running the NeMo smoke test `scripts/nemo_finetune_smoke.py` in `.venv_nemo`) cannot be completed here.
+
+### **What I tried (summary)**
+- Created 8GB swap at `/swapfile` (persistent in `/etc/fstab`). Verified `free -h` shows Swap ≈ 11GiB.
+- Built a clean venv `.venv_nemo` and installed CPU PyTorch, `nemo-toolkit==2.5.3` and required dependencies.
+- Resolved a few package incompatibilities (`dill==0.3.6`, fixed `numpy`), but `lightning` (PyTorch Lightning) still needs installing before NeMo can import fully.
+- During the final step WSL started failing (getpwuid/systemd errors) so the smoke test could not be executed.
+
+### **Next steps to run after you reboot / fix WSL**
+Run these commands from Windows PowerShell (normal or elevated). Prefer an elevated prompt if WSL had permission issues.
+
+1) Quick check & start (recommended):
+
+```powershell
+# restart WSL host
+wsl --shutdown
+
+# try a simple WSL shell check
+wsl -d Ubuntu-22.04 -e bash -lc "whoami; uname -a; free -h; swapon --show"
+```
+
+2) If that works, run the final NeMo step inside WSL (from the repo root):
+
+```bash
+cd ~/code/amchi_asr || cd /mnt/c/Users/Milind\ Kopikare/Code/amchi_konkani/konkani_asr
+source .venv_nemo/bin/activate
+pip install --no-cache-dir lightning
+# set HF variables (already used earlier) and run smoke test
+HF_TOKEN="<your HF token>" HF_HOME="/mnt/d/huggingface_cache" python scripts/nemo_finetune_smoke.py
+```
+
+3) If WSL still fails to start, try these host-side steps from an elevated PowerShell (one at a time):
+
+```powershell
+# restart LxssManager service
+Restart-Service LxssManager -Force
+
+# update WSL components
+wsl --update
+wsl --shutdown
+
+# then retry the quick WSL check above
+wsl -d Ubuntu-22.04 -e bash -lc "whoami; free -h; swapon --show"
+```
+
+4) If nothing fixes it, reboot Windows. If WSL continues to fail, collect the LxssManager events and paste them here:
+
+```powershell
+wsl -l -v > wsl_list.txt
+wevtutil qe System /q:"*[System[Provider[@Name='LxssManager']]]" /f:text /c:200 > LxssManager_recent.txt
+Get-Content LxssManager_recent.txt -Tail 60
+Get-Content wsl_list.txt
+```
+
+### **If you want a faster verification now (optional)**
+- If you prefer to validate manifests & WER quickly without NeMo, run the HuggingFace-based smoke test (faster, fewer heavy deps). I can run that immediately instead — say `run HF smoke` and I will execute it and report WER.
+
+### **Where we left off for GitHub Copilot Agent**
+- Repo root: `README.md`, `scripts/nemo_finetune_smoke.py`, and `.venv_nemo` were prepared. The next concrete command for the agent (after WSL is responsive) is the `pip install --no-cache-dir lightning` step followed by `python scripts/nemo_finetune_smoke.py` with `HF_TOKEN`/`HF_HOME` set.
+
+---
+
+**Last Updated**: November 29, 2025  
+**WIP Status**: Waiting on WSL host restart; NeMo stack mostly installed in `.venv_nemo`.

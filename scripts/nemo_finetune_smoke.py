@@ -25,7 +25,33 @@ try:
         os.uname = _uname
 
     import nemo.collections.asr as nemo_asr
-    from jiwer import wer
+    # Try to import jiwer.wer; if unavailable, provide a simple fallback WER.
+    try:
+        from jiwer import wer
+    except Exception:
+        def wer(ref, hyp):
+            """A small word-level WER implementation fallback.
+
+            Returns WER as a float in [0,1].
+            """
+            ref_words = ref.split()
+            hyp_words = hyp.split()
+            m = len(ref_words)
+            n = len(hyp_words)
+            # empty reference -> define WER as 0 if both empty else 1
+            if m == 0:
+                return 0.0 if n == 0 else 1.0
+            # edit distance DP
+            dp = [[0] * (n + 1) for _ in range(m + 1)]
+            for i in range(m + 1):
+                dp[i][0] = i
+            for j in range(n + 1):
+                dp[0][j] = j
+            for i in range(1, m + 1):
+                for j in range(1, n + 1):
+                    cost = 0 if ref_words[i - 1] == hyp_words[j - 1] else 1
+                    dp[i][j] = min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost)
+            return dp[m][n] / float(m)
 except Exception:
     print("Failed to import prerequisites. Ensure you're running inside WSL/Linux with the correct Python env and that `nemo-toolkit`, `jiwer` are installed.")
     traceback.print_exc()
@@ -59,12 +85,20 @@ def main():
     print("Loading AI4Bharat Marathi IndicConformer model (this may download files)...")
     # HF token should be in env var HF_TOKEN
     hf_token = os.environ.get('HF_TOKEN') or os.environ.get('HF_TOKEN')
+    # NeMo's package layout can vary between releases. Try a couple of import paths
+    model = None
     try:
-        model = nemo_asr.models.ASRModel.from_pretrained("ai4bharat/indicconformer_stt_mr_hybrid_rnnt_large")
-    except Exception as e:
-        print("Failed to load model:", e)
-        traceback.print_exc()
-        sys.exit(1)
+        # Preferred: direct models module
+        from nemo.collections.asr.models import ASRModel as _ASRModel
+        model = _ASRModel.from_pretrained("ai4bharat/indicconformer_stt_mr_hybrid_rnnt_large")
+    except Exception:
+        try:
+            # Older/alternate layout: nemo.collections.asr.models attribute
+            model = nemo_asr.models.ASRModel.from_pretrained("ai4bharat/indicconformer_stt_mr_hybrid_rnnt_large")
+        except Exception as e:
+            print("Failed to load model:", e)
+            traceback.print_exc()
+            sys.exit(1)
 
     model.freeze()
 

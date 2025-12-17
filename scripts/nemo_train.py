@@ -40,8 +40,8 @@ class ASRTrainer:
     # Supported model configurations
     SUPPORTED_MODELS = {
         'marathi': {
-            'name': 'ai4bharat/indicconformer_stt_mr_hybrid_rnnt_large',
-            'nemo_file': 'models/indicconformer_mr/indicconformer_stt_mr_hybrid_rnnt_large.nemo',
+            'name': 'ai4bharat/indicconformer_stt_mr_hybrid_ctc_rnnt_large',
+            'nemo_file': 'models/indicconformer_mr/indicconformer_stt_mr_hybrid_ctc_rnnt_large.nemo',
             'description': 'AI4Bharat Marathi IndicConformer (RNNT+CTC)',
             'model_class': nemo_asr.models.EncDecHybridRNNTCTCBPEModel
         },
