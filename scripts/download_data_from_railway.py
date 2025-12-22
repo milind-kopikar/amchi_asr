@@ -53,18 +53,20 @@ def fetch_recordings_list(base_url: str):
     return approved
 
 def create_manifest(recordings: list, output_path: str, split: str = 'train'):
-    """Create NeMo-compatible manifest file"""
+    """Create NeMo-compatible manifest file with AI4Bharat required fields"""
     logger.info(f"Creating {split} manifest...")
     
     manifest_lines = []
-    for rec in recordings:
-        # NeMo manifest format
+    for idx, rec in enumerate(recordings):
+        # NeMo manifest format with AI4Bharat multilingual fields
         manifest_entry = {
             "audio_filepath": f"data/{split}/audio/{rec['id']}.wav",
             "text": rec['sentence_text'],  # Devanagari text
             "duration": rec.get('duration', 0),
+            "lang": "mr",  # Use "mr" (Marathi) for Konkani (AI4Bharat convention)
+            "sample_id": f"{split}_{idx:04d}"  # Unique ID: train_0000, dev_0000, etc.
         }
-        manifest_lines.append(json.dumps(manifest_entry))
+        manifest_lines.append(json.dumps(manifest_entry, ensure_ascii=False))
     
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write('\n'.join(manifest_lines))

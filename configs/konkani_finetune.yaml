@@ -105,7 +105,7 @@ optim:
 
   # Learning rate scheduler
   sched:
-    name: "cosine"
+    name: "CosineAnnealing"
     warmup_steps: 1000
     warmup_ratio: null
     min_lr: 0.000001
@@ -126,6 +126,7 @@ data:
     trim_silence: true
     load_audio: true
     use_start_end_token: false
+    return_language_id: true
 
   # Validation data
   validation_ds:
@@ -140,6 +141,7 @@ data:
     trim_silence: true
     load_audio: true
     use_start_end_token: false
+    return_language_id: true
 
   # Test data (optional)
   test_ds:
@@ -154,6 +156,7 @@ data:
     trim_silence: true
     load_audio: true
     use_start_end_token: false
+    return_language_id: true
 
 # Experiment configuration
 exp_manager:

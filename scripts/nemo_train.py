@@ -132,7 +132,12 @@ class ASRTrainer:
             ModelClass = self.model_config['model_class']
             logger.info(f"🔄 Restoring {ModelClass.__name__}...")
             
-            self.model = ModelClass.restore_from(model_path, strict=False)
+            # Use map_location to ensure compatibility
+            self.model = ModelClass.restore_from(
+                model_path, 
+                strict=False,
+                map_location='cpu'  # Load to CPU first to avoid CUDA issues
+            )
             
             # Optionally freeze encoder
             if freeze_encoder:
