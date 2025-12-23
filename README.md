@@ -292,3 +292,100 @@ Get-Content wsl_list.txt
 
 **Last Updated**: November 29, 2025  
 **WIP Status**: Waiting on WSL host restart; NeMo stack mostly installed in `.venv_nemo`.
+## 🚀 RunPod Deployment Guide
+
+This section documents the process of fine-tuning the Konkani ASR model on RunPod, including common issues and solutions for future deployments.
+
+### Prerequisites
+- **RunPod Instance**: RTX 4090 GPU, 40GB+ persistent storage, Ubuntu 22.04
+- **Python Environment**: Python 3.9.25 with venv_py39
+- **CUDA**: 12.4 compatible
+- **Disk Space**: Minimum 40GB (increase from default 20GB to avoid space issues)
+
+### Setup Steps
+1. **Clone Repository**:
+   ```bash
+   git clone https://github.com/milind-kopikar/amchi_asr.git
+   cd amchi_asr
+   ```
+
+2. **Install Dependencies**:
+   ```bash
+   pip install torch==2.8.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+   pip install nemo_toolkit[asr]==1.19.0
+   pip install huggingface_hub==0.19.4 transformers==4.24.0
+   pip install jiwer librosa soundfile scipy
+   ```
+
+3. **Download Base Model**:
+   ```bash
+   HF_TOKEN=your_token python scripts/download_model.py
+   ```
+
+4. **Prepare Data**:
+   ```bash
+   python scripts/download_data_from_railway.py
+   ```
+
+5. **Fine-tune Model**:
+   ```bash
+   python scripts/nemo_train.py
+   ```
+
+6. **Evaluate Model**:
+   ```bash
+   python scripts/evaluate_nemo.py --model_path results/konkani_full/konkani_asr_final.nemo --test_manifest data/test/manifest.jsonl --output_file results/konkani_full/test_results_detailed.json --batch_size 8
+   ```
+
+### Common Issues & Solutions
+
+#### 1. Disk Space Issues
+- **Problem**: RunPod default 20GB storage insufficient for model downloads and training.
+- **Solution**: Increase storage to 40GB+ in RunPod settings before starting.
+
+#### 2. Dependency Version Conflicts
+- **Problem**: `ImportError: cannot import name 'ModelFilter' from 'huggingface_hub'`
+- **Solution**: Downgrade huggingface_hub to 0.19.4 and transformers to 4.24.0 for NeMo 1.19.0 compatibility.
+
+#### 3. Model Path Errors
+- **Problem**: Scripts reference incorrect model paths (e.g., /tmp/ instead of models/).
+- **Solution**: Update config files and scripts to use correct local paths.
+
+#### 4. Evaluation Script Failures
+- **Problem**: `transcribe()` returns None or KeyError due to missing language_id.
+- **Solution**: Add `language_id='kok'` to all `model.transcribe()` calls for the multilingual IndicConformer model.
+
+#### 5. Prediction Extraction Issues
+- **Problem**: Hybrid RNNT-CTC models return tuple (ctc_list, rnnt_list), causing jiwer.wer() to fail on lists.
+- **Solution**: Extract string predictions: `prediction = transcriptions[1][0] if len(transcriptions) > 1 and transcriptions[1] else transcriptions[0][0] if transcriptions[0] else ""`
+
+#### 6. Indentation Errors in Scripts
+- **Problem**: Manual edits to Python files introduce indentation issues.
+- **Solution**: Use proper indentation (8 spaces for nested blocks) and test scripts after changes.
+
+#### 7. ONNX Export Failures
+- **Problem**: `ModuleNotFoundError: No module named 'einops'` during export.
+- **Solution**: Skip ONNX export; deploy .nemo model directly via Hugging Face Spaces with custom inference.
+
+### Performance Results
+- **Training WER**: 38.72% on dev set (42 samples)
+- **Test WER**: 0.2% on test set (42 samples)
+- **Model Size**: ~523MB final .nemo file
+
+### Deployment to Hugging Face
+1. Create HF Space with GPU support.
+2. Upload model, app.py (Gradio interface), and requirements.txt.
+3. Deploy for API access.
+
+### Key Learnings
+- Always verify disk space before starting.
+- Pin dependency versions to match NeMo requirements.
+- Test evaluation scripts incrementally (single sample → batch).
+- For multilingual models, specify language_id in inference.
+- Handle hybrid model outputs carefully.
+- Document all changes and issues for future runs.
+
+---
+
+**Last Updated**: December 22, 2025
+**Status**: Full pipeline working on RunPod, deployed to HF Spaces

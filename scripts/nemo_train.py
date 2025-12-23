@@ -47,7 +47,7 @@ class ASRTrainer:
         },
         'konkani': {
             'name': 'ai4bharat/indicconformer_stt_kok_hybrid_ctc_rnnt_large',
-            'nemo_file': 'models/indicconformer_kok/indicconformer_stt_kok_hybrid_ctc_rnnt_large.nemo',
+            'nemo_file': 'models/indicconformer_kok/indicconformer_stt_kok_hybrid_rnnt_large.nemo',
             'description': 'AI4Bharat Goan Konkani IndicConformer (CTC+RNNT)',
             'model_class': nemo_asr.models.EncDecHybridRNNTCTCBPEModel
         }

@@ -93,8 +93,9 @@ def transcribe_audio(model, audio_path: str, batch_size: int = 1) -> str:
     """
     try:
         # Use NeMo's transcribe method
-        transcriptions = model.transcribe([audio_path], batch_size=batch_size)
-        return transcriptions[0] if transcriptions else ""
+        transcriptions = model.transcribe([audio_path], batch_size=batch_size, language_id='kok')
+        prediction = transcriptions[1][0] if len(transcriptions) > 1 and transcriptions[1] else transcriptions[0][0] if transcriptions[0] else ""
+        return prediction
     except Exception as e:
         logger.warning(f"Transcription failed for {audio_path}: {e}")
         return ""
