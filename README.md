@@ -385,6 +385,8 @@ This section documents the process of fine-tuning the Konkani ASR model on RunPo
 - Handle hybrid model outputs carefully.
 - Document all changes and issues for future runs.
 
+**Smoke tests & MMS runbook:** For a concise, repeatable smoke test and MMS-specific guidance see `README_SMOKE.md` included in the repository.
+
 ---
 
 **Last Updated**: December 22, 2025

@@ -1,0 +1,49 @@
+# Hugging Face ASR Configuration (SMOKE)
+# Minimal configuration for quick CPU smoke tests
+
+# Model settings
+model:
+  base_model: "facebook/wav2vec2-base-960h"
+  model_type: "wav2vec2-bert"
+  freeze_feature_encoder: true
+  freeze_feature_projection: true
+
+# Training settings
+training:
+  output_dir: "results/smoke/hf_konkani"
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 1
+  gradient_accumulation_steps: 4
+  learning_rate: 3e-5
+  warmup_steps: 10
+  max_steps: 5
+  logging_steps: 1
+  save_steps: 5  # Save at the end
+  eval_steps: 5
+  eval_strategy: "steps"
+  save_strategy: "steps"
+  save_total_limit: 1
+  save_only_model: true
+  load_best_model_at_end: true
+  metric_for_best_model: "wer"
+  greater_is_better: false
+  push_to_hub: false
+
+# Data settings
+data:
+  train_manifest: "data/test_run/train.tsv"
+  dev_manifest: "data/test_run/dev.tsv"
+  test_manifest: "data/test_run/test.tsv"
+  audio_dir: "."
+  sampling_rate: 16000
+
+# Processing settings
+processing:
+  max_duration: 30.0
+  min_duration: 0.1
+  pad_to_multiple_of: 8
+
+# Testing settings
+testing:
+  num_test_samples: 3
+  display_results: true

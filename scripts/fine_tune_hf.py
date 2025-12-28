@@ -9,8 +9,8 @@ import json
 import torch
 import yaml
 from transformers import (
-    Wav2Vec2BertProcessor,
-    Wav2Vec2BertForCTC,
+    AutoProcessor,
+    AutoModelForCTC,
     TrainingArguments,
     Trainer
 )
@@ -45,8 +45,10 @@ class KonkaniASRTrainer:
 
         # Load processor and model
         print("Loading ASR model and processor...")
-        self.processor = Wav2Vec2BertProcessor.from_pretrained(self.base_model)
-        self.model = Wav2Vec2BertForCTC.from_pretrained(self.base_model)
+        # Use Auto classes for broader model compatibility (MMS, wav2vec2, etc.)
+        self.processor = AutoProcessor.from_pretrained(self.base_model)
+        # low_cpu_mem_usage reduces peak memory usage on CPU hosts
+        self.model = AutoModelForCTC.from_pretrained(self.base_model, low_cpu_mem_usage=True)
         self.model.to(self.device)
 
         # Freeze feature encoder if specified
@@ -119,7 +121,7 @@ class KonkaniASRTrainer:
             return result
 
         # Process dataset - keep audio_filepath column
-        processed_dataset = dataset.map(process_sample, remove_columns=["text", "duration", "valid"])
+        processed_dataset = dataset.map(process_sample, remove_columns=["text", "duration"])
         print(f"Processed dataset features: {list(processed_dataset.features.keys())}")
         print(f"First example keys: {list(processed_dataset[0].keys())}")
 
@@ -217,7 +219,6 @@ class KonkaniASRTrainer:
         data_collator_fn = data_collator
 
         # Compute WER metric
-        from transformers import Wav2Vec2BertProcessor
         import evaluate
 
         wer_metric = evaluate.load("wer")
@@ -260,12 +261,12 @@ class KonkaniASRTrainer:
 
         # Load fine-tuned model
         model_path = self.config['training']['output_dir']
-        processor = Wav2Vec2BertProcessor.from_pretrained(model_path)
-        model = Wav2Vec2BertForCTC.from_pretrained(model_path)
+        from transformers import AutoProcessor, AutoModelForCTC, pipeline
+        processor = AutoProcessor.from_pretrained(model_path)
+        model = AutoModelForCTC.from_pretrained(model_path)
         model.to(self.device)
 
         # Create ASR pipeline
-        from transformers import pipeline
         asr = pipeline(
             "automatic-speech-recognition",
             model=model,

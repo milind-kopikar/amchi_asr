@@ -4,8 +4,9 @@ Test the fine-tuned Konkani ASR model
 """
 
 import os
+import argparse
 import torch
-from transformers import Wav2Vec2BertProcessor, Wav2Vec2BertForCTC, pipeline
+from transformers import AutoProcessor, AutoModelForCTC, pipeline
 import librosa
 import subprocess
 import tempfile
@@ -24,7 +25,7 @@ def load_audio_with_fallback(audio_path, sample_rate=16000):
         # Convert M4A to WAV using ffmpeg
         try:
             subprocess.run([
-                'c:/Users/Milind Kopikare/Code/amchi_konkani/konkani_asr/ffmpeg/ffmpeg-8.0.1-essentials_build/bin/ffmpeg.exe', '-i', audio_path,
+                'ffmpeg', '-i', audio_path,
                 '-acodec', 'pcm_s16le', '-ar', str(sample_rate), temp_wav_path,
                 '-y', '-loglevel', 'quiet'
             ], check=True)
@@ -44,13 +45,17 @@ def test_model():
     print("🧪 Testing Fine-tuned Konkani ASR Model")
     print("=" * 50)
 
-    # Load the fine-tuned model
-    model_path = "D:/konkani_asr_models/huggingface_konkani/checkpoint-5"
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--model', type=str, default=os.getenv('MODEL_PATH', 'facebook/wav2vec2-base-960h'), help='Hugging Face model name or path')
+    parser.add_argument('--device', type=int, default=-1, help='Device index for pipeline; -1 for CPU')
+    args = parser.parse_args()
+
+    model_path = args.model
     print(f"Loading model from: {model_path}")
 
     try:
-        processor = Wav2Vec2BertProcessor.from_pretrained(model_path)
-        model = Wav2Vec2BertForCTC.from_pretrained(model_path)
+        processor = AutoProcessor.from_pretrained(model_path)
+        model = AutoModelForCTC.from_pretrained(model_path)
         print("✅ Model loaded successfully!")
     except Exception as e:
         print(f"❌ Failed to load model: {e}")
@@ -62,7 +67,7 @@ def test_model():
         model=model,
         tokenizer=processor.tokenizer,
         feature_extractor=processor.feature_extractor,
-        device=-1  # CPU
+        device=args.device
     )
 
     # Test on the training sample
