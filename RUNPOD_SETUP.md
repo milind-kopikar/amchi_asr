@@ -157,6 +157,19 @@ pip uninstall torch torchvision torchaudio
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 ```
 
+### "Error: Your SSH client doesn't support PTY"
+
+- **Symptom**: VS Code Remote-SSH installer fails or an `ssh <host> 'tty'` command prints: `Error: Your SSH client doesn't support PTY`.
+- **Cause**: Often seen when connecting via RunPod's proxy (`ssh.runpod.io`), which doesn't support allocating a PTY; VS Code installer requires a PTY to run installer commands and detect platform.
+- **Workarounds**:
+  - Use the pod's public IP and port (direct TCP endpoint) instead of the proxy host — this reliably supports PTY allocation.
+  - Verify PTY: `ssh -vvv -tt <host> 'tty'` should return `/dev/pts/0` on success.
+  - Ensure your SSH config points to your private key (e.g., `~/.ssh/runpod_ed25519`) for the host.
+
+- **Automated helper**: use `python scripts/setup_runpod_remote.py --host <ip> --port <port> --user runpod --pubkey ~/.ssh/runpod_ed25519.pub --identity ~/.ssh/runpod_ed25519 --workspace konkani_asr.code-workspace --host-alias runpod-large` to add a host entry, try to copy your public key, run the PTY test, and update the workspace settings to show installer logs.
+
+- **VS Code tips**: add `"remote.SSH.remotePlatform": { "runpod-large": "linux" }` and `"remote.SSH.showLoginTerminal": true` to your `.code-workspace` file to force Linux detection and capture installer output for debugging.
+
 ## After Training
 
 ### Download Trained Model

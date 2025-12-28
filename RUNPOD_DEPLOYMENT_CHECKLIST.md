@@ -269,6 +269,14 @@ huggingface-cli download ai4bharat/indicconformer_stt_mr_hybrid_rnnt_large
 - Reconnect using same SSH command
 - Check training status: `tail -f results/logs/*/events.out.tfevents.*`
 
+### "Error: Your SSH client doesn't support PTY"
+
+- **Symptom**: VS Code Remote-SSH installer fails with `Error: Your SSH client doesn't support PTY`, or `ssh <host> 'tty'` prints that message.
+- **Cause**: Often caused by connecting via the RunPod proxy (`ssh.runpod.io`) which does not support PTY allocation required by the installer.
+- **Fix**: Use the pod's public IP and port (direct TCP) instead of the proxy; verify PTY with `ssh -vvv -tt <host> 'tty'` which should return `/dev/pts/0` when PTY succeeds. Ensure your SSH `IdentityFile` is set to your RunPod private key (for example `~/.ssh/runpod_ed25519`).
+
+- **Helper**: the repository includes `scripts/setup_runpod_remote.py` which automates adding the host, copying your pubkey (if password access is available), running the PTY test, and updating the `.code-workspace` settings to show installer logs.
+
 ## 📝 Notes
 
 - All scripts have comprehensive logging with emoji icons

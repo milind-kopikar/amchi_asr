@@ -367,6 +367,44 @@ This section documents the process of fine-tuning the Konkani ASR model on RunPo
 - **Problem**: `ModuleNotFoundError: No module named 'einops'` during export.
 - **Solution**: Skip ONNX export; deploy .nemo model directly via Hugging Face Spaces with custom inference.
 
+### SSH / RunPod Remote-SSH Troubleshooting ✅
+
+- **Symptom**: Remote‑SSH installer fails with the message **"Error: Your SSH client doesn't support PTY"** when connecting via the RunPod proxy host (`ssh.runpod.io`). This happens because the proxy does not support allocating a PTY and the VS Code installer expects one.
+
+- **Quick checks**:
+  - Test PTY allocation: `ssh -vvv -tt <host> 'tty'` — if successful you should see `/dev/pts/0` returned.
+  - Check verbose auth & negotiation: `ssh -vvv <host>` for detailed debug output.
+
+- **Recommended workaround**:
+  - Use the pod's public TCP address and port (exposed IP) instead of the proxy host — this reliably supports PTY allocation.
+  - Ensure you point your `IdentityFile` to your RunPod private key (example: `~/.ssh/runpod_ed25519`) in your `~/.ssh/config`.
+
+- **Example `~/.ssh/config` entry**:
+
+  Host runpod-large
+    HostName 157.157.221.29
+    Port 31603
+    User runpod
+    IdentityFile ~/.ssh/runpod_ed25519
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+
+- **Onboarding helper** (automates adding the host, copying pubkey, PTY test, and updating workspace settings):
+
+  ```bash
+  python scripts/setup_runpod_remote.py \
+    --host 157.157.221.29 --port 31603 --user runpod \
+    --pubkey ~/.ssh/runpod_ed25519.pub --identity ~/.ssh/runpod_ed25519 \
+    --workspace konkani_asr.code-workspace --host-alias runpod-large
+  ```
+
+- **VS Code tips**:
+  - Add `"remote.SSH.remotePlatform": { "runpod-large": "linux" }` to the `.code-workspace` file to force Linux detection.
+  - Enable `"remote.SSH.showLoginTerminal": true` in the workspace settings to view installer logs when debugging failures.
+
+- **If you must use the proxy**: you can try forcing a PTY with `-tt` and set `remote.SSH.permitPtyAllocation` to `true`, but results may vary — using the exposed TCP address is more reliable.
+
+
 ### Performance Results
 - **Training WER**: 38.72% on dev set (42 samples)
 - **Test WER**: 0.2% on test set (42 samples)

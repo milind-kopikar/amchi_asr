@@ -207,6 +207,48 @@ python scripts/download_data_from_railway.py \
     --train_split 0.8
 ```
 
+### ❌ "Error: Your SSH client doesn't support PTY"
+
+```bash
+# Symptom: VS Code Remote-SSH installer or 'ssh <host> "tty"' prints:
+# Error: Your SSH client doesn't support PTY
+```
+
+- **Cause**: This commonly occurs when connecting via the RunPod proxy host (`ssh.runpod.io`) which doesn't support allocating a PTY; VS Code installer expects a PTY to detect platform and run installation steps.
+
+- **Quick checks**:
+  - PTY test: `ssh -vvv -tt <host> 'tty'` — success returns `/dev/pts/0`.
+  - Verbose auth: `ssh -vvv <host>` for debug logs.
+
+- **Workaround**:
+  - Prefer connecting to the pod's exposed public IP and port (the direct TCP endpoint) rather than the proxy; this supports PTY allocation reliably.
+  - Ensure your `IdentityFile` points to your RunPod private key (e.g., `~/.ssh/runpod_ed25519`) in your `~/.ssh/config`.
+
+- **Example `~/.ssh/config`**:
+
+```sshconfig
+Host runpod-large
+  HostName 157.157.221.29
+  Port 31603
+  User runpod
+  IdentityFile ~/.ssh/runpod_ed25519
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+```
+
+- **Automate onboarding** (adds host entry, copies pubkey if needed, runs PTY test and updates workspace settings):
+
+```bash
+python scripts/setup_runpod_remote.py \
+  --host 157.157.221.29 --port 31603 --user runpod \
+  --pubkey ~/.ssh/runpod_ed25519.pub --identity ~/.ssh/runpod_ed25519 \
+  --workspace konkani_asr.code-workspace --host-alias runpod-large
+```
+
+- **VS Code settings to help debugging**:
+  - Add `"remote.SSH.remotePlatform": { "runpod-large": "linux" }` to your `.code-workspace`.
+  - Set `"remote.SSH.showLoginTerminal": true` to capture installer output when connecting.
+
 ---
 
 ## 💾 Download Trained Model to Local Machine
