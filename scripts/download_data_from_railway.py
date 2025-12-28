@@ -141,7 +141,7 @@ def main():
         recordings = fetch_recordings_list(args.base_url)
         
         if not recordings:
-            logger.error("No approved recordings found")
+            logger.error("No recordings found")
             return 1
         
         # IMPORTANT: Shuffle recordings randomly to mix speakers
