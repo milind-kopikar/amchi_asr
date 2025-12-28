@@ -14,7 +14,7 @@ frameworks:
 
   huggingface:
     # Hugging Face transformers (works on Windows)
-    config_file: "configs/huggingface_config.yaml"
+    config_file: "configs/huggingface_config.smoke.yaml"
     model_dir: "models/huggingface_konkani"
     base_model: "hriteshMaikap/marathi-asr-model"
 
@@ -28,7 +28,7 @@ frameworks:
 common:
   # Data paths
   data_dir: "data/test_run"
-  audio_dir: "data/audio"
+  audio_dir: "."
 
   # Training parameters
   max_epochs: 50

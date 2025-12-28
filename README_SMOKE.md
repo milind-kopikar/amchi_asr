@@ -59,3 +59,71 @@ python scripts/smoke_infer.py --model facebook/wav2vec2-base-960h --manifest dat
 ---
 
 For detailed automated smoke steps, see `scripts/smoke_run.sh` and `scripts/smoke_infer.py` included in the repo.
+
+## RunPod Quick Start (exact commands) 🚀
+Follow these exact steps on a fresh RunPod instance (50GB disk recommended, GPU recommended for MMS-1B fine-tuning):
+
+1) Clone the branch containing the smoke helpers:
+```bash
+# clone only the smoke branch
+git clone --branch smoke-mms --single-branch https://github.com/milind-kopikar/amchi_asr.git
+cd amchi_asr
+```
+
+2) Prepare HF cache and credentials (use large disk mount):
+```bash
+export HF_HOME="/path/to/large/disk/huggingface"
+export HF_TOKEN="<your_hf_token_here>"
+mkdir -p "$HF_HOME"
+```
+
+3) Run the automated smoke runner (idempotent):
+```bash
+# CPU smoke
+./scripts/smoke_run.sh --hf-home "$HF_HOME"
+# or for GPU (ensure correct torch CUDA wheel installed)
+./scripts/smoke_run.sh --hf-home "$HF_HOME" --gpu
+```
+
+4) Inspect results and logs:
+- Training log: `results/smoke/train.log`
+- Inference printed to stdout by `scripts/smoke_infer.py` (also visible in run output)
+
+5) Optional: run parts manually
+```bash
+# create venv and activate
+python3 -m venv .venv && . .venv/bin/activate
+pip install --upgrade pip
+# install minimal packages (choose GPU/CPU appropriately)
+python -m pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision torchaudio
+python -m pip install transformers datasets librosa soundfile scipy evaluate jiwer
+# download smoke data
+python scripts/download_smoke_test_data.py --output_dir data_smoke
+# copy manifests
+mkdir -p data/test_run
+cp data_smoke/train/manifest.jsonl data/test_run/train.tsv
+cp data_smoke/dev/manifest.jsonl data/test_run/dev.tsv
+cp data_smoke/test/manifest.jsonl data/test_run/test.tsv
+# run fine-tune smoke
+python scripts/fine_tune_hf.py
+# run inference smoke
+python scripts/smoke_infer.py --model facebook/mms-1b-all --manifest data_smoke/test/manifest.jsonl --limit 10
+```
+
+## Troubleshooting ⚠️
+- Disk full during model download: run `df -h` to check free space. If small, set `HF_HOME` to a larger mount or delete old cache (`rm -rf $HF_HOME/*`).
+- OOM / process killed: add swap or use a GPU instance. Example add swap:
+```bash
+sudo fallocate -l 32G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+```
+- Hugging Face auth errors: ensure `HF_TOKEN` is set or run `huggingface-cli login`.
+- Need to change base model or language: edit `configs/mms_smoke.yaml` or set `--model` on `scripts/smoke_infer.py`.
+
+---
+**Tip:** After verification, create a PR or merge `smoke-mms` into `master` using GitHub PR page: https://github.com/milind-kopikar/amchi_asr/pull/new/smoke-mms
+
+If you want, I can also add a short single-command helper to launch the smoke run in a screen/tmux session on the RunPod. Let me know.
