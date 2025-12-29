@@ -29,20 +29,29 @@ def parse_args():
     p.add_argument("--marker", "-m", default="[Sanskrit]", help="Marker string to match")
     p.add_argument("--bookended", action="store_true", help="Only remove lines that contain both a start and end marker")
     p.add_argument("--ignore-case", action="store_true", help="Case-insensitive marker match")
+    p.add_argument("--remove-latin", action="store_true", help="Also remove lines that contain ASCII Latin letters (A-Z, a-z)")
     p.add_argument("--in-place", action="store_true", help="Overwrite the input file (creates a .bak backup)")
     p.add_argument("--dry-run", action="store_true", help="Show counts but do not write files")
     return p.parse_args()
 
 
-def build_pattern(marker: str, bookended: bool, ignore_case: bool):
+def build_pattern(marker: str, bookended: bool, ignore_case: bool, remove_latin: bool=False):
     # Escape marker for regex
     esc = re.escape(marker)
     flags = re.IGNORECASE if ignore_case else 0
-    if bookended:
+    latin_pat = r"[A-Za-z]"
+    if bookended and remove_latin:
+        # Match either bookended marker OR any Latin letter
+        pattern = re.compile(r"(^.*" + esc + r".*" + esc + r".*$)|(" + latin_pat + r")", flags)
+    elif bookended:
         # Looks for marker ... marker (anywhere in the line)
         pattern = re.compile(r"^.*" + esc + r".*" + esc + r".*$", flags)
     else:
-        pattern = re.compile(esc, flags)
+        if remove_latin:
+            # Match marker OR any Latin letter
+            pattern = re.compile(r"(" + esc + r")|(" + latin_pat + r")", flags)
+        else:
+            pattern = re.compile(esc, flags)
     return pattern
 
 
@@ -75,7 +84,7 @@ def main():
     args = parse_args()
     inp = Path(args.input)
     out = Path(args.output) if args.output else inp.with_suffix(inp.suffix + ".cleaned")
-    pattern = build_pattern(args.marker, args.bookended, args.ignore_case)
+    pattern = build_pattern(args.marker, args.bookended, args.ignore_case, remove_latin=args.remove_latin)
 
     # Dry-run first if requested
     if args.dry_run:
