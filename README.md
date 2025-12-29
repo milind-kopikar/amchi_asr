@@ -292,6 +292,8 @@ Get-Content wsl_list.txt
 
 **Last Updated**: November 29, 2025  
 **WIP Status**: Waiting on WSL host restart; NeMo stack mostly installed in `.venv_nemo`.
+For MMS reproducibility & recovery, see `docs/MMS_FINETUNE.md`.
+
 ## 🚀 RunPod Deployment Guide
 
 This section documents the process of fine-tuning the Konkani ASR model on RunPod, including common issues and solutions for future deployments.
