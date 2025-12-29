@@ -106,20 +106,26 @@ def main():
     parser.add_argument(
         "--train_split",
         type=float,
-        default=0.7,
-        help="Fraction of data for training (default: 0.7 = 70%%)"
+        default=None,
+        help="Fraction of data for training (overrides if provided). If not provided, --train_dev_ratio will split remaining after test"
     )
     parser.add_argument(
         "--dev_split",
         type=float,
-        default=0.15,
-        help="Fraction of data for validation (default: 0.15 = 15%%)"
+        default=None,
+        help="Fraction of data for validation (overrides if provided). If not provided, --train_dev_ratio will split remaining after test"
     )
     parser.add_argument(
         "--test_split",
         type=float,
         default=0.15,
         help="Fraction of data for testing (default: 0.15 = 15%%)"
+    )
+    parser.add_argument(
+        "--train_dev_ratio",
+        type=float,
+        default=0.9,
+        help="If --train_split/--dev_split not provided, split the remaining (after reserving test) into train/dev with this ratio (default 0.9 = 90%% train, 10%% dev)"
     )
     parser.add_argument(
         "--seed",
@@ -130,11 +136,12 @@ def main():
     
     args = parser.parse_args()
     
-    # Validate splits sum to 1.0
-    total_split = args.train_split + args.dev_split + args.test_split
-    if abs(total_split - 1.0) > 0.001:
-        logger.error(f"Splits must sum to 1.0, got {total_split}")
-        return 1
+    # Validate splits if explicit fractions provided
+    if args.train_split is not None and args.dev_split is not None:
+        total_split = args.train_split + args.dev_split + args.test_split
+        if abs(total_split - 1.0) > 0.001:
+            logger.error(f"Splits must sum to 1.0, got {total_split}")
+            return 1
     
     try:
         # Fetch recordings
@@ -151,13 +158,24 @@ def main():
         logger.info("✓ Recordings shuffled to mix speakers across splits")
         
         # Calculate split indices
-        n_train = int(len(recordings) * args.train_split)
-        n_dev = int(len(recordings) * args.dev_split)
-        # Remaining goes to test (handles rounding)
-        
-        train_recordings = recordings[:n_train]
-        dev_recordings = recordings[n_train:n_train + n_dev]
-        test_recordings = recordings[n_train + n_dev:]
+        if args.train_split is not None and args.dev_split is not None:
+            # user provided explicit fractions
+            if abs(args.train_split + args.dev_split + args.test_split - 1.0) > 0.001:
+                logger.error('Provided splits must sum to 1.0')
+                return 1
+            n_train = int(len(recordings) * args.train_split)
+            n_dev = int(len(recordings) * args.dev_split)
+            train_recordings = recordings[:n_train]
+            dev_recordings = recordings[n_train:n_train + n_dev]
+            test_recordings = recordings[n_train + n_dev:]
+        else:
+            # Reserve test first, then split remaining into train/dev using train_dev_ratio
+            n_test = int(len(recordings) * args.test_split)
+            remaining = recordings[:-n_test] if n_test > 0 else recordings[:]
+            n_train = int(len(remaining) * args.train_dev_ratio)
+            train_recordings = remaining[:n_train]
+            dev_recordings = remaining[n_train:]
+            test_recordings = recordings[-n_test:] if n_test > 0 else []
         
         logger.info("="*80)
         logger.info(f"📊 Data Split (Total: {len(recordings)} samples)")

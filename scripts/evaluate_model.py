@@ -41,16 +41,23 @@ def evaluate_model():
         return
 
     dataset = Dataset.from_pandas(df_test)
-    dataset = dataset.cast_column("audio_filepath", Audio(sampling_rate=16000))
 
     wer_metric = evaluate.load("wer")
     results = []
 
     print(f"Running Inference on {len(dataset)} samples...")
 
+    import soundfile as sf
     for i, batch in enumerate(dataset):
-        audio = batch["audio_filepath"]
-        input_values = processor(audio["array"], sampling_rate=16000, return_tensors="pt", padding="longest").input_values.to(model.device)
+        audio_path = batch["audio_filepath"]
+        # Normalize and resolve path (handle windows backslashes)
+        audio_path = audio_path.replace('\\\\', '/').replace('\\', '/')
+        audio_path = os.path.normpath(audio_path)
+        if not os.path.isabs(audio_path):
+            audio_path = os.path.normpath(os.path.join(os.getcwd(), audio_path))
+
+        audio_arr, sr = sf.read(audio_path)
+        input_values = processor(audio_arr, sampling_rate=sr, return_tensors="pt", padding="longest").input_values.to(model.device)
 
         # INFERENCE
         with torch.no_grad():
@@ -63,7 +70,7 @@ def evaluate_model():
         local_wer = wer_metric.compute(predictions=[pred_str], references=[batch["text"]])
 
         results.append({
-            "audio_file": batch["audio_filepath"]["path"] if isinstance(batch["audio_filepath"], dict) else batch["audio_filepath"],
+            "audio_file": audio_path,
             "ground_truth": batch["text"],
             "prediction": pred_str,
             "wer": local_wer
