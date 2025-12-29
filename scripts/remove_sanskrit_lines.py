@@ -92,7 +92,10 @@ def main():
         return
 
     if args.in_place:
-        bak = inp.with_suffix(inp.suffix + ".bak")
+        # Create a timestamped backup so repeated in-place runs do not fail
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        bak = inp.with_suffix(inp.suffix + f".bak.{timestamp}")
         inp.rename(bak)
         # After renaming, process from bak -> inp
         total, removed = process(bak, inp, pattern, dry_run=False)
