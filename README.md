@@ -86,9 +86,11 @@ sentence_02.m4a	[konkani text here]
   - Sets model directories
 
 - **Framework Configs**:
-  - `configs/huggingface_config.yaml`: Training parameters, model settings
-  - `configs/nemo_config.yaml`: NeMo-specific settings (placeholder)
-  - `configs/ai4bharat_config.yaml`: AI4Bharat settings (placeholder)
+  - `configs/huggingface_config.yaml`: Training parameters, model settings (HuggingFace / MMS flow)
+  - `configs/nemo_config.yaml`: NeMo-specific settings (placeholder — see NeMo docs)
+  - `configs/ai4bharat_config.yaml`: AI4Bharat settings (placeholder — see AI4Bharat docs)
+
+> **Note:** The **MMS** fine-tuning pipeline implemented in this repository targets the **facebook/mms-1b-all** model (MMS multilingual speech model). All scripts, `requirements_mms.txt`, and `docs/MMS_FINETUNE.md` are specific to the MMS finetune workflow. If you want to run the **AI4Bharat + NeMo** experiment, follow the separate NeMo instructions (use a dedicated virtualenv and `requirements_nemo.txt`) — see the **RunPod / NeMo** sections in this README and `docs/` for details.
 
 ## 🚀 Setup & Installation
 
@@ -295,6 +297,14 @@ Get-Content wsl_list.txt
 For MMS reproducibility & recovery, see `docs/MMS_FINETUNE.md`.
 
 ## 🚀 RunPod Deployment Guide
+
+### Backup & Persistence (important before terminating a Pod)
+- We created a backup branch and tarball to preserve scripts/configs/docs created during this session:
+  - **Backup branch:** `backup/scripts-config-2025-12-29-2330` (pushed to GitHub)
+  - **Local tarball:** `/root/amchi_asr_backup_scripts_config_2025-12-29-2330.tgz` (~78K)
+- If you terminate this Pod, pull the branch or download the tarball to restore scripts and configs quickly.
+
+
 
 This section documents the process of fine-tuning the Konkani ASR model on RunPod, including common issues and solutions for future deployments.
 
