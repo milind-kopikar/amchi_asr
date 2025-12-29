@@ -1,0 +1,26 @@
+experiment:
+  smoke_test: false  # Set to FALSE to run full training
+  max_train_samples_smoke: 3
+  max_val_samples_smoke: 1
+  max_test_samples_smoke: 3
+
+training:
+  output_dir: "results/mms_devanagari_finetune"
+  batch_size: 2
+  learning_rate: 1e-4
+  num_epochs: 30
+  save_steps: 200
+  eval_steps: 200
+  save_total_limit: 1
+  logging_steps: 50
+
+data:
+  vocab_file: "data/vocab.json"
+  train_manifest: "data/train/manifest.jsonl"
+  val_manifest: "data/dev/manifest.jsonl"
+  test_manifest: "data/test/manifest.jsonl"
+  test_story_ids: ["story3"]
+
+model:
+  base_model: "facebook/mms-1b-all"
+  processor_path: "data/processor_devanagari"
