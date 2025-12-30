@@ -116,6 +116,20 @@ sentence_02.m4a	[konkani text here]
    - Edit `configs/main_config.yaml` to set `framework: huggingface`
    - Adjust paths in config files as needed
 
+---
+
+### AI4Bharat + NeMo Golden Setup
+If you plan to use the **AI4Bharat + NeMo** workflow (Linux/Mac), we provide a "golden" setup script that captures the environment and patches used during development. This is the recommended way to reproduce the working setup used for fine-tuning.
+
+Steps:
+```bash
+chmod +x setup_env.sh
+sudo ./setup_env.sh
+```
+
+Full details and caveats are in `SETUP_ENV.md`.
+
+
 ## 🎯 Usage
 
 ### Framework Switching
@@ -228,6 +242,8 @@ For AI4Bharat integration or framework comparisons:
 
 - **Date:** November 29, 2025
 - **Current State:** Most of the HuggingFace pipeline runs in WSL. I created a fresh venv named `.venv_nemo` and installed a pinned NeMo stack (`nemo-toolkit==2.5.3` + matching `hydra-core`, `omegaconf`, `antlr4-python3-runtime`, `dill`, etc.). I also added an 8 GB swapfile to WSL so large pip builds won't OOM.
+
+**Important (AI4Bharat / NeMo fork):** When using the AI4Bharat NeMo fork and AI4Bharat `.nemo` checkpoints, **use Python 3.9**. The fork is tested against specific dependency versions (notably `llvmlite`/`numba`) that may not be available on Python 3.10+; the fork also includes model options (e.g., `multisoftmax`) that are not in upstream NeMo. See `AI4BHARAT_SETUP_GUIDE.md` for the full rationale and setup steps.
 - **Blocked On:** WSL is currently failing to start on this machine with `Error code: 6 (Wsl/Service/CreateInstance/E_FAIL)`. Until WSL is running again the final step (installing `lightning` and running the NeMo smoke test `scripts/nemo_finetune_smoke.py` in `.venv_nemo`) cannot be completed here.
 
 ### **What I tried (summary)**
