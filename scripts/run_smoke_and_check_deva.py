@@ -173,11 +173,33 @@ def run(args):
             except Exception:
                 pswer = None
 
+        # Normalize prediction to a single readable string
+        def _normalize_pred(p):
+            import ast
+            # If it's a string representation of a Python object, try to parse
+            if isinstance(p, str):
+                try:
+                    parsed = ast.literal_eval(p)
+                    return _normalize_pred(parsed)
+                except Exception:
+                    # not a Python literal; return as-is
+                    return p
+            # If it's a list/tuple, drill down to first string
+            if isinstance(p, (list, tuple)) and len(p) > 0:
+                first = p[0]
+                if isinstance(first, (list, tuple)) and len(first) > 0:
+                    return _normalize_pred(first[0])
+                return _normalize_pred(first)
+            # Otherwise cast to str
+            return str(p)
+
+        pred_norm = _normalize_pred(pred)
+
         results["samples"].append({
             "index": i,
             "audio": audio,
             "ref": ref,
-            "pred": pred,
+            "pred": pred_norm,
             "deva_ok": sample_has_deva,
             "pred_latency_s": latency,
             "wer": pswer
