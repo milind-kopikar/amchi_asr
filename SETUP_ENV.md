@@ -17,6 +17,17 @@ The script will:
 - Install required Python packages (nemo_toolkit and key libs)
 - Copy our vendored `patches/conv_asr_fixed.py` over the installed NeMo `conv_asr.py`
 
+## Bootstrap / First-Time Host Notes 🐣
+- **Hugging Face login (manual step):** The script cannot guess your Hugging Face token. On a new machine you'll need to run `huggingface-cli login` manually (or set `HF_TOKEN` in your environment) before attempting to download AI4Bharat models from the Hub.
+
+- **Chicken & Egg (bootstrap command):** This repository and the setup script may not exist yet on a fresh host. Use this command to bootstrap a fresh machine in one step (replace YOUR_USER):
+
+  ```bash
+  git clone https://github.com/YOUR_USER/amchi_asr.git && cd amchi_asr && sudo ./setup_env.sh
+  ```
+
+- **Cython / build deps:** Some packages (e.g., `pynini`) require `Cython` and build tools to be installed before they can build. We install `Cython` early in the script (`pip install Cython`) — if you prefer to pre-seed system build deps use `sudo apt-get install -y build-essential` before running `setup_env.sh`.
+
 ---
 
 ## What we learned / environment details 📚

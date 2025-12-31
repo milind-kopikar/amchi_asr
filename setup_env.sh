@@ -14,6 +14,10 @@ pip install --force-reinstall torch torchvision torchaudio --index-url https://d
 
 # 3. Dependencies (From our manual installs)
 echo "📚 Installing Python libraries..."
+# Some build-time deps are required for packages such as pynini; install Cython first to avoid build failures
+pip install --upgrade pip setuptools wheel
+pip install Cython
+
 # Allow explicit override to force upstream NeMo
 if [ "${USE_UPSTREAM_NEMO:-0}" = "1" ]; then
   echo "ℹ️ USE_UPSTREAM_NEMO=1 set — installing upstream nemo_toolkit[all]"

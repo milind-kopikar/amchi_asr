@@ -121,6 +121,16 @@ sentence_02.m4a	[konkani text here]
 ### AI4Bharat + NeMo Golden Setup
 If you plan to use the **AI4Bharat + NeMo** workflow (Linux/Mac), we provide a "golden" setup script that captures the environment and patches used during development. This is the recommended way to reproduce the working setup used for fine-tuning.
 
+Bootstrap (fresh host):
+```bash
+# Clone + run the setup script (replace YOUR_USER):
+git clone https://github.com/YOUR_USER/amchi_asr.git && cd amchi_asr && sudo ./setup_env.sh
+```
+
+Notes:
+- You must run `huggingface-cli login` (or set `HF_TOKEN`) before running tasks that download models from Hugging Face.
+- The setup script now installs `Cython` before trying to install `pynini`/NeMo to reduce build failures on fresh hosts.
+
 Steps:
 ```bash
 chmod +x setup_env.sh
