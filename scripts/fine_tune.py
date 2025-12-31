@@ -111,15 +111,158 @@ def setup_model(config: DictConfig):
         for param in model.encoder.parameters():
             param.requires_grad = False
 
+    # Runtime patching and safety measures for pilot runs:
+    # 1) Optionally apply the vendored conv_asr patch to the installed NeMo module so
+    #    ConvASRDecoder can accept string language ids like 'kok'. This avoids
+    #    altering the base package on disk and is safe for pilots. Set
+    #    `APPLY_CONV_PATCH=1` in the environment to enable.
+    try:
+        if os.environ.get('APPLY_CONV_PATCH') == '1':
+            try:
+                # Ensure repo root is importable so `patches` can be imported from anywhere
+                repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                if repo_root not in sys.path:
+                    sys.path.insert(0, repo_root)
+                # Import the vendored patch module and monkey-patch the installed module
+                import patches.conv_asr_fixed as patched_conv
+                import nemo.collections.asr.modules.conv_asr as orig_conv
+                # Replace the classes in-place
+                orig_conv.ConvASRDecoder = patched_conv.ConvASRDecoder
+                orig_conv.ConvASREncoder = patched_conv.ConvASREncoder
+                orig_conv.ConvASRDecoderClassification = patched_conv.ConvASRDecoderClassification
+                logger.info('Applied conv_asr runtime patch (patched ConvASRDecoder/Encoder)')
+            except Exception as e:
+                logger.warning(f'Failed to apply conv_asr patch at runtime: {e}')
+    except Exception:
+        pass
+
+    # 2) Temporary stub replacement (ONLY if explicitly requested via USE_CTC_STUB=1)
+    #    This is unsafe for research results; do not enable unless debugging.
+    try:
+        import torch
+        if os.environ.get('USE_CTC_STUB') == '1' and hasattr(model, 'ctc_decoder'):
+            try:
+                # Validate a dry-run forward to see if ctc_decoder accepts our language id form
+                dummy_in = torch.randn(1, model.preprocessor.features, 16)
+                _ = model.ctc_decoder(dummy_in, language_ids=[getattr(config, 'custom_config', {}).get('language', 'kok')])
+            except Exception as e:
+                logger.warning(f"CTC decoder raised during dry-run: {e}. Replacing with a safe stub for pilot runs (USE_CTC_STUB=1).")
+
+                class _DummyCTCDecoder(torch.nn.Module):
+                    def __init__(self, num_classes_with_blank):
+                        super().__init__()
+                        self._num_classes_with_blank = num_classes_with_blank
+                    def forward(self, encoder_output, language_ids=None):
+                        # encoder_output: [B, C, T] expected by ConvASRDecoder; convert to [B, T, C]
+                        if encoder_output.dim() == 3:
+                            b, c, t = encoder_output.shape
+                            out = torch.zeros((b, t, self._num_classes_with_blank), device=encoder_output.device, dtype=encoder_output.dtype)
+                        else:
+                            out = torch.zeros((1, 1, self._num_classes_with_blank), device=next(self.parameters()).device if any(p.requires_grad for p in self.parameters()) else 'cpu')
+                        return out
+
+                try:
+                    num_classes = getattr(model.ctc_decoder, 'num_classes_with_blank', None)
+                    if num_classes is None:
+                        sdict = model.state_dict()
+                        num_classes = 256
+                        for k in sdict.keys():
+                            if 'ctc_decoder.decoder_layers.0.weight' in k:
+                                num_classes = sdict[k].shape[0]
+                                break
+                    model.ctc_decoder = _DummyCTCDecoder(num_classes)
+                    logger.info('Replaced model.ctc_decoder with safe stub for pilot run (USE_CTC_STUB=1)')
+                except Exception as e2:
+                    logger.warning(f'Failed to replace ctc_decoder: {e2}')
+    except Exception:
+        pass
+
     # Update model configuration for fine-tuning
     if hasattr(config.model, 'decoder'):
         # Update decoder vocabulary if needed
         pass
 
+    # If the user explicitly requested CTC via config (decoder_type or loss_name),
+    # force the model to use CTC loss to avoid RNNT/Numba GPU JIT compilation.
+    try:
+        loss_choice = getattr(config, 'loss', {}).get('loss_name', None) if hasattr(config, 'loss') else None
+        decoder_choice = getattr(config.model, 'decoder_type', None) if hasattr(config, 'model') else None
+        if (loss_choice == 'ctc') or (decoder_choice == 'ctc'):
+            if hasattr(model, 'ctc_loss'):
+                model.loss = model.ctc_loss
+                logger.info('Switched model.loss to ctc_loss (CTC) to avoid RNNT/Numba GPU JIT issues')
+                # Update internal cfg if present
+                try:
+                    if hasattr(model, '_cfg') and 'loss' in model._cfg:
+                        model._cfg.loss.loss_name = 'ctc'
+                except Exception:
+                    pass
+            else:
+                logger.warning('CTC loss not present on model; cannot force CTC. Proceeding with model default loss.')
+    except Exception as e:
+        logger.warning(f'Failed to enforce CTC loss via config: {e}')
+
+    # If CTC was requested, monkey-patch a CTC-only training_step to avoid RNNT/jit codepath
+    try:
+        loss_choice = getattr(config, 'loss', {}).get('loss_name', None) if hasattr(config, 'loss') else None
+        decoder_choice = getattr(config.model, 'decoder_type', None) if hasattr(config, 'model') else None
+        if (loss_choice == 'ctc') or (decoder_choice == 'ctc'):
+            # enforce decoder selection
+            try:
+                model.cur_decoder = 'ctc'
+            except Exception:
+                pass
+
+            # Replace training_step with a CTC-only variant to skip RNNT joint computation
+            def _ctc_training_step(self, batch, batch_nb):
+                import torch
+                # Unpack batch
+                try:
+                    if isinstance(batch, (list, tuple)) and len(batch) >= 6:
+                        signal, signal_len, transcript, transcript_len, sample_ids, language_ids = batch
+                    elif isinstance(batch, dict):
+                        signal = batch['input_signal']
+                        signal_len = batch['input_signal_length']
+                        transcript = batch['labels']
+                        transcript_len = batch['labels_length']
+                        language_ids = batch.get('language_ids', None)
+                    else:
+                        # fallback: try standard unpack
+                        signal, signal_len, transcript, transcript_len = batch
+                        language_ids = None
+                except Exception:
+                    # raise to let PL handle abnormal batch formats
+                    raise
+
+                # Encoder forward
+                encoded, encoded_len = self.forward(input_signal=signal, input_signal_length=signal_len)
+
+                # CTC logits and loss
+                if "multisoftmax" not in getattr(self, 'cfg', {}).get('decoder', {}):
+                    lang_ids = None
+                else:
+                    lang_ids = language_ids
+
+                log_probs = self.ctc_decoder(encoder_output=encoded, language_ids=lang_ids)
+                ctc_loss = self.ctc_loss(log_probs=log_probs, targets=transcript, input_lengths=encoded_len, target_lengths=transcript_len)
+
+                # Add auxiliary losses if any
+                loss_value = self.add_auxiliary_losses(ctc_loss) if hasattr(self, 'add_auxiliary_losses') else ctc_loss
+
+                # Optional logging
+                tensorboard_logs = {'loss': loss_value}
+                return {'loss': loss_value, 'log': tensorboard_logs}
+
+            import types
+            model.training_step = types.MethodType(_ctc_training_step, model)
+            logger.info('Patched model.training_step to a CTC-only implementation for pilot runs')
+    except Exception as e:
+        logger.warning(f'Failed to monkey-patch training step for CTC: {e}')
+
     logger.info("Model setup completed")
     return model
 
-def setup_data_module(config: DictConfig):
+def setup_data_module(config: DictConfig, model=None):
     """
     Setup data module for training
 
@@ -187,8 +330,62 @@ def setup_data_module(config: DictConfig):
         val_collate = getattr(val_dataset, 'collate_fn', None)
         val_loader = DataLoader(val_dataset, batch_size=config.data.validation_ds.batch_size, shuffle=config.data.validation_ds.shuffle, num_workers=config.data.validation_ds.num_workers, collate_fn=val_collate)
 
+        # Wrap NeMo DataLoader batches to the six-tuple format expected by the model (signal, signal_len, transcript, transcript_len, sample_ids, language_ids)
+        import torch
+        class BatchWrapper:
+            def __init__(self, loader, model=None):
+                self.loader = loader
+                self.model = model
+            def __iter__(self):
+                for batch in self.loader:
+                    # If NeMo's AudioToBPEDataset returns (signal, signal_len, labels, labels_len)
+                    if isinstance(batch, (list, tuple)) and len(batch) == 4:
+                        signal, signal_len, labels, labels_len = batch
+                        bs = signal.size(0) if hasattr(signal, 'size') else len(signal)
+                        sample_ids = None
+
+                        # Helper: combined language identifier object that behaves like a str for dict lookup
+                        # and like an int for int(...) conversion. This avoids modifying library code.
+                        class LanguageIdentifier:
+                            def __init__(self, key: str, idx: int):
+                                self.key = str(key)
+                                self.idx = int(idx)
+                            def __int__(self):
+                                return int(self.idx)
+                            def __str__(self):
+                                return self.key
+                            def __repr__(self):
+                                return f"LangId({self.key}:{self.idx})"
+                            def __hash__(self):
+                                return hash(self.key)
+                            def __eq__(self, other):
+                                if isinstance(other, LanguageIdentifier):
+                                    return self.key == other.key
+                                return self.key == other
+
+                        # Provide language_ids as a list of LanguageIdentifier objects so both conv_asr
+                        # (which does int(lid)) and joint.ModuleDict (which expects string keys) work.
+                        if self.model is not None and hasattr(self.model, 'joint') and hasattr(self.model.joint, 'language_keys'):
+                            lang_key = getattr(config, 'custom_config', {}).get('language', 'kok') if hasattr(config, 'custom_config') else 'kok'
+                            try:
+                                lang_idx = list(self.model.joint.language_keys).index(lang_key)
+                            except Exception:
+                                lang_idx = 0
+                            language_ids = [LanguageIdentifier(lang_key, lang_idx) for _ in range(bs)]
+                        else:
+                            language_ids = [LanguageIdentifier('kok', 0) for _ in range(bs)]
+                        yield (signal, signal_len, labels, labels_len, sample_ids, language_ids)
+                    else:
+                        # Pass through other batch formats unchanged
+                        yield batch
+            def __len__(self):
+                return len(self.loader)
+
+        wrapped_train = BatchWrapper(train_loader, model=model)
+        wrapped_val = BatchWrapper(val_loader, model=model)
+
         logger.info('Data module setup completed (NeMo dataset)')
-        return train_loader, val_loader
+        return wrapped_train, wrapped_val
 
     # Fallback: simple dataset using SentencePiece + soundfile
     logger.info('Falling back to simple dataset (SentencePiece + soundfile)')
@@ -236,7 +433,8 @@ def setup_data_module(config: DictConfig):
         lablen = torch.tensor([l.shape[0] for l in labels], dtype=torch.long)
         for i,l in enumerate(labels):
             labpad[i, :l.shape[0]] = l
-        langs = torch.zeros((len(batch),), dtype=torch.long)
+        # Return language ids as a Python list of ints to avoid being moved to CUDA as a tensor
+        langs = [0] * len(batch)
         return {'input_signal': padded, 'input_signal_length': lengths, 'labels': labpad, 'labels_length': lablen, 'language_ids': langs}
 
     dataset = SimpleASRDataset(config.data.train_ds.manifest_filepath)
@@ -310,8 +508,21 @@ def setup_trainer(config: DictConfig, output_dir: str):
         callbacks=callbacks,
     )
 
+    # Debugging helper: if FAST_FAIL=1 is set in env, force very small limits to reproduce errors quickly
+    if os.environ.get('FAST_FAIL') == '1':
+        trainer_kwargs['max_epochs'] = 1
+        trainer_kwargs['limit_train_batches'] = 1
+        trainer_kwargs['limit_val_batches'] = 1
+        logger.info('FAST_FAIL enabled: limiting trainer to 1 batch/epoch for faster repro')
+
     if hasattr(config.trainer, 'strategy') and config.trainer.strategy not in (None, ''):
         trainer_kwargs['strategy'] = config.trainer.strategy
+
+    # Allow forcing CPU mode for debugging if requested via env var
+    if os.environ.get('FORCE_CPU') == '1':
+        logger.warning('FORCE_CPU=1 detected: overriding trainer to run on CPU for debugging')
+        trainer_kwargs['accelerator'] = 'cpu'
+        trainer_kwargs['devices'] = 1
 
     trainer = pl.Trainer(**trainer_kwargs)
 
@@ -329,7 +540,7 @@ def fine_tune_model(config: DictConfig, output_dir: str):
     try:
         # Setup components
         model = setup_model(config)
-        train_loader, val_loader = setup_data_module(config)
+        train_loader, val_loader = setup_data_module(config, model=model)
         trainer = setup_trainer(config, output_dir)
 
         # Setup experiment manager
@@ -363,7 +574,8 @@ def fine_tune_model(config: DictConfig, output_dir: str):
         logger.error(f"NeMo error during fine-tuning: {e}")
         raise
     except Exception as e:
-        logger.error(f"Unexpected error during fine-tuning: {e}")
+        # Log full traceback to aid debugging (was only logging the exception string which may be None)
+        logger.exception("Unexpected error during fine-tuning")
         raise
 
 def main():

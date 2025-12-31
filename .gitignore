@@ -32,6 +32,8 @@ final_corpus/
 data/
 results/
 models/
+# Experiment outputs created by NeMo/this repo
+nemo_experiments/
 
 # Python virtual environments
 venv/

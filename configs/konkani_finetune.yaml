@@ -68,8 +68,12 @@ model:
       dropout: 0.0
 
   # Loss function
+  # Use CTC loss to avoid RNNT/Numba GPU JIT compilation issues
   loss:
-    loss_name: "rnnt_loss"
+    loss_name: "ctc"
+
+  # Force decoder type to CTC (safety to ensure RNNT path isn't selected)
+  decoder_type: "ctc"
 
   # Spec augmentation
   spec_augment:
@@ -124,7 +128,7 @@ data:
     trim_silence: true
     load_audio: true
     use_start_end_token: false
-    return_language_id: true
+    return_language_id: false
 
   # Validation data
   validation_ds:
@@ -139,7 +143,7 @@ data:
     trim_silence: true
     load_audio: true
     use_start_end_token: false
-    return_language_id: true
+    return_language_id: false
 
   # Test data (optional)
   test_ds:
