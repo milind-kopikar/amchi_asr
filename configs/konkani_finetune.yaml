@@ -93,9 +93,7 @@ trainer:
   check_val_every_n_epoch: 1
 
   # Strategy configuration
-  strategy:
-    _target_: pytorch_lightning.strategies.DDPStrategy
-    find_unused_parameters: false
+  strategy: null
 
 # Optimizer configuration
 optim:
