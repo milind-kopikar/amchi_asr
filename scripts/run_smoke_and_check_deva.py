@@ -31,6 +31,29 @@ def transcribe(model, audio):
     # Try language_id='kok' first (AI4Bharat models), fallback to no language_id on failure
     for kwargs in ({'language_id': 'kok'}, {}):
         try:
+            # If a string language_id like 'kok' is provided, try to map it to an integer index
+            if 'language_id' in kwargs and isinstance(kwargs['language_id'], str):
+                lid = kwargs['language_id']
+                mapped = None
+                try:
+                    # Preferred: model.joint.language_keys
+                    if hasattr(model, 'joint') and hasattr(model.joint, 'language_keys'):
+                        mapped = list(model.joint.language_keys).index(lid)
+                except Exception:
+                    mapped = None
+                if mapped is None:
+                    try:
+                        # fallback: look for language_keys in model.config
+                        if hasattr(model, 'cfg') and 'language_keys' in getattr(model.cfg, 'joint', {}):
+                            mapped = list(model.cfg.joint.language_keys).index(lid)
+                    except Exception:
+                        mapped = None
+                if mapped is not None:
+                    print(f"DEBUG: Mapped language_id '{lid}' -> {mapped}")
+                    kwargs['language_id'] = mapped
+                else:
+                    print(f"DEBUG: Could not map language_id '{lid}' to integer index; passing as-is")
+
             out = model.transcribe([audio], batch_size=1, **kwargs)
             if isinstance(out, list) and out:
                 if isinstance(out[0], list):
