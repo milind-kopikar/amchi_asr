@@ -26,7 +26,9 @@ The script will:
   git clone https://github.com/YOUR_USER/amchi_asr.git && cd amchi_asr && sudo ./setup_env.sh
   ```
 
-- **Cython / build deps:** Some packages (e.g., `pynini`) require `Cython` and build tools to be installed before they can build. We install `Cython` early in the script (`pip install Cython`) — if you prefer to pre-seed system build deps use `sudo apt-get install -y build-essential` before running `setup_env.sh`.
+- **Cython / build deps:** Some packages (e.g., `pynini`) require `Cython` and build tools to be installed before they can build. We install `Cython` early in the script (`pip install Cython`) and the script now installs `build-essential` via `apt-get` on fresh hosts so compilers and make are available for building wheels. If you prefer to pre-seed system build deps yourself, run `sudo apt-get install -y build-essential` before running `setup_env.sh`.
+
+- **Hugging Face login reminder:** The `setup_env.sh` script will now print a final reminder to run `huggingface-cli login` (or set `HF_TOKEN`) after the setup finishes so you're ready to download model files.
 
 ---
 

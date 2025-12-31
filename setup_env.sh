@@ -5,7 +5,7 @@ echo "🚀 Starting Amchi-ASR Environment Setup..."
 
 # 1. System Dependencies (Fixes pydub warning)
 echo "📦 Installing system tools..."
-apt-get update && apt-get install -y ffmpeg
+apt-get update && apt-get install -y ffmpeg build-essential
 
 # 2. GPU Enabler (The Critical Fix)
 echo "🔥 Waking up the GPU (Reinstalling PyTorch for CUDA)..."
@@ -70,3 +70,4 @@ else:
 PY
 
 echo "✅ Environment Setup Complete! GPU and Patch should be active."
+echo "🔐 Reminder: Run 'huggingface-cli login' (or set HF_TOKEN) before downloading AI4Bharat models from Hugging Face."
