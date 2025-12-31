@@ -38,6 +38,13 @@ def transcribe(model, audio):
                 return out[0]
             return str(out)
         except Exception as e:
+            # Print full traceback for debugging
+            import traceback, os
+            print(f"DEBUG: transcribe with kwargs={kwargs} failed with: {e}")
+            traceback.print_exc()
+            # If requested via env var, re-raise to get the full stack and abort
+            if os.environ.get('RAISE_ON_ERROR') == '1':
+                raise
             last_exc = e
             continue
     return f"<ERROR: {last_exc}>"
@@ -101,28 +108,72 @@ def run(args):
         model = model.cuda()
 
     entries = load_manifest(manifest)
-    results = {"summary": {"total": len(entries), "devanagari_ok": 0}, "samples": []}
+    # Add model metadata
+    try:
+        param_count = sum(p.numel() for p in model.parameters())
+    except Exception:
+        param_count = None
+    model_identity = os.path.basename(model_path)
+    model_class = model.__class__.__name__ if hasattr(model, '__class__') else None
+
+    results = {
+        "summary": {
+            "total": len(entries),
+            "devanagari_ok": 0,
+            "model_identity": model_identity,
+            "model_class": model_class,
+            "param_count": param_count,
+            "language": "kok"
+        },
+        "samples": []
+    }
 
     start = time.time()
+    per_sample_latencies = []
     for i, e in enumerate(entries):
         audio = e["audio_filepath"]
         ref = e.get("text", "")
+        t0 = time.time()
         pred = transcribe(model, audio)
+        latency = time.time() - t0
+        per_sample_latencies.append(latency)
+
         sample_has_deva = has_devanagari(pred)
         if sample_has_deva:
             results["summary"]["devanagari_ok"] += 1
-        results["samples"].append({"index": i, "audio": audio, "ref": ref, "pred": pred, "deva_ok": sample_has_deva})
+
+        # per-sample WER (if prediction is valid)
+        pswer = None
+        if not (isinstance(pred, str) and pred.startswith("<ERROR")):
+            try:
+                pswer = wer([ref], [pred])
+            except Exception:
+                pswer = None
+
+        results["samples"].append({
+            "index": i,
+            "audio": audio,
+            "ref": ref,
+            "pred": pred,
+            "deva_ok": sample_has_deva,
+            "pred_latency_s": latency,
+            "wer": pswer
+        })
     duration = time.time() - start
 
     # overall WER (if jiwer available)
-    hyps = [s["pred"] for s in results["samples"]]
-    refs = [s["ref"] for s in results["samples"]]
+    hyps = [s["pred"] for s in results["samples"] if not (isinstance(s.get("pred"), str) and s.get("pred").startswith("<ERROR"))]
+    refs = [s["ref"] for s in results["samples"] if not (isinstance(s.get("pred"), str) and s.get("pred").startswith("<ERROR"))]
     try:
-        overall_wer = wer(refs, hyps)
+        overall_wer = wer(refs, hyps) if len(hyps) > 0 else None
     except Exception:
         overall_wer = None
 
-    results["summary"].update({"time_s": duration, "overall_wer": overall_wer})
+    results["summary"].update({
+        "time_s": duration,
+        "avg_latency_s": sum(per_sample_latencies) / len(per_sample_latencies) if per_sample_latencies else None,
+        "overall_wer": overall_wer
+    })
 
     out_file = out_dir / "smoke_eval_devanagari.json"
     with out_file.open("w", encoding="utf-8") as fh:
