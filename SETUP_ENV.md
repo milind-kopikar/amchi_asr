@@ -27,6 +27,17 @@ The script will:
   - nemo_toolkit: `pip install "nemo_toolkit[all]"` (used for training & decoding features).
   - pynini, librosa: other libs used by preprocessing and tokenization.
 
+## Unicode / Devanagari (देवनागरी) handling 🪔
+- Ensure all transcript text in manifests and evaluation inputs is encoded in **UTF-8** and written in Devanagari script (for example: `तुमी कसो आसा`). This repository assumes transcripts use Devanagari and the SentencePiece tokenizer pieces are trained for Devanagari.
+- Verify the local SentencePiece files in the unpacked model folder (e.g., `*_tokenizer.vocab` / `*_tokenizer.model`) are the ones referenced by your `model_config.yaml` and that `aux_ctc.decoder.vocabulary` has been replaced with the real tokenizer pieces (not the earlier dummy `token_0..token_255`).
+- When reading or writing manifests/datasets in Python, always open files with `encoding='utf-8'` to preserve Unicode characters (e.g., `open(path, 'r', encoding='utf-8')`).
+- If you see garbled characters (mojibake) in terminals or logs, set your locale to UTF-8 before running scripts:
+
+  ```bash
+  export LC_ALL=en_US.UTF-8
+  export LANG=en_US.UTF-8
+  ```
+
 ---
 
 ## Key problems & fixes implemented 🔧
@@ -51,10 +62,16 @@ Files changed and where to find them:
 - `patches/conv_asr_fixed.py`: A snapshot of the patched `conv_asr.py` that contains `_LanguageMaskList` & the safer `forward` implementation.
 - The `setup_env.sh` script uses Python to locate the installed `conv_asr.py` and copies `patches/conv_asr_fixed.py` over it.
 
+**GPU visibility note:** If `CUDA_VISIBLE_DEVICES` is defined but empty, GPU runtimes (PyTorch) will not see any devices. `setup_env.sh` will set `CUDA_VISIBLE_DEVICES=0` if it is empty and then validate PyTorch CUDA availability. If your environment uses multiple GPUs or a different device mapping, adjust `CUDA_VISIBLE_DEVICES` accordingly before running the script.
+
+
 ---
 
 ## Notes & caveats ⚠️
 - The `setup_env.sh` script uses `apt-get` and installs PyTorch via pip wheel index; adjust the CUDA wheel selection if you need a different CUDA version.
+- **Important**: `setup_env.sh` now prefers installing the **AI4Bharat NeMo fork** (the `multi-softmax` branch) because AI4Bharat models require fork-specific codepaths (e.g., `multisoftmax` in RNNT decoders). If for any reason you'd prefer the upstream NVIDIA NeMo package, set the environment variable `USE_UPSTREAM_NEMO=1` before running the script and it will install `nemo_toolkit[all]` instead of the fork.
+
+  **Note**: The AI4Bharat fork is tested primarily with **Python 3.9** (see `AI4BHARAT_SETUP_GUIDE.md`). On newer Python versions you may run into dependency incompatibilities (e.g., `llvmlite`/`numba`); if that happens, either run the setup in a Python 3.9 venv or set `USE_UPSTREAM_NEMO=1` to install upstream NeMo instead.
 - Running the script as non-root may fail the `apt-get` step.
 - This process is specific to the AI4Bharat + NeMo setup used here and may not be appropriate for other workflows.
 
