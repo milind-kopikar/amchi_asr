@@ -11,8 +11,16 @@
 
 ### Python Version
 - **MUST USE Python 3.9** (3.8 also works)
-- **CANNOT USE Python 3.10, 3.11, 3.12+**
-- **Reason**: AI4Bharat NeMo fork requires `llvmlite==0.38.1` which is not available for Python 3.10+
+- **CANNOT USE Python 3.10, 3.11, 3.12+** for the AI4Bharat NeMo fork
+
+**Why Python 3.9?**
+- The AI4Bharat NeMo fork is *tested and packaged* against a set of dependencies that are only reliably available for Python 3.9 (notably `llvmlite==0.38.1` in some historical releases). Some systems will attempt to install newer `llvmlite`/`numba` versions which can cause CUDA IR/compatibility errors.
+- The AI4Bharat fork also includes model-specific options (e.g., `multisoftmax` in RNNT decoders) that are not present in upstream NeMo releases; these require the forked codebase to load certain `.nemo` checkpoints without errors.
+
+**Practical implication:** Use Python 3.9 when installing the AI4Bharat fork and running inference/training with AI4Bharat `.nemo` checkpoints to avoid dependency and model-instantiation failures.
+
+**What we tried and learned (short):**
+- Attempting the smoke test on Python 3.11 succeeded at downloading the `.nemo` but failed to instantiate the model due to two issues: a) tokenizer `dir` paths embedded in the checkpoint and b) a decoder option (`multisoftmax`) only available on the AI4Bharat fork. We resolved (a) by extracting tokenizer files into a local folder and patching `model_config.yaml`, and confirmed (b) requires the AI4Bharat fork (and hence Python 3.9). See the Troubleshooting section below for details.
 
 ### Installation Steps
 

@@ -3,11 +3,11 @@
 
 # Model configuration
 model:
-  nemo_model: "models/indicconformer_kok/indicconformer_stt_kok_hybrid_rnnt_large.nemo"
+  nemo_model: "models/indicconformer_mr/indicconformer_stt_mr_hybrid_rnnt_large_patched.nemo"
 
   # Tokenizer configuration
   tokenizer:
-    dir: "models/indicconformer_kok"  # Directory containing the model
+    dir: "models/indicconformer_mr/unpacked"  # Directory containing tokenizer files extracted from the .nemo
     type: "bpe"
 
   # Preprocessor configuration
@@ -83,7 +83,7 @@ model:
 trainer:
   devices: 1
   accelerator: "gpu"  # Use GPU on RunPod (auto-detects, falls back to CPU)
-  max_epochs: 50
+  max_epochs: 3
   max_steps: -1  # -1 means no limit
   num_nodes: 1
   accumulate_grad_batches: 1
@@ -174,6 +174,6 @@ exp_manager:
 # Additional configuration
 # You can add custom configurations here
 custom_config:
-  language: "konkani"
+  language: "kok"
   base_model: "marathi_indicconformer"
   fine_tune_strategy: "full_finetune"  # Options: full_finetune, adapter, lora

@@ -27,6 +27,24 @@ def fix_model_tokenizer_config(model_path):
         
         with open(config_path, 'r') as f:
             config = yaml.safe_load(f)
+
+        # Attempt to detect tokenizer vocabulary size from extracted files (if present)
+        detected_vocab_size = None
+        for root, dirs, files in os.walk(temp_dir):
+            for fname in files:
+                if fname.endswith('.vocab') or fname.endswith('vocab.txt') or fname.endswith('.vocab.txt'):
+                    fpath = os.path.join(root, fname)
+                    try:
+                        with open(fpath, 'r', encoding='utf-8') as vf:
+                            lines = [l for l in (l.strip() for l in vf) if l]
+                            if lines:
+                                detected_vocab_size = len(lines)
+                                print(f"🔎 Detected tokenizer vocab file '{fname}' with {detected_vocab_size} entries")
+                                break
+                    except Exception:
+                        continue
+            if detected_vocab_size is not None:
+                break
         
         # Fix tokenizer config - convert multilingual to monolingual (Marathi only)
         if 'tokenizer' in config:
@@ -42,14 +60,47 @@ def fix_model_tokenizer_config(model_path):
                 config['tokenizer']['dir'] = os.path.dirname(model_path)
                 print(f"✓ Tokenizer config fixed")
         
-        # Remove AI4Bharat custom parameters not in standard NeMo
+        # Remove AI4Bharat custom parameters (recursively)
         print("🔨 Removing AI4Bharat custom parameters...")
-        if 'decoder' in config and isinstance(config['decoder'], dict):
-            # Remove multisoftmax parameter
-            if 'multisoftmax' in config['decoder']:
-                del config['decoder']['multisoftmax']
-                print("  - Removed 'multisoftmax' from decoder")
-        
+        def remove_key_recursive(d, key_to_remove='multisoftmax'):
+            if isinstance(d, dict):
+                if key_to_remove in d:
+                    del d[key_to_remove]
+                    print(f"  - Removed '{key_to_remove}' from dict")
+                for v in d.values():
+                    remove_key_recursive(v, key_to_remove)
+            elif isinstance(d, list):
+                for item in d:
+                    remove_key_recursive(item, key_to_remove)
+
+        # Remove any 'multisoftmax' occurrences anywhere in the config
+        remove_key_recursive(config, 'multisoftmax')
+
+        # Fix potential vocabulary/num_classes mismatches in nested decoder configs.
+        # If a tokenizer vocab file was detected, prefer using its size as the num_classes target.
+        def fix_decoder_num_classes(d):
+            if isinstance(d, dict):
+                for k, v in d.items():
+                    if isinstance(v, dict):
+                        # If decoder dict with vocabulary present
+                        if k == 'decoder' and 'vocabulary' in v and 'num_classes' in v:
+                            # Prefer detected tokenizer vocab size if available, otherwise use provided vocabulary length
+                            vocab_len = detected_vocab_size if detected_vocab_size is not None else len(v.get('vocabulary', []))
+                            if v['num_classes'] != vocab_len:
+                                print(f"🔧 Fixing num_classes in decoder from {v['num_classes']} to {vocab_len}")
+                                v['num_classes'] = vocab_len
+                        else:
+                            fix_decoder_num_classes(v)
+                    elif isinstance(v, list):
+                        for item in v:
+                            fix_decoder_num_classes(item)
+        fix_decoder_num_classes(config)
+
+        # Remove auxiliary CTC decoder config to avoid size mismatch with tokenizer vocab
+        if 'aux_ctc' in config:
+            print("🔧 Removing 'aux_ctc' config to avoid decoder/tokenizer size mismatch")
+            del config['aux_ctc']
+
         if 'joint' in config and isinstance(config['joint'], dict):
             # Remove language_keys and multilingual parameters
             if 'language_keys' in config['joint']:
