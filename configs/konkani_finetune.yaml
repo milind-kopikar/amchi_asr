@@ -7,7 +7,7 @@ model:
 
   # Tokenizer configuration
   tokenizer:
-    dir: "models/indicconformer_mr/unpacked"  # Directory containing tokenizer files extracted from the .nemo
+    dir: "models/tokenizer"  # Directory containing tokenizer files (extracted from the .nemo)
     type: "bpe"
 
   # Preprocessor configuration
@@ -83,7 +83,7 @@ model:
 trainer:
   devices: 1
   accelerator: "gpu"  # Use GPU on RunPod (auto-detects, falls back to CPU)
-  max_epochs: 50
+  max_epochs: 5
   max_steps: -1  # -1 means no limit
   num_nodes: 1
   accumulate_grad_batches: 1
