@@ -66,7 +66,44 @@ def setup_model(config: DictConfig):
         raise FileNotFoundError(f"Model file not found: {model_path}")
 
     logger.info(f"Loading base model: {model_path}")
-    model = nemo_asr.models.EncDecHybridRNNTCTCBPEModel.restore_from(model_path)
+    try:
+        model = nemo_asr.models.EncDecHybridRNNTCTCBPEModel.restore_from(model_path, strict=False)
+    except Exception as e:
+        # Fallback: attempt partial restore loading only matching-shape params
+        import tarfile, tempfile, torch, yaml
+        print(f"🔧 Partial restore from {model_path} due to: {e}")
+        with tempfile.TemporaryDirectory() as td:
+            with tarfile.open(model_path, 'r') as tar:
+                members = {m.name: m for m in tar.getmembers()}
+                if 'model_config.yaml' not in members or 'model_weights.ckpt' not in members:
+                    raise RuntimeError('model_config.yaml or model_weights.ckpt missing in .nemo')
+                tar.extract('model_config.yaml', path=td)
+                tar.extract('model_weights.ckpt', path=td)
+
+            config_path = os.path.join(td, 'model_config.yaml')
+            ckpt_path = os.path.join(td, 'model_weights.ckpt')
+            with open(config_path, 'r') as f:
+                conf = yaml.safe_load(f)
+
+            try:
+                model = nemo_asr.models.ASRModel.from_config_dict(conf, trainer=None)
+            except Exception:
+                from nemo.collections.asr.models import ASRModel as _ASRModel
+                model = _ASRModel.from_config_dict(conf, trainer=None)
+
+            ckpt = torch.load(ckpt_path, map_location='cpu')
+            state = ckpt.get('state_dict', ckpt)
+            model_sd = model.state_dict()
+            filtered = {}
+            matched = skipped = 0
+            for k, v in state.items():
+                if k in model_sd and list(v.shape) == list(model_sd[k].shape):
+                    filtered[k] = v
+                    matched += 1
+                else:
+                    skipped += 1
+            print(f"🔁 Matched {matched} params, skipped {skipped} params")
+            model.load_state_dict(filtered, strict=False)
 
     # Freeze encoder layers (optional - for faster training with less data)
     if hasattr(config, 'freeze_encoder') and config.freeze_encoder:
@@ -195,10 +232,16 @@ def fine_tune_model(config: DictConfig, output_dir: str):
         logger.info("Starting fine-tuning...")
         trainer.fit(model, data_module)
 
-        # Save final model
-        final_model_path = os.path.join(output_dir, "konkani_asr_final.nemo")
-        model.save_to(final_model_path)
-        logger.info(f"Final model saved to: {final_model_path}")
+        # Print final training metrics if available
+        try:
+            metrics = trainer.callback_metrics
+            logger.info(f"Final callback metrics: {metrics}")
+            # Try to extract training loss
+            if 'train_loss' in metrics:
+                logger.info(f"Final training loss: {metrics['train_loss']}")
+        except Exception as e:
+            logger.warning(f"Could not read final metrics: {e}")
+
 
         logger.info("Fine-tuning completed successfully!")
 
