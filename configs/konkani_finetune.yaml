@@ -83,7 +83,7 @@ model:
 trainer:
   devices: 1
   accelerator: "gpu"  # Use GPU on RunPod (auto-detects, falls back to CPU)
-  max_epochs: 3
+  max_epochs: 50
   max_steps: -1  # -1 means no limit
   num_nodes: 1
   accumulate_grad_batches: 1
@@ -160,16 +160,16 @@ data:
 
 # Experiment configuration
 exp_manager:
-  exp_dir: "results/"
-  name: "konkani_asr_finetune"
+  exp_dir: "/workspace/amchi_asr/nemo_experiments"
+  name: "Amchi_Konkani_Research"
   create_tensorboard_logger: true
   create_checkpoint_callback: true
   checkpoint_callback_params:
     monitor: "val_wer"
     mode: "min"
-    save_top_k: 5
+    save_top_k: 3
     save_last: true
-    filename: "konkani_asr-{epoch:02d}-{val_wer:.3f}"
+    filename: "amchi_konkani-{epoch:02d}-{val_wer:.3f}"
 
 # Additional configuration
 # You can add custom configurations here

@@ -131,25 +131,63 @@ def setup_data_module(config: DictConfig):
     """
     logger.info("Setting up data module...")
 
-    # Create data module
-    data_module = nemo_asr.data.AudioToBPEDataset(
+    # Create data module using the AudioToBPEDataset in the audio_to_text submodule
+    from nemo.collections.asr.data.audio_to_text import AudioToBPEDataset
+    from nemo.collections.common.tokenizers.sentencepiece_tokenizer import SentencePieceTokenizer
+
+    # locate sentencepiece model in tokenizer dir
+    tokenizer_dir = config.model.tokenizer.dir
+    # Configs may use relative paths like '.' inside the unpacked .nemo dir
+    # If tokenizer_dir is an unpacked folder, use that directly
+    sp_model = None
+    import os
+    if os.path.isdir(tokenizer_dir):
+        # find *tokenizer.model in dir
+        for f in os.listdir(tokenizer_dir):
+            if f.endswith('_tokenizer.model'):
+                sp_model = os.path.join(tokenizer_dir, f)
+                break
+    if sp_model is None:
+        raise FileNotFoundError(f"Could not find a SentencePiece model in tokenizer dir: {tokenizer_dir}")
+
+    tokenizer = SentencePieceTokenizer(sp_model)
+
+    dataset = AudioToBPEDataset(
         manifest_filepath=config.data.train_ds.manifest_filepath,
-        tokenizer_dir=config.model.tokenizer.dir,
-        tokenizer_type=config.model.tokenizer.type,
+        tokenizer=tokenizer,
         sample_rate=config.data.train_ds.sample_rate,
-        batch_size=config.data.train_ds.batch_size,
-        shuffle=config.data.train_ds.shuffle,
-        num_workers=config.data.train_ds.num_workers,
-        pin_memory=config.data.train_ds.pin_memory,
+        int_values=False,
         max_duration=config.data.train_ds.max_duration,
         min_duration=config.data.train_ds.min_duration,
-        trim_silence=config.data.train_ds.trim_silence,
-        load_audio=config.data.train_ds.load_audio,
-        use_start_end_token=config.data.train_ds.use_start_end_token
+        trim=config.data.train_ds.trim_silence,
+        use_start_end_token=config.data.train_ds.use_start_end_token,
+        return_language_id=config.data.train_ds.return_language_id
     )
 
+    from torch.utils.data import DataLoader
+
+    # Use dataset's collate_fn if available (AudioToBPEDataset inherits a collate)
+    collate = getattr(dataset, 'collate_fn', None)
+
+    train_loader = DataLoader(dataset, batch_size=config.data.train_ds.batch_size, shuffle=config.data.train_ds.shuffle, num_workers=config.data.train_ds.num_workers, collate_fn=collate)
+
+    # Validation loader
+    val_dataset = AudioToBPEDataset(
+        manifest_filepath=config.data.validation_ds.manifest_filepath,
+        tokenizer=tokenizer,
+        sample_rate=config.data.validation_ds.sample_rate,
+        int_values=False,
+        max_duration=config.data.validation_ds.max_duration,
+        min_duration=config.data.validation_ds.min_duration,
+        trim=config.data.validation_ds.trim_silence,
+        use_start_end_token=config.data.validation_ds.use_start_end_token,
+        return_language_id=config.data.validation_ds.return_language_id
+    )
+    val_collate = getattr(val_dataset, 'collate_fn', None)
+    val_loader = DataLoader(val_dataset, batch_size=config.data.validation_ds.batch_size, shuffle=config.data.validation_ds.shuffle, num_workers=config.data.validation_ds.num_workers, collate_fn=val_collate)
+
     logger.info("Data module setup completed")
-    return data_module
+    return train_loader, val_loader
 
 def setup_trainer(config: DictConfig, output_dir: str):
     """
@@ -167,17 +205,18 @@ def setup_trainer(config: DictConfig, output_dir: str):
     # Setup callbacks
     callbacks = []
 
-    # Model checkpoint callback
-    checkpoint_callback = ModelCheckpoint(
-        dirpath=os.path.join(output_dir, "checkpoints"),
-        filename="konkani_asr-{epoch:02d}-{val_wer:.3f}",
-        monitor="val_wer",
-        mode="min",
-        save_top_k=5,
-        save_last=True,
-        verbose=True
-    )
-    callbacks.append(checkpoint_callback)
+    # Model checkpoint callback (only add if checkpointing enabled)
+    if config.trainer.enable_checkpointing:
+        checkpoint_callback = ModelCheckpoint(
+            dirpath=os.path.join(output_dir, "checkpoints"),
+            filename="konkani_asr-{epoch:02d}-{val_wer:.3f}",
+            monitor="val_wer",
+            mode="min",
+            save_top_k=5,
+            save_last=True,
+            verbose=True
+        )
+        callbacks.append(checkpoint_callback)
 
     # Learning rate monitor
     lr_monitor = LearningRateMonitor(logging_interval="step")
@@ -190,7 +229,7 @@ def setup_trainer(config: DictConfig, output_dir: str):
     )
 
     # Create trainer
-    trainer = pl.Trainer(
+    trainer_kwargs = dict(
         accelerator=config.trainer.accelerator,
         devices=config.trainer.devices,
         max_epochs=config.trainer.max_epochs,
@@ -202,8 +241,12 @@ def setup_trainer(config: DictConfig, output_dir: str):
         log_every_n_steps=config.trainer.log_every_n_steps,
         check_val_every_n_epoch=config.trainer.check_val_every_n_epoch,
         callbacks=callbacks,
-        strategy=config.trainer.strategy if hasattr(config.trainer, 'strategy') else None
     )
+
+    if hasattr(config.trainer, 'strategy') and config.trainer.strategy not in (None, ''):
+        trainer_kwargs['strategy'] = config.trainer.strategy
+
+    trainer = pl.Trainer(**trainer_kwargs)
 
     logger.info("Trainer setup completed")
     return trainer
@@ -219,18 +262,22 @@ def fine_tune_model(config: DictConfig, output_dir: str):
     try:
         # Setup components
         model = setup_model(config)
-        data_module = setup_data_module(config)
+        train_loader, val_loader = setup_data_module(config)
         trainer = setup_trainer(config, output_dir)
 
         # Setup experiment manager
         if hasattr(config, 'exp_manager'):
-            exp_manager_config = OmegaConf.to_container(config.exp_manager)
-            exp_manager_config['exp_dir'] = output_dir
-            exp_manager(exp_manager_config, trainer)
+            # exp_manager expects a more fully-specified config; try to run it but do not fail training if it errors
+            try:
+                config.exp_manager.exp_dir = output_dir
+                from nemo.utils import exp_manager as em
+                em.exp_manager(config.exp_manager, trainer)
+            except Exception as e:
+                logger.warning(f"exp_manager invocation failed: {e}")
 
         # Start training
         logger.info("Starting fine-tuning...")
-        trainer.fit(model, data_module)
+        trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=val_loader)
 
         # Print final training metrics if available
         try:

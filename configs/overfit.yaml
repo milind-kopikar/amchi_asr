@@ -74,7 +74,12 @@ data:
     return_language_id: true
 
 exp_manager:
-  exp_dir: "results/overfit_smoke"
+  exp_dir: "/workspace/amchi_asr/experiments"
   name: "overfit_smoke"
   create_tensorboard_logger: false
-  create_checkpoint_callback: false
+  create_checkpoint_callback: true
+  checkpoint_callback_params:
+    save_top_k: 5
+    monitor: "val_wer"
+    mode: "min"
+    save_last: true
