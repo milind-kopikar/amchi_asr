@@ -48,6 +48,26 @@ def _compute_wer(ref: str, hyp: str) -> float:
     return dp[m][n] / m
 
 
+def _compute_char_distance(ref: str, hyp: str) -> float:
+    """Normalized character-level Levenshtein distance."""
+    a = list(ref)
+    b = list(hyp)
+    m = len(a)
+    n = len(b)
+    if m == 0:
+        return 0.0 if n == 0 else 1.0
+    dp = [[0] * (n + 1) for _ in range(m + 1)]
+    for i in range(m + 1):
+        dp[i][0] = i
+    for j in range(n + 1):
+        dp[0][j] = j
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            cost = 0 if a[i - 1] == b[j - 1] else 1
+            dp[i][j] = min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost)
+    return float(dp[m][n]) / max(1, m)
+
+
 class ResearchCSVLogger(pl.Callback):
     """Lightweight CSV logger that appends epoch metrics to a CSV file.
 
@@ -119,6 +139,7 @@ class ResearchCSVLogger(pl.Callback):
         # Validation loss: try a few common keys
         val_loss = metrics.get('val_loss', None) or metrics.get('validation_loss', None) or metrics.get('val/loss', None) or metrics.get('val_epoch_loss', None)
         val_wer = metrics.get('val_wer', None) or metrics.get('val_wer_ctc', None) or metrics.get('validation_wer', None) or metrics.get('val/wer', None)
+        val_char = metrics.get('val_char_dist', None) or metrics.get('val_char', None)
 
         lr = None
         try:
@@ -134,6 +155,7 @@ class ResearchCSVLogger(pl.Callback):
                                  float(train_loss) if train_loss is not None else '',
                                  float(val_loss) if val_loss is not None else '',
                                  float(val_wer) if val_wer is not None else '',
+                                 float(val_char) if val_char is not None else '',
                                  lr if lr is not None else '',
                                  round(time_elapsed, 2)])
         except Exception as e:
@@ -322,11 +344,20 @@ class SampleLoggerDebug(pl.Callback):
             wer = _compute_wer(ref, pred) if ref and pred is not None else None
             if wer is not None:
                 wer_list.append(wer)
+            # char-level distance
+            char_d = None
+            try:
+                char_d = _compute_char_distance(ref, pred) if ref is not None and pred is not None else None
+            except Exception:
+                char_d = None
+            if char_d is not None:
+                char_list.append(char_d)
             pred_latency_s = (batch_time / max(1, len(audio_paths))) if audio_paths else None
             deva_ok = any(0x0900 <= ord(ch) <= 0x097F for ch in pred) if pred else False
-            results.append({'index': i, 'audio': audio, 'ref': ref, 'pred': pred, 'deva_ok': bool(deva_ok), 'pred_latency_s': pred_latency_s, 'wer': wer})
+            results.append({'index': i, 'audio': audio, 'ref': ref, 'pred': pred, 'deva_ok': bool(deva_ok), 'pred_latency_s': pred_latency_s, 'wer': wer, 'char_dist': char_d})
 
         overall_wer = sum(wer_list) / max(1, len(wer_list)) if wer_list else None
+        overall_char = sum(char_list) / max(1, len(char_list)) if char_list else None
         try:
             if overall_wer is not None:
                 try:
@@ -338,8 +369,18 @@ class SampleLoggerDebug(pl.Callback):
                     trainer.callback_metrics['val_wer'] = float(overall_wer)
                 except Exception:
                     pass
+            if overall_char is not None:
+                try:
+                    if hasattr(pl_module, 'log'):
+                        pl_module.log('val_char_dist', float(overall_char), on_epoch=True, on_step=False)
+                except Exception:
+                    pass
+                try:
+                    trainer.callback_metrics['val_char_dist'] = float(overall_char)
+                except Exception:
+                    pass
         except Exception as e:
-            logger.warning(f"Failed to log aggregate val_wer: {e}")
+            logger.warning(f"Failed to log aggregate val_wer/val_char: {e}")
 
         out = {'summary': {'epoch': int(epoch), 'global_step': int(global_step) if global_step is not None else None, 'model_name': pl_module.__class__.__name__, 'param_count': int(pl_module.num_parameters()) if hasattr(pl_module, 'num_parameters') else None, 'overall_wer': overall_wer, 'date': datetime.datetime.now().isoformat()}, 'samples': results}
         outpath = os.path.join(self.outdir, f'samples_epoch_{epoch:02d}.json')
@@ -473,6 +514,7 @@ class SampleLoggerWriter(pl.Callback):
 
         results = []
         wer_list = []
+        char_list = []
         for i, s in enumerate(self.samples):
             audio = s.get('audio')
             ref = s.get('reference', '')
@@ -490,6 +532,14 @@ class SampleLoggerWriter(pl.Callback):
             wer = _compute_wer(ref, pred) if ref and pred is not None else None
             if wer is not None:
                 wer_list.append(wer)
+            # char-level distance
+            char_d = None
+            try:
+                char_d = _compute_char_distance(ref, pred) if ref is not None and pred is not None else None
+            except Exception:
+                char_d = None
+            if char_d is not None:
+                char_list.append(char_d)
             pred_latency_s = (batch_time / max(1, len(audio_paths))) if audio_paths else None
             deva_ok = self._is_devanagari(pred)
             results.append({
@@ -499,7 +549,8 @@ class SampleLoggerWriter(pl.Callback):
                 'pred': pred,
                 'deva_ok': bool(deva_ok),
                 'pred_latency_s': pred_latency_s,
-                'wer': wer
+                'wer': wer,
+                'char_dist': char_d
             })
 
         # Build summary block
@@ -527,8 +578,9 @@ class SampleLoggerWriter(pl.Callback):
             param_count = None
 
         overall_wer = sum(wer_list) / max(1, len(wer_list)) if wer_list else None
+        overall_char = sum(char_list) / max(1, len(char_list)) if char_list else None
 
-        # Log aggregate validation WER so ModelCheckpoint can monitor it if requested
+        # Log aggregate validation WER and char distance so ModelCheckpoint can monitor them if requested
         try:
             if overall_wer is not None:
                 try:
@@ -541,8 +593,18 @@ class SampleLoggerWriter(pl.Callback):
                     trainer.callback_metrics['val_wer'] = float(overall_wer)
                 except Exception:
                     pass
+            if overall_char is not None:
+                try:
+                    if hasattr(pl_module, 'log'):
+                        pl_module.log('val_char_dist', float(overall_char), on_epoch=True, on_step=False)
+                except Exception:
+                    pass
+                try:
+                    trainer.callback_metrics['val_char_dist'] = float(overall_char)
+                except Exception:
+                    pass
         except Exception as e:
-            logger.warning(f"Failed to log aggregate val_wer: {e}")
+            logger.warning(f"Failed to log aggregate val_wer/val_char: {e}")
 
         out = {
             'summary': {
@@ -1253,7 +1315,7 @@ def fine_tune_model(config: DictConfig, output_dir: str):
                 try:
                     with open(csv_path, 'w', newline='') as fh:
                         writer = csv.writer(fh)
-                        writer.writerow(['epoch', 'train_loss', 'val_loss', 'val_wer', 'lr', 'time_elapsed'])
+                        writer.writerow(['epoch', 'train_loss', 'val_loss', 'val_wer', 'val_char_dist', 'lr', 'time_elapsed'])
                 except Exception as e:
                     logger.warning(f"Failed to create epoch CSV file: {e}")
 
