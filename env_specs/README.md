@@ -35,3 +35,11 @@ Usage:
 - The micro-overfit runner (`scripts/run_micro_overfit.py`) will run `scripts/preflight_checks.py` before training and we will use the canonical environment created by `scripts/ensure_env.sh` to run the micro-overfit test.
 
 If you'd like, I can now provision the canonical environment here (requires installing packages). Confirm and I will proceed to run `scripts/ensure_env.sh`, snapshot the environment with `dump_env_info.py`, then run the micro-overfit check under the canonical environment.
+
+Quick unit-test for micro-overfit acceptance (fast mode):
+
+- You can run a fast, unit-level acceptance check without running full training by setting env vars to skip preflight and training and pointing to prepopulated results (used by our tests):
+
+  SKIP_MICRO_PREFLIGHT=1 SKIP_MICRO_TRAIN=1 RUN_MICRO_OVERFIT=1 pytest tests/test_micro_overfit_acceptance.py -q
+
+This runs the acceptance logic (train-loss reduction OR char-distance threshold) against synthetic experiment files under `results/experiments/` and is useful for CI-level checks or quick verification.

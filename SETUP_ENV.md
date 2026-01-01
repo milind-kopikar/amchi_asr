@@ -184,6 +184,16 @@ Optional micro-overfit check (opt-in) 🔬
 
 - The check is implemented in `scripts/run_micro_overfit.py` and will exit non-zero if the final test prediction does not contain Devanagari characters and a low WER (meaning it did not memorize the sample).
 
+Quick CI / unit test (fast):
+
+- To validate the acceptance logic without performing training (useful for CI), run the unit acceptance tests which simulate experiment outputs and skip preflight/training:
+
+  ```bash
+  SKIP_MICRO_PREFLIGHT=1 SKIP_MICRO_TRAIN=1 RUN_MICRO_OVERFIT=1 pytest tests/test_micro_overfit_acceptance.py -q
+  ```
+
+This test suite checks both the PASS and FAIL branches of the micro-overfit acceptance logic and is intentionally opt-in (`RUN_MICRO_OVERFIT=1`).
+
 ## RunPod persistent storage guidance
 - When launching a RunPod instance, attach a persistent block storage volume and mount it somewhere stable (for example `/workspace` or `/workspace/storage`).
 - Clone the repo onto the persistent volume so code, small datasets, and scripts are preserved across instance restarts:
