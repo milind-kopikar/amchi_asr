@@ -49,16 +49,43 @@ def _compute_wer(ref: str, hyp: str) -> float:
 
 
 class ResearchCSVLogger(pl.Callback):
-    """Lightweight CSV logger that appends epoch metrics to a CSV file."""
+    """Lightweight CSV logger that appends epoch metrics to a CSV file.
+
+    Improvements:
+    - Capture training loss at epoch end via on_train_epoch_end (fallbacks: 'train_loss', 'loss')
+    - On validation end, try multiple metrics keys for val_loss and val_wer
+    - Keep last seen training loss in memory so it is recorded even if trainer.callback_metrics doesn't expose it at validation end
+    """
     def __init__(self, filepath: str):
         self.filepath = filepath
         self.start_time = time.time()
+        self._last_train_loss = None
+
+    def on_train_epoch_end(self, trainer, pl_module, outputs=None):
+        # Try to capture training loss from callback metrics or logged metrics
+        try:
+            metrics = trainer.callback_metrics
+            train_loss = metrics.get('train_loss', None)
+            if train_loss is None:
+                train_loss = metrics.get('loss', None)
+            self._last_train_loss = float(train_loss) if train_loss is not None else None
+        except Exception:
+            # Best-effort; do not fail the epoch
+            pass
+
     def on_validation_epoch_end(self, trainer, pl_module):
         epoch = trainer.current_epoch
         metrics = trainer.callback_metrics
-        train_loss = metrics.get('train_loss', None)
-        val_loss = metrics.get('val_loss', None)
-        val_wer = metrics.get('val_wer', None)
+
+        # Train loss: prefer last captured train epoch loss, then fall back to common metric keys
+        train_loss = self._last_train_loss
+        if train_loss is None:
+            train_loss = metrics.get('train_loss', None) or metrics.get('loss', None) or metrics.get('training_loss', None)
+
+        # Validation loss: try a few common keys
+        val_loss = metrics.get('val_loss', None) or metrics.get('validation_loss', None) or metrics.get('val/loss', None) or metrics.get('val_epoch_loss', None)
+        val_wer = metrics.get('val_wer', None) or metrics.get('validation_wer', None) or metrics.get('val/wer', None)
+
         lr = None
         try:
             opt = trainer.optimizers[0]
@@ -69,7 +96,12 @@ class ResearchCSVLogger(pl.Callback):
         try:
             with open(self.filepath, 'a', newline='') as fh:
                 writer = csv.writer(fh)
-                writer.writerow([epoch, float(train_loss) if train_loss is not None else '', float(val_loss) if val_loss is not None else '', float(val_wer) if val_wer is not None else '', lr if lr is not None else '', round(time_elapsed, 2)])
+                writer.writerow([epoch,
+                                 float(train_loss) if train_loss is not None else '',
+                                 float(val_loss) if val_loss is not None else '',
+                                 float(val_wer) if val_wer is not None else '',
+                                 lr if lr is not None else '',
+                                 round(time_elapsed, 2)])
         except Exception as e:
             logger.warning(f"Failed to append CSV epoch metrics: {e}")
 
@@ -711,6 +743,19 @@ def fine_tune_model(config: DictConfig, output_dir: str):
         output_dir: Output directory
     """
     try:
+        # Safety: clamp learning rate if config specifies an excessively large value
+        try:
+            if hasattr(config, 'optim') and getattr(config.optim, 'lr', None) is not None:
+                try:
+                    cfg_lr = float(config.optim.lr)
+                    if cfg_lr > 0.01:
+                        logger.warning(f"Large learning rate detected in config.optim.lr={cfg_lr}; clamping to 1e-3 for safety")
+                        config.optim.lr = 1e-3
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
         # Setup components
         model = setup_model(config)
         train_loader, val_loader = setup_data_module(config, model=model)
@@ -814,18 +859,70 @@ def fine_tune_model(config: DictConfig, output_dir: str):
             if best_ckpt:
                 logger.info(f"Running final evaluation using best checkpoint: {best_ckpt}")
                 try:
+                    # Try to perform a trustful load from the checkpoint in several ways.
+                    # 1) Prefer class-level load_from_checkpoint (trusted deserialization)
+                    # 2) Try to apply full state_dict with prefix-stripping (module., model.)
+                    # 3) Fallback to filtered matching by exact key/shape
                     import torch
-                    ckpt = torch.load(best_ckpt, map_location='cpu')
-                    state = ckpt.get('state_dict', ckpt)
-                    model_sd = model.state_dict()
-                    filtered = {}
-                    for k, v in state.items():
+                    try:
+                        ModelClass = model.__class__
+                        logger.info('Attempting to load checkpoint via ModelClass.load_from_checkpoint(...)')
+                        loaded_model = ModelClass.load_from_checkpoint(best_ckpt, map_location='cpu')
+                        model = loaded_model
+                        logger.info('Successfully loaded model via load_from_checkpoint')
+                    except Exception as e_load:
+                        logger.warning(f"load_from_checkpoint failed: {e_load}; attempting state_dict-based mapping")
+
                         try:
-                            if k in model_sd and list(v.shape) == list(model_sd[k].shape):
-                                filtered[k] = v
+                            ckpt = torch.load(best_ckpt, map_location='cpu')
+                        except Exception as e0:
+                            # Retry with trustful load (weights_only=False) per user request
+                            logger.warning('Safe torch.load failed; retrying with weights_only=False (trust required)')
+                            ckpt = torch.load(best_ckpt, map_location='cpu', weights_only=False)
+
+                        state = ckpt.get('state_dict', ckpt)
+
+                        # Helper to try stripping common prefixes
+                        def _strip_prefixes(sd):
+                            new = {}
+                            for k, v in sd.items():
+                                kk = k
+                                for p in ('model.', 'module.'):
+                                    if kk.startswith(p):
+                                        kk = kk[len(p):]
+                                new[kk] = v
+                            return new
+
+                        base_sd = model.state_dict()
+
+                        # Try direct assignment first
+                        try:
+                            model.load_state_dict(state, strict=False)
+                            logger.info('Loaded checkpoint state_dict directly into model (strict=False)')
                         except Exception:
-                            continue
-                    model.load_state_dict(filtered, strict=False)
+                            # Try prefix-stripped keys
+                            stripped = _strip_prefixes(state)
+                            matched = 0
+                            for k, v in stripped.items():
+                                if k in base_sd and list(v.shape) == list(base_sd[k].shape):
+                                    matched += 1
+                            total = len(base_sd)
+                            if matched >= max(1, int(0.6 * total)):
+                                # If a reasonable fraction matches, apply
+                                model.load_state_dict(stripped, strict=False)
+                                logger.info(f'Loaded checkpoint after prefix-stripping; matched {matched}/{total} params')
+                            else:
+                                # Last resort: filtered matching keyed by exact matches (old behavior)
+                                filtered = {}
+                                matched = skipped = 0
+                                for k, v in state.items():
+                                    if k in base_sd and list(v.shape) == list(base_sd[k].shape):
+                                        filtered[k] = v
+                                        matched += 1
+                                    else:
+                                        skipped += 1
+                                logger.info(f'Applying fallback filtered mapping: matched {matched} params, skipped {skipped} params')
+                                model.load_state_dict(filtered, strict=False)
                 except Exception as e:
                     logger.warning(f"Failed to load best checkpoint: {e}")
 

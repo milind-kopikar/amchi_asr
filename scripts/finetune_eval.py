@@ -40,12 +40,54 @@ def load_model(ckpt_path):
     base = nemo_asr.models.EncDecHybridRNNTCTCBPEModel.restore_from(nemo_model_path, strict=False)
 
     # Load checkpoint state dict safely and apply matching weights
-    ckpt = torch.load(ckpt_path, map_location='cpu')
+    # Robust checkpoint application: prefer class-level load_from_checkpoint, then try prefix stripping, else fallback to filtered matching
+    try:
+        ModelClass = base.__class__
+        print('Attempting to load checkpoint via ModelClass.load_from_checkpoint(...)')
+        loaded = ModelClass.load_from_checkpoint(ckpt_path, map_location='cpu')
+        print('Loaded model via load_from_checkpoint successfully')
+        return loaded
+    except Exception as e_load:
+        print(f'load_from_checkpoint failed: {e_load}; falling back to state_dict mapping')
+
+    try:
+        ckpt = torch.load(ckpt_path, map_location='cpu')
+    except Exception as e:
+        # Try an explicit trustful load (weights_only=False) if the checkpoint contains pickled objects
+        try:
+            print('Initial safe load failed; retrying with weights_only=False (trust required)')
+            ckpt = torch.load(ckpt_path, map_location='cpu', weights_only=False)
+        except Exception as e2:
+            raise RuntimeError(f'Failed to load checkpoint (both safe and trustful loads failed): {e} | {e2}')
     state = ckpt.get('state_dict', ckpt)
     base_sd = base.state_dict()
+
+    # Try stripping prefixes like 'model.' and 'module.'
+    def strip_prefixes(sd):
+        new = {}
+        for k, v in sd.items():
+            kk = k
+            for p in ('model.', 'module.'):
+                if kk.startswith(p):
+                    kk = kk[len(p):]
+            new[kk] = v
+        return new
+
+    stripped = strip_prefixes(state)
+    matched = 0
+    for k, v in stripped.items():
+        if k in base_sd and list(v.shape) == list(base_sd[k].shape):
+            matched += 1
+    total = len(base_sd)
+    if matched >= max(1, int(0.6 * total)):
+        print(f'Applying prefix-stripped state_dict: matched {matched}/{total} params; loading with strict=False')
+        base.load_state_dict(stripped, strict=False)
+        return base
+
+    # Fallback: exact-match filtered mapping
     filtered = {k: v for k, v in state.items() if k in base_sd and list(v.shape) == list(base_sd[k].shape)}
     missing = set(base_sd.keys()) - set(filtered.keys())
-    print(f'Applying {len(filtered)} matching params, {len(missing)} params missing from checkpoint; loading with strict=False')
+    print(f'Applying filtered mapping: matched {len(filtered)} params, {len(missing)} missing; loading with strict=False')
     base.load_state_dict(filtered, strict=False)
     return base
 
