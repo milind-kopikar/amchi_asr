@@ -116,8 +116,11 @@ def run_all():
         'tokenizer': check_tokenizer(),
         'disk': check_disk_space(),
         'model_config': check_model_in_config(),
-        'env': {'APPLY_CONV_PATCH': os.environ.get('APPLY_CONV_PATCH', None)}
     }
+    # Env check: ensure APPLY_CONV_PATCH is set (recommended)
+    env_val = os.environ.get('APPLY_CONV_PATCH', None)
+    results['env'] = {'ok': env_val is not None, 'APPLY_CONV_PATCH': env_val}
+
     ok = all(v.get('ok', False) for v in results.values())
     return ok, results
 
