@@ -1,0 +1,21 @@
+{
+  "date": "2026-01-01T21:55:13.974116Z",
+  "python": "3.11.10 (main, Sep  7 2024, 18:35:41) [GCC 11.4.0]",
+  "env": {
+    "APPLY_CONV_PATCH": null,
+    "CUDA_VISIBLE_DEVICES": null,
+    "HF_TOKEN": "REDACTED"
+  },
+  "packages": {
+    "torch": "2.9.1+cu128",
+    "torchvision": "0.24.1+cpu",
+    "torchaudio": "2.9.1+cpu",
+    "nemo": "1.23.0rc0",
+    "sentencepiece": "0.2.1",
+    "librosa": "0.11.0",
+    "pandas": "2.3.3",
+    "jiwer": "unknown",
+    "pynini": "2.1.6.post1"
+  },
+  "ffmpeg": "ffmpeg version 4.4.2-0ubuntu0.22.04.1 Copyright (c) 2000-2021 the FFmpeg developers"
+}
