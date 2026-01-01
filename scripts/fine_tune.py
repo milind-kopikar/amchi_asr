@@ -125,6 +125,24 @@ class SampleLoggerCallback(pl.Callback):
         except Exception as e:
             logger.warning(f"Failed to read manifest for SampleLogger: {e}")
 
+
+class ForceLRCallback(pl.Callback):
+    """Force optimizer learning rate to a fixed value at training start.
+
+    This ensures the actual optimizer param_groups['lr'] matches the config value
+    even if model.configure_optimizers or other code attempts to set a different base lr.
+    """
+    def __init__(self, lr: float):
+        self.lr = float(lr)
+    def on_train_start(self, trainer, pl_module):
+        try:
+            for opt in getattr(trainer, 'optimizers', []):
+                for g in opt.param_groups:
+                    g['lr'] = self.lr
+            logger.info(f"Forced optimizer lr to {self.lr}")
+        except Exception as e:
+            logger.warning(f"Failed to force optimizer lr: {e}")
+
     def _is_devanagari(self, text: str) -> bool:
         if not text:
             return False
@@ -799,12 +817,16 @@ def fine_tune_model(config: DictConfig, output_dir: str):
                 sample_logger = SampleLoggerCallback(getattr(config.data.validation_ds, 'manifest_filepath', ''), experiment_dir)
                 trainer.callbacks.append(csv_logger)
                 trainer.callbacks.append(sample_logger)
-                logger.info(f"Research logging initialized in {experiment_dir}")
-            except Exception as e:
-                logger.warning(f"Failed to initialize research logger callbacks: {e}")
 
-        except Exception as e:
-            logger.warning(f"Failed to create experiment folder or logging artifacts: {e}")
+                    # Force optimizer LR to config value for reproducibility
+                    try:
+                        lr_val = float(getattr(config, 'optim', {}).get('lr', 0.0))
+                        force_lr_cb = ForceLRCallback(lr_val)
+                        trainer.callbacks.append(force_lr_cb)
+                        logger.info(f"ForceLRCallback added to set lr={lr_val}")
+                    except Exception as e:
+                        logger.warning(f"Failed to add ForceLRCallback: {e}")
+
 
         # Setup experiment manager
         if hasattr(config, 'exp_manager'):
