@@ -12,6 +12,7 @@ import sys
 import subprocess
 import json
 import time
+import shutil
 from pathlib import Path
 
 # small helper to compute simple token-level WER
@@ -76,11 +77,14 @@ def main():
     config = os.environ.get('MICRO_OVERFIT_CONFIG', 'configs/konkani_finetune_overfit20_single.yaml')
 
     # Run preflight checks first to avoid known tokenizer/model mismatches
-    print('Running preflight checks before micro-overfit...')
-    ret = subprocess.run([sys.executable, 'scripts/preflight_checks.py'], check=False)
-    if ret.returncode != 0:
-        print('Preflight checks failed; aborting micro-overfit')
-        sys.exit(2)
+    if os.environ.get('SKIP_MICRO_PREFLIGHT', '0') == '1':
+        print('Skipping preflight checks (SKIP_MICRO_PREFLIGHT=1)')
+    else:
+        print('Running preflight checks before micro-overfit...')
+        ret = subprocess.run([sys.executable, 'scripts/preflight_checks.py'], check=False)
+        if ret.returncode != 0:
+            print('Preflight checks failed; aborting micro-overfit')
+            sys.exit(2)
 
     cmd = [
         'bash', '-lc',
@@ -102,11 +106,15 @@ def main():
                 subprocess.run(["python3", "-c", f"import sys,yaml; d=open('{config}').read(); o=yaml.safe_load(d); o['trainer']['max_epochs']={me}; open('{config}','w').write(yaml.dump(o))"], check=True)
         except Exception as e:
             print('Failed to override max_epochs from MAX_MICRO_EPOCHS:', e)
-    print('Running micro-overfit (this may take a few minutes)...')
-    ret = subprocess.run(' '.join(cmd), shell=True)
-    if ret.returncode != 0:
-        print('micro-overfit training failed')
-        sys.exit(3)
+
+    if os.environ.get('SKIP_MICRO_TRAIN', '0') == '1':
+        print('Skipping micro-overfit training (SKIP_MICRO_TRAIN=1)')
+    else:
+        print('Running micro-overfit (this may take a few minutes)...')
+        ret = subprocess.run(' '.join(cmd), shell=True)
+        if ret.returncode != 0:
+            print('micro-overfit training failed')
+            sys.exit(3)
 
     exp = find_latest_experiment(Path('results'))
     if not exp:
