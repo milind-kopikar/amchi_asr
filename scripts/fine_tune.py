@@ -939,8 +939,44 @@ def fine_tune_model(config: DictConfig, output_dir: str):
             metrics = trainer.callback_metrics
             logger.info(f"Final callback metrics: {metrics}")
             # Try to extract training loss
+            final_train_loss = None
             if 'train_loss' in metrics:
-                logger.info(f"Final training loss: {metrics['train_loss']}")
+                final_train_loss = metrics['train_loss']
+                logger.info(f"Final training loss: {final_train_loss}")
+
+            # Post-process CSV to ensure train_loss is recorded (best-effort)
+            try:
+                # locate experiment dir from attached CSV logger
+                exp_dir = None
+                for c in trainer.callbacks:
+                    if c.__class__.__name__ == 'ResearchCSVLogger':
+                        exp_dir = os.path.dirname(c.filepath)
+                        csv_path = c.filepath
+                        break
+                if exp_dir and os.path.exists(csv_path) and final_train_loss is not None:
+                    import csv as _csv, io as _io
+                    # Read CSV
+                    with open(csv_path, 'r', newline='') as fh:
+                        rows = list(_csv.reader(fh))
+                    if len(rows) >= 2:
+                        header = rows[0]
+                        last_row = rows[-1]
+                        # header expected: ['epoch','train_loss','val_loss','val_wer','lr','time_elapsed']
+                        try:
+                            train_idx = header.index('train_loss')
+                            if last_row[train_idx] == '' or last_row[train_idx] is None:
+                                last_row[train_idx] = str(float(final_train_loss))
+                                rows[-1] = last_row
+                                # Write back
+                                with open(csv_path, 'w', newline='') as fh:
+                                    writer = _csv.writer(fh)
+                                    writer.writerows(rows)
+                                logger.info(f"Backfilled train_loss={final_train_loss} into {csv_path}")
+                        except Exception:
+                            pass
+            except Exception as e:
+                logger.warning(f"Failed to post-process epoch CSV: {e}")
+
         except Exception as e:
             logger.warning(f"Could not read final metrics: {e}")
 
