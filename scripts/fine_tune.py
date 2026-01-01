@@ -84,7 +84,7 @@ class ResearchCSVLogger(pl.Callback):
 
         # Validation loss: try a few common keys
         val_loss = metrics.get('val_loss', None) or metrics.get('validation_loss', None) or metrics.get('val/loss', None) or metrics.get('val_epoch_loss', None)
-        val_wer = metrics.get('val_wer', None) or metrics.get('validation_wer', None) or metrics.get('val/wer', None)
+        val_wer = metrics.get('val_wer', None) or metrics.get('val_wer_ctc', None) or metrics.get('validation_wer', None) or metrics.get('val/wer', None)
 
         lr = None
         try:
@@ -143,6 +143,13 @@ class ForceLRCallback(pl.Callback):
         except Exception as e:
             logger.warning(f"Failed to force optimizer lr: {e}")
 
+    # Silence validation hooks to avoid accidental calls (no-op)
+    def on_validation_epoch_end(self, trainer, pl_module):
+        return
+
+    def on_train_end(self, trainer, pl_module):
+        return
+
     def _is_devanagari(self, text: str) -> bool:
         if not text:
             return False
@@ -154,10 +161,14 @@ class ForceLRCallback(pl.Callback):
         return False
 
     def on_validation_epoch_end(self, trainer, pl_module):
+        # Guard against accidental invocation on unrelated callback instances
+        if not hasattr(self, 'samples'):
+            return
+
         epoch = trainer.current_epoch
         global_step = getattr(trainer, 'global_step', None)
 
-        audio_paths = [s['audio'] for s in self.samples if s.get('audio')]
+        audio_paths = [s['audio'] for s in getattr(self, 'samples', []) if s.get('audio')]
         preds = []
         start_t = time.time()
         try:
@@ -472,7 +483,14 @@ def setup_model(config: DictConfig):
                 # Add auxiliary losses if any
                 loss_value = self.add_auxiliary_losses(ctc_loss) if hasattr(self, 'add_auxiliary_losses') else ctc_loss
 
-                # Optional logging
+                # Log train loss in a way PyTorch Lightning aggregates per epoch
+                try:
+                    # on_epoch=True to ensure Train epoch aggregated metric is available in callback_metrics at validation end
+                    self.log('train_loss', loss_value, on_epoch=True, on_step=False, prog_bar=False)
+                except Exception:
+                    pass
+
+                # Optional logging (legacy)
                 tensorboard_logs = {'loss': loss_value}
                 return {'loss': loss_value, 'log': tensorboard_logs}
 
@@ -818,15 +836,21 @@ def fine_tune_model(config: DictConfig, output_dir: str):
                 trainer.callbacks.append(csv_logger)
                 trainer.callbacks.append(sample_logger)
 
-                    # Force optimizer LR to config value for reproducibility
-                    try:
-                        lr_val = float(getattr(config, 'optim', {}).get('lr', 0.0))
-                        force_lr_cb = ForceLRCallback(lr_val)
-                        trainer.callbacks.append(force_lr_cb)
-                        logger.info(f"ForceLRCallback added to set lr={lr_val}")
-                    except Exception as e:
-                        logger.warning(f"Failed to add ForceLRCallback: {e}")
+                # Force optimizer LR to config value for reproducibility
+                try:
+                    lr_val = float(getattr(config, 'optim', {}).get('lr', 0.0))
+                    force_lr_cb = ForceLRCallback(lr_val)
+                    trainer.callbacks.append(force_lr_cb)
+                    logger.info(f"ForceLRCallback added to set lr={lr_val}")
+                except Exception as e:
+                    logger.warning(f"Failed to add ForceLRCallback: {e}")
 
+                logger.info(f"Research logging initialized in {experiment_dir}")
+            except Exception as e:
+                logger.warning(f"Failed to initialize research logger callbacks: {e}")
+
+        except Exception as e:
+            logger.warning(f"Failed to create experiment folder or logging artifacts: {e}")
 
         # Setup experiment manager
         if hasattr(config, 'exp_manager'):
