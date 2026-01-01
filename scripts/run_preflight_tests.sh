@@ -10,6 +10,9 @@ if [ -d "venv_py311" ]; then
   source venv_py311/bin/activate
 fi
 
+# Ensure our conv_asr runtime patch env var is set so preflight verifies the patched codepath
+export APPLY_CONV_PATCH=${APPLY_CONV_PATCH:-1}
+
 # Run preflight script
 python3 scripts/preflight_checks.py || { echo "Preflight checks failed"; exit 2; }
 
