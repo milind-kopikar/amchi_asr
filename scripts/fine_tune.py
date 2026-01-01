@@ -21,6 +21,179 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
 from pytorch_lightning.loggers import TensorBoardLogger
 
+# Research logger imports
+import datetime, json, csv, time
+from typing import Optional, List
+
+# Simple WER helper for quick evaluations
+def _compute_wer(ref: str, hyp: str) -> float:
+    r = ref.split()
+    h = hyp.split()
+    m = len(r)
+    n = len(h)
+    if m == 0:
+        return 0.0 if n == 0 else 1.0
+    dp = [[0] * (n + 1) for _ in range(m + 1)]
+    for i in range(m + 1):
+        dp[i][0] = i
+    for j in range(n + 1):
+        dp[0][j] = j
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            if r[i - 1] == h[j - 1]:
+                cost = 0
+            else:
+                cost = 1
+            dp[i][j] = min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost)
+    return dp[m][n] / m
+
+
+class ResearchCSVLogger(pl.Callback):
+    """Lightweight CSV logger that appends epoch metrics to a CSV file."""
+    def __init__(self, filepath: str):
+        self.filepath = filepath
+        self.start_time = time.time()
+    def on_validation_epoch_end(self, trainer, pl_module):
+        epoch = trainer.current_epoch
+        metrics = trainer.callback_metrics
+        train_loss = metrics.get('train_loss', None)
+        val_loss = metrics.get('val_loss', None)
+        val_wer = metrics.get('val_wer', None)
+        lr = None
+        try:
+            opt = trainer.optimizers[0]
+            lr = opt.param_groups[0].get('lr', None)
+        except Exception:
+            pass
+        time_elapsed = time.time() - self.start_time
+        try:
+            with open(self.filepath, 'a', newline='') as fh:
+                writer = csv.writer(fh)
+                writer.writerow([epoch, float(train_loss) if train_loss is not None else '', float(val_loss) if val_loss is not None else '', float(val_wer) if val_wer is not None else '', lr if lr is not None else '', round(time_elapsed, 2)])
+        except Exception as e:
+            logger.warning(f"Failed to append CSV epoch metrics: {e}")
+
+
+class SampleLoggerCallback(pl.Callback):
+    """Saves a few validation sample transcriptions per epoch into JSON files."""
+    def __init__(self, manifest_path: str, outdir: str, max_samples: int = 8):
+        self.manifest_path = manifest_path
+        self.outdir = outdir
+        self.max_samples = max_samples
+        self.samples = []
+        try:
+            with open(self.manifest_path, 'r', encoding='utf-8') as fh:
+                for i, line in enumerate(fh):
+                    if i >= self.max_samples:
+                        break
+                    if not line.strip():
+                        continue
+                    obj = json.loads(line)
+                    self.samples.append({'audio': obj.get('audio_filepath'), 'reference': obj.get('text', '')})
+        except Exception as e:
+            logger.warning(f"Failed to read manifest for SampleLogger: {e}")
+
+    def _is_devanagari(self, text: str) -> bool:
+        if not text:
+            return False
+        for ch in text:
+            o = ord(ch)
+            # Devanagari block U+0900..U+097F
+            if 0x0900 <= o <= 0x097F:
+                return True
+        return False
+
+    def on_validation_epoch_end(self, trainer, pl_module):
+        epoch = trainer.current_epoch
+        global_step = getattr(trainer, 'global_step', None)
+
+        audio_paths = [s['audio'] for s in self.samples if s.get('audio')]
+        preds = []
+        start_t = time.time()
+        try:
+            # Try common transcribe signatures
+            if hasattr(pl_module, 'transcribe'):
+                try:
+                    preds = pl_module.transcribe(audio_paths)
+                except TypeError:
+                    try:
+                        preds = pl_module.transcribe(paths2audio_files=audio_paths)
+                    except Exception:
+                        preds = []
+            else:
+                preds = []
+        except Exception as e:
+            logger.warning(f"SampleLoggerCallback failed to run inference: {e}")
+            preds = []
+        end_t = time.time()
+        batch_time = end_t - start_t
+
+        results = []
+        wer_list = []
+        for i, s in enumerate(self.samples):
+            audio = s.get('audio')
+            ref = s.get('reference', '')
+            pred = preds[i] if i < len(preds) else ''
+            wer = _compute_wer(ref, pred) if ref and pred is not None else None
+            if wer is not None:
+                wer_list.append(wer)
+            pred_latency_s = (batch_time / max(1, len(audio_paths))) if audio_paths else None
+            deva_ok = self._is_devanagari(pred)
+            results.append({
+                'index': i,
+                'audio': audio,
+                'ref': ref,
+                'pred': pred,
+                'deva_ok': bool(deva_ok),
+                'pred_latency_s': pred_latency_s,
+                'wer': wer
+            })
+
+        # Build summary block
+        # model_name: prefer config name if present, fall back to class name
+        try:
+            cfg_name = None
+            if hasattr(pl_module, '_cfg') and isinstance(pl_module._cfg, dict) and 'name' in pl_module._cfg:
+                cfg_name = pl_module._cfg['name']
+            elif hasattr(pl_module, '_cfg') and hasattr(pl_module._cfg, 'name'):
+                cfg_name = getattr(pl_module._cfg, 'name')
+        except Exception:
+            cfg_name = None
+
+        model_name = cfg_name if cfg_name else pl_module.__class__.__name__
+
+        # param_count
+        try:
+            if hasattr(pl_module, 'num_parameters') and callable(getattr(pl_module, 'num_parameters')):
+                param_count = int(pl_module.num_parameters())
+            elif hasattr(pl_module, 'num_parameters'):
+                param_count = int(getattr(pl_module, 'num_parameters'))
+            else:
+                param_count = int(sum([p.numel() for p in pl_module.parameters()]))
+        except Exception:
+            param_count = None
+
+        overall_wer = sum(wer_list) / max(1, len(wer_list)) if wer_list else None
+
+        out = {
+            'summary': {
+                'epoch': int(epoch),
+                'global_step': int(global_step) if global_step is not None else None,
+                'model_name': model_name,
+                'param_count': param_count,
+                'overall_wer': overall_wer,
+                'date': datetime.datetime.now().isoformat()
+            },
+            'samples': results
+        }
+
+        outpath = os.path.join(self.outdir, f'samples_epoch_{epoch:02d}.json')
+        try:
+            with open(outpath, 'w', encoding='utf-8') as fh:
+                json.dump(out, fh, indent=2, ensure_ascii=False)
+        except Exception as e:
+            logger.warning(f"Failed to write sample results to {outpath}: {e}")
+
 # NeMo imports
 import nemo
 import nemo.collections.asr as nemo_asr
@@ -543,6 +716,51 @@ def fine_tune_model(config: DictConfig, output_dir: str):
         train_loader, val_loader = setup_data_module(config, model=model)
         trainer = setup_trainer(config, output_dir)
 
+        # Create a timestamped experiment folder and write research logging artifacts
+        try:
+            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            experiment_dir = os.path.join(output_dir, "experiments", timestamp)
+            os.makedirs(experiment_dir, exist_ok=True)
+
+            # Save the full config as hyperparameters.json (resolved)
+            try:
+                hp = OmegaConf.to_container(config, resolve=True)
+                with open(os.path.join(experiment_dir, 'hyperparameters.json'), 'w', encoding='utf-8') as fh:
+                    json.dump(hp, fh, indent=2, ensure_ascii=False)
+            except Exception as e:
+                logger.warning(f"Failed to write hyperparameters.json: {e}")
+
+            # Dump model architecture to text file
+            try:
+                with open(os.path.join(experiment_dir, 'model_architecture.txt'), 'w', encoding='utf-8') as fh:
+                    fh.write(str(model))
+            except Exception as e:
+                logger.warning(f"Failed to write model_architecture.txt: {e}")
+
+            # CSV epoch metrics file
+            csv_path = os.path.join(experiment_dir, 'epoch_metrics.csv')
+            if not os.path.exists(csv_path):
+                try:
+                    with open(csv_path, 'w', newline='') as fh:
+                        writer = csv.writer(fh)
+                        writer.writerow(['epoch', 'train_loss', 'val_loss', 'val_wer', 'lr', 'time_elapsed'])
+                except Exception as e:
+                    logger.warning(f"Failed to create epoch CSV file: {e}")
+
+
+            # Instantiate callbacks and attach to trainer
+            try:
+                csv_logger = ResearchCSVLogger(csv_path)
+                sample_logger = SampleLoggerCallback(getattr(config.data.validation_ds, 'manifest_filepath', ''), experiment_dir)
+                trainer.callbacks.append(csv_logger)
+                trainer.callbacks.append(sample_logger)
+                logger.info(f"Research logging initialized in {experiment_dir}")
+            except Exception as e:
+                logger.warning(f"Failed to initialize research logger callbacks: {e}")
+
+        except Exception as e:
+            logger.warning(f"Failed to create experiment folder or logging artifacts: {e}")
+
         # Setup experiment manager
         if hasattr(config, 'exp_manager'):
             # exp_manager expects a more fully-specified config; try to run it but do not fail training if it errors
@@ -569,6 +787,89 @@ def fine_tune_model(config: DictConfig, output_dir: str):
 
 
         logger.info("Fine-tuning completed successfully!")
+
+        # Final test run using best checkpoint (if available) and save results to experiment folder
+        try:
+            # Locate experiment directory from attached CSV logger (if created)
+            experiment_dir = None
+            for c in trainer.callbacks:
+                if c.__class__.__name__ == 'ResearchCSVLogger':
+                    experiment_dir = os.path.dirname(c.filepath)
+                    break
+            if experiment_dir is None:
+                experiment_dir = os.path.join(output_dir, 'experiments', datetime.datetime.now().strftime("%Y%m%d_%H%M%S"))
+                os.makedirs(experiment_dir, exist_ok=True)
+
+            # Find best checkpoint
+            best_ckpt = None
+            for c in trainer.callbacks:
+                if isinstance(c, ModelCheckpoint) and getattr(c, 'best_model_path', ''):
+                    best_ckpt = c.best_model_path
+                    break
+            if not best_ckpt and hasattr(trainer, 'checkpoint_callback'):
+                cb = getattr(trainer, 'checkpoint_callback')
+                if cb is not None and getattr(cb, 'best_model_path', ''):
+                    best_ckpt = cb.best_model_path
+
+            if best_ckpt:
+                logger.info(f"Running final evaluation using best checkpoint: {best_ckpt}")
+                try:
+                    import torch
+                    ckpt = torch.load(best_ckpt, map_location='cpu')
+                    state = ckpt.get('state_dict', ckpt)
+                    model_sd = model.state_dict()
+                    filtered = {}
+                    for k, v in state.items():
+                        try:
+                            if k in model_sd and list(v.shape) == list(model_sd[k].shape):
+                                filtered[k] = v
+                        except Exception:
+                            continue
+                    model.load_state_dict(filtered, strict=False)
+                except Exception as e:
+                    logger.warning(f"Failed to load best checkpoint: {e}")
+
+                # Evaluate on validation manifest (create per-sample and summary results)
+                manifest = getattr(config.data.validation_ds, 'manifest_filepath', None)
+                if manifest and os.path.exists(manifest):
+                    per_sample = []
+                    try:
+                        with open(manifest, 'r', encoding='utf-8') as fh:
+                            for line in fh:
+                                if not line.strip():
+                                    continue
+                                obj = json.loads(line)
+                                audio = obj.get('audio_filepath')
+                                ref = obj.get('text', '')
+                                pred = ''
+                                wer_val = None
+                                try:
+                                    if hasattr(model, 'transcribe') and audio:
+                                        # model.transcribe expects a list of paths
+                                        try:
+                                            pred = model.transcribe([audio])[0]
+                                        except TypeError:
+                                            pred = model.transcribe(paths2audio_files=[audio])[0]
+                                    else:
+                                        pred = ''
+                                    wer_val = _compute_wer(ref, pred) if ref else None
+                                except Exception as e:
+                                    logger.warning(f"Failed to transcribe {audio}: {e}")
+                                per_sample.append({'audio': audio, 'reference': ref, 'prediction': pred, 'wer': wer_val})
+                        total_wer = sum([p['wer'] for p in per_sample if p['wer'] is not None]) / max(1, len([p for p in per_sample if p['wer'] is not None]))
+                        out = {'best_checkpoint': best_ckpt, 'summary': {'total_samples': len(per_sample), 'mean_wer': total_wer}, 'per_sample': per_sample}
+                        outpath = os.path.join(experiment_dir, 'final_test_results.json')
+                        with open(outpath, 'w', encoding='utf-8') as fh:
+                            json.dump(out, fh, indent=2, ensure_ascii=False)
+                        logger.info(f"Wrote final test results to {outpath}")
+                    except Exception as e:
+                        logger.warning(f"Final evaluation failed: {e}")
+                else:
+                    logger.warning('Validation manifest not found; skipping final evaluation')
+            else:
+                logger.warning('No best checkpoint found; skipping final evaluation')
+        except Exception as e:
+            logger.warning(f"Final test run failed: {e}")
 
     except NeMoBaseException as e:
         logger.error(f"NeMo error during fine-tuning: {e}")
