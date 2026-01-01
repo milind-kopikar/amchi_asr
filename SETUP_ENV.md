@@ -155,3 +155,35 @@ python3 debug_tokenizer.py
 - Optionally create an upstream PR to the NeMo fork for maintainability and to prevent regressions.
 
 If anything here needs to be expanded (e.g., more detailed package versions, Dockerfile, or CI steps), tell me which area to prioritize and I will add it to this document and/or the repo.
+
+---
+
+## Full preflight & unit tests
+To validate the environment and essential invariants before training, run the convenience script which runs the preflight checks and our unit tests (including the tokenizer <-> .nemo consistency test).
+
+```bash
+# From repo root, activated venv (recommended)
+python3 -m venv venv_py311  # if not already created
+source venv_py311/bin/activate
+pip install -r requirements.txt  # or ensure python deps are present
+./scripts/run_preflight_tests.sh
+```
+
+This exits non-zero on failure and prints diagnostic info to help repair issues quickly.
+
+## RunPod persistent storage guidance
+- When launching a RunPod instance, attach a persistent block storage volume and mount it somewhere stable (for example `/workspace` or `/workspace/storage`).
+- Clone the repo onto the persistent volume so code, small datasets, and scripts are preserved across instance restarts:
+
+```bash
+cd /workspace
+git clone https://github.com/<you>/amchi_asr.git
+cd amchi_asr
+sudo ./setup_env.sh  # sets up environment and runs non-failing preflight
+./scripts/run_preflight_tests.sh  # run full checks and unit tests
+```
+
+- Keep experiment outputs on the attached volume by configuring `exp_manager.exp_dir` in your config or mounting `results/` to the persistent volume.
+
+These steps let you spin up a new RunPod and be training-ready within minutes after preflight passes.
+

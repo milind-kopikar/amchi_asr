@@ -141,7 +141,8 @@ Steps:
 ```bash
 chmod +x setup_env.sh
 sudo ./setup_env.sh
-python3 scripts/preflight_checks.py  # verify environment & tokenizer
+# Run the full preflight and unit tests before starting training
+./scripts/run_preflight_tests.sh
 ```
 
 Full details and caveats are in `SETUP_ENV.md` (this is the canonical reference — use it instead of older docs to avoid confusion).
