@@ -19,7 +19,7 @@ python3 scripts/preflight_checks.py || { echo "Preflight checks failed"; exit 2;
 # Run selected pytest tests (tokenizer and preflight units)
 # Ensure the repo root is on PYTHONPATH so `import scripts` works during tests
 export PYTHONPATH="${PYTHONPATH:-}:$(pwd)"
-pytest -q tests/test_unit_preflight.py tests/test_tokenizer_nemo_consistency.py || { echo "Unit tests failed"; exit 3; }
+pytest -q tests/test_unit_preflight.py tests/test_tokenizer_nemo_consistency.py tests/test_char_metric.py || { echo "Unit tests failed"; exit 3; }
 
 if [ "${RUN_MICRO_OVERFIT:-0}" = "1" ]; then
   echo "RUN_MICRO_OVERFIT=1 detected — cleaning old artifacts and running micro overfit check (this may take a while)..."
