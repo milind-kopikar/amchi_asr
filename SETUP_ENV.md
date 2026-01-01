@@ -30,6 +30,8 @@ The script will:
 
 - **Hugging Face login reminder:** The `setup_env.sh` script will now print a final reminder to run `huggingface-cli login` (or set `HF_TOKEN`) after the setup finishes so you're ready to download model files.
 
+- **Experiments / checkpointing / log location:** By default training configs point to a persistent experiments directory at `/workspace/amchi_asr/experiments`. The default checkpoint policy is to **save only the top 5** checkpoints (`save_top_k: 5`) to limit disk usage. You can change `exp_manager.exp_dir` in your config files if you prefer a different mount path.
+
 ---
 
 ## What we learned / environment details 📚
