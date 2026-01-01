@@ -60,6 +60,27 @@ Data splitting policy (story-based):
   export LANG=en_US.UTF-8
   ```
 
+Tokenizer consistency (important):
+- Training loads the tokenizer from `config.model.tokenizer.dir` on disk, whereas running inference with a `.nemo` via `restore_from()` will use the tokenizer embedded inside the `.nemo` archive.
+- If these differ, transcripts may be encoded as `<unk>` during training which will teach the model to predict `?` placeholders. Always verify the local tokenizer matches the `.nemo` tokenizer before training.
+
+Quick verification and fix (example):
+
+```bash
+# 1) Compare checksums/sizes
+md5sum models/tokenizer/*tokenizer.model
+# 2) Show model_config inside .nemo to find the expected tokenizer
+tar -tf models/your_model.nemo | grep tokenizer
+# 3) Extract the referenced tokenizer and copy it into place (backup original)
+mkdir -p temp_investigation && tar -xf models/your_model.nemo -C temp_investigation <tokenizer.model>
+cp models/tokenizer/<local>.model models/tokenizer/backup/<local>.model.bak
+cp temp_investigation/<tokenizer.model> models/tokenizer/<local>.model
+# 4) Run a quick validation script (we include debug_tokenizer.py) to ensure a Devanagari sample encodes correctly
+python3 debug_tokenizer.py
+```
+
+Include this check in your pre-deployment checklist to avoid regressions.
+
 ---
 
 ## Key problems & fixes implemented 🔧
@@ -99,10 +120,38 @@ Files changed and where to find them:
 
 ---
 
-## Suggested next steps
-- Add unit tests around `ConvASRDecoder.forward` verifying the handling of: scalar torch language ids, list of tensor masks, boolean masks, numpy arrays.
-- Optionally create an upstream PR to the NeMo fork for maintainability and to prevent regressions.
+## Preflight checks (recommended)
+To avoid regressions and wasted time during training, run the preflight checks before starting any training or inference work. These checks validate the runtime environment, tokenizer consistency, and key library availability.
+
+Run the quick script:
+
+```bash
+python3 scripts/preflight_checks.py
+```
+
+What the preflight checks validate:
+- Python version (minimum 3.9; recommended 3.11)
+- `ffmpeg` binary availability
+- `torch` import and CUDA availability
+- `nemo` import and whether the `conv_asr` runtime patch is applied (we look for our `_LanguageMaskList` fix)
+- Local `tokenizer.model` encodes Devanagari for a canonical sample (prevents `<unk>` regressions)
+- Disk free space (require >= 10 GB free by default)
+- Presence of the `.nemo` file referenced by your training config
+
+If any check fails, the script prints diagnostic info to guide remediation.
+
+**Quick tokenizer sanity check (manual)**
+
+```bash
+python3 debug_tokenizer.py
+# Expect: 'PASS' and a round-trip decode containing Devanagari characters
+```
 
 ---
+
+## Suggested next steps
+- Add unit tests around `ConvASRDecoder.forward` verifying the handling of: scalar torch language ids, list of tensor masks, boolean masks, numpy arrays.
+- Add the preflight checks to CI (run early in the pipeline) and add a small test that validates tokenizer encoding of a Devanagari sample.
+- Optionally create an upstream PR to the NeMo fork for maintainability and to prevent regressions.
 
 If anything here needs to be expanded (e.g., more detailed package versions, Dockerfile, or CI steps), tell me which area to prioritize and I will add it to this document and/or the repo.

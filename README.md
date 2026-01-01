@@ -128,16 +128,23 @@ git clone https://github.com/YOUR_USER/amchi_asr.git && cd amchi_asr && sudo ./s
 ```
 
 Notes:
+- **Python version**: Use Python 3.11 when possible (recommended). The AI4Bharat NeMo fork was historically tested on Python 3.9, so if you encounter dependency issues consider using a 3.9 virtualenv. `setup_env.sh` is the canonical source for the environment used in this repo.
 - You must run `huggingface-cli login` (or set `HF_TOKEN`) before running tasks that download models from Hugging Face.
 - The setup script now installs `Cython` before trying to install `pynini`/NeMo to reduce build failures on fresh hosts.
+- **Run the preflight checks** after setup (this script validates tokenizer consistency and common failures):
+
+```bash
+python3 scripts/preflight_checks.py
+```
 
 Steps:
 ```bash
 chmod +x setup_env.sh
 sudo ./setup_env.sh
+python3 scripts/preflight_checks.py  # verify environment & tokenizer
 ```
 
-Full details and caveats are in `SETUP_ENV.md`.
+Full details and caveats are in `SETUP_ENV.md` (this is the canonical reference — use it instead of older docs to avoid confusion).
 
 
 ## 🎯 Usage
