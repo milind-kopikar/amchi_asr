@@ -69,5 +69,15 @@ else:
     sys.exit(1)
 PY
 
+# Recommended environment variables for pilot runs
+echo "ℹ️ Setting recommended environment variables for pilot runs"
+# Enable our runtime conv_asr patch by default for local experiments
+export APPLY_CONV_PATCH=1
+# If CUDA libs are in the standard location, ensure LD_LIBRARY_PATH includes them
+if [ -d "/usr/local/cuda/lib64" ]; then
+  export LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH:-}"
+  echo "LD_LIBRARY_PATH set to include /usr/local/cuda/lib64"
+fi
+
 echo "✅ Environment Setup Complete! GPU and Patch should be active."
 echo "🔐 Reminder: Run 'huggingface-cli login' (or set HF_TOKEN) before downloading AI4Bharat models from Hugging Face."

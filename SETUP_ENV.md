@@ -17,6 +17,13 @@ The script will:
 - Install required Python packages (nemo_toolkit and key libs)
 - Copy our vendored `patches/conv_asr_fixed.py` over the installed NeMo `conv_asr.py`
 
+Important environment variables set/used by the project:
+- `APPLY_CONV_PATCH=1` (recommended): enables the runtime conv_asr patch that fixes language-id and mask handling.
+- `LD_LIBRARY_PATH` should include your CUDA lib directory (for example `/usr/local/cuda/lib64`) if CUDA is installed in a non-standard location.
+
+Data splitting policy (story-based):
+- The `download_data_from_railway.py` script supports a `--use_story_split` flag that enforces deterministic, leakage-free splits: story_id 1/2/3 → train, story_id 5 → dev, story_id 4 → test. This is the canonical split used for experiments to avoid speaker/story leakage.
+
 ## Bootstrap / First-Time Host Notes 🐣
 - **Hugging Face login (manual step):** The script cannot guess your Hugging Face token. On a new machine you'll need to run `huggingface-cli login` manually (or set `HF_TOKEN` in your environment) before attempting to download AI4Bharat models from the Hub.
 
