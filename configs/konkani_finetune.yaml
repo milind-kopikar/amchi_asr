@@ -166,6 +166,8 @@ exp_manager:
   name: "Amchi_Konkani_Research"
   create_tensorboard_logger: true
   create_checkpoint_callback: true
+  # For pilot runs we avoid saving .nemo artifacts automatically to save space and time.
+  always_save_nemo: false
   checkpoint_callback_params:
     monitor: "val_wer"
     mode: "min"

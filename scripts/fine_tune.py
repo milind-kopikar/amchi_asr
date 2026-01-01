@@ -862,6 +862,38 @@ def fine_tune_model(config: DictConfig, output_dir: str):
                         with open(outpath, 'w', encoding='utf-8') as fh:
                             json.dump(out, fh, indent=2, ensure_ascii=False)
                         logger.info(f"Wrote final test results to {outpath}")
+
+                        # Optional: export a .nemo artifact from the best checkpoint if explicitly requested
+                        try:
+                            if os.environ.get('SAVE_NEMO_ARTIFACT') == '1':
+                                # Check free space (bytes available on the experiment dir mount)
+                                statvfs = os.statvfs(experiment_dir)
+                                free_bytes = statvfs.f_bavail * statvfs.f_frsize
+                                # Require at least 10GB free to safely write the .nemo
+                                if free_bytes < (10 * 1024 ** 3):
+                                    logger.warning(f"Insufficient free space ({free_bytes / 1024 ** 3:.2f} GB) to save .nemo artifact; skipping .nemo export")
+                                else:
+                                    nemo_name = f"{os.path.basename(best_ckpt) if best_ckpt else 'model'}_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.nemo"
+                                    nemo_path = os.path.join(experiment_dir, nemo_name)
+                                    try:
+                                        # Prefer model.save_to() if available
+                                        if hasattr(model, 'save_to'):
+                                            model.save_to(nemo_path)
+                                        elif hasattr(model, 'save_to_nemo'):
+                                            model.save_to_nemo(nemo_path)
+                                        else:
+                                            # Fallback: try NeMo serializer
+                                            try:
+                                                import nemo.collections.asr as nemo_asr
+                                                model.save_to(nemo_path)
+                                            except Exception as e:
+                                                raise RuntimeError(f"No known .nemo save method available: {e}")
+                                        logger.info(f"Saved .nemo artifact to {nemo_path}")
+                                    except Exception as e:
+                                        logger.warning(f"Failed to save .nemo artifact: {e}")
+                        except Exception as e:
+                            logger.warning(f".nemo export step failed: {e}")
+
                     except Exception as e:
                         logger.warning(f"Final evaluation failed: {e}")
                 else:
