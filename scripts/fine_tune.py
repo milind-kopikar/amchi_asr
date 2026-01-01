@@ -358,7 +358,7 @@ class SampleLoggerDebug(pl.Callback):
             logger.warning(f"Failed to write sample results to {outpath}: {e}")
 
 
-class ForceLRCallback(pl.Callback):
+class SampleLoggerWriter(pl.Callback):
     def on_validation_epoch_end(self, trainer, pl_module):
         # Guard against accidental invocation on unrelated callback instances
         if not hasattr(self, 'samples'):
@@ -718,7 +718,56 @@ def setup_model(config: DictConfig):
     # Update model configuration for fine-tuning
     if hasattr(config.model, 'decoder'):
         # Update decoder vocabulary if needed
-        pass
+        try:
+            # If the decoder vocabulary is missing in the config or model, try to populate it from
+            # the local SentencePiece tokenizer so we don't fall back to a dummy 256-token vocab.
+            import sentencepiece as spm
+            tk_dir = getattr(config.model, 'tokenizer', {}).get('dir', None) if hasattr(config.model, 'tokenizer') else None
+            sp_model_path = None
+            if tk_dir and os.path.isdir(tk_dir):
+                for f in os.listdir(tk_dir):
+                    if f.endswith('.model'):
+                        sp_model_path = os.path.join(tk_dir, f)
+                        break
+            if sp_model_path is not None:
+                sp = spm.SentencePieceProcessor(model_file=sp_model_path)
+                pieces = [sp.id_to_piece(i) for i in range(sp.get_piece_size())]
+
+                cfg_decoder = getattr(config.model, 'decoder', None)
+                try:
+                    cfg_vocab = cfg_decoder.vocabulary if cfg_decoder is not None and hasattr(cfg_decoder, 'vocabulary') else None
+                except Exception:
+                    cfg_vocab = None
+
+                model_vocab = None
+                try:
+                    model_vocab = getattr(getattr(model, 'decoder', None), 'vocabulary', None)
+                except Exception:
+                    model_vocab = None
+
+                if not cfg_vocab or cfg_vocab in (None, [], '') or model_vocab in (None, [], ''):
+                    logger.info('Populating decoder vocabulary from SentencePiece tokenizer (size=%d) to avoid dummy 256 fill-in', len(pieces))
+                    try:
+                        # set in config where possible
+                        if cfg_decoder is not None:
+                            try:
+                                cfg_decoder.vocabulary = pieces
+                            except Exception:
+                                try:
+                                    setattr(config.model.decoder, 'vocabulary', pieces)
+                                except Exception:
+                                    pass
+                        # set on model runtime attribute
+                        if getattr(model, 'decoder', None) is not None:
+                            try:
+                                setattr(model.decoder, 'vocabulary', pieces)
+                            except Exception:
+                                pass
+                    except Exception as e:
+                        logger.warning(f'Failed to populate decoder vocabulary from tokenizer: {e}')
+        except Exception:
+            # If sentencepiece is not available or fails, skip this best-effort step
+            pass
 
     # If the user explicitly requested CTC via config (decoder_type or loss_name),
     # force the model to use CTC loss to avoid RNNT/Numba GPU JIT compilation.
