@@ -171,6 +171,19 @@ pip install -r requirements.txt  # or ensure python deps are present
 
 This exits non-zero on failure and prints diagnostic info to help repair issues quickly.
 
+Optional micro-overfit check (opt-in) 🔬
+
+- We provide a micro-overfit sanity test that runs training for 20 epochs on a single sample to verify the model can memorize a single sentence. This is intentionally opt-in because it runs training (but on a tiny dataset, so it completes reasonably fast).
+
+  Run it like this:
+
+  ```bash
+  # runs preflight checks, unit tests, and the micro-overfit check (20 epochs)
+  RUN_MICRO_OVERFIT=1 ./scripts/run_preflight_tests.sh
+  ```
+
+- The check is implemented in `scripts/run_micro_overfit.py` and will exit non-zero if the final test prediction does not contain Devanagari characters and a low WER (meaning it did not memorize the sample).
+
 ## RunPod persistent storage guidance
 - When launching a RunPod instance, attach a persistent block storage volume and mount it somewhere stable (for example `/workspace` or `/workspace/storage`).
 - Clone the repo onto the persistent volume so code, small datasets, and scripts are preserved across instance restarts:
