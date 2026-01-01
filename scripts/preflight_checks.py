@@ -85,11 +85,16 @@ def check_tokenizer():
     return {'ok': has_nonunk, 'model_path': str(model_path), 'ids': ids, 'unk_id': unk, 'decoded': decoded}
 
 
-def check_disk_space(min_gb=10):
+def check_disk_space():
+    # Allow override via env var PREFLIGHT_MIN_DISK_GB; default to 25 GB for safety
+    try:
+        min_gb = int(os.environ.get('PREFLIGHT_MIN_DISK_GB', '25'))
+    except Exception:
+        min_gb = 25
     usage = shutil.disk_usage('.')
     free_gb = usage.free / (1024 ** 3)
     ok = free_gb >= min_gb
-    return {'ok': ok, 'free_gb': round(free_gb, 2)}
+    return {'ok': ok, 'free_gb': round(free_gb, 2), 'min_gb': min_gb}
 
 
 def check_model_in_config(config_path='configs/konkani_finetune.yaml'):

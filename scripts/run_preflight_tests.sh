@@ -22,8 +22,12 @@ export PYTHONPATH="${PYTHONPATH:-}:$(pwd)"
 pytest -q tests/test_unit_preflight.py tests/test_tokenizer_nemo_consistency.py || { echo "Unit tests failed"; exit 3; }
 
 if [ "${RUN_MICRO_OVERFIT:-0}" = "1" ]; then
-  echo "RUN_MICRO_OVERFIT=1 detected — running micro overfit check (this may take a few minutes)..."
-  python3 scripts/run_micro_overfit.py || { echo "Micro-overfit check failed"; exit 4; }
+  echo "RUN_MICRO_OVERFIT=1 detected — cleaning old artifacts and running micro overfit check (this may take a while)..."
+  # Run cleanup (will fail if free space < PREFLIGHT_MIN_DISK_GB or MIN_GB)
+  MIN_GB=${MIN_GB:-25}
+  echo "Ensuring at least ${MIN_GB}GB free (cleanup may remove old artifacts)..."
+  MIN_GB=${MIN_GB} ./scripts/cleanup_old_artifacts.sh || { echo "Cleanup failed or insufficient disk space"; exit 4; }
+  python3 scripts/run_micro_overfit.py || { echo "Micro-overfit check failed"; exit 5; }
 fi
 
 echo "All preflight checks and unit tests passed."
