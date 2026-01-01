@@ -169,12 +169,11 @@ exp_manager:
   # For pilot runs we avoid saving .nemo artifacts automatically to save space and time.
   always_save_nemo: false
   checkpoint_callback_params:
-    monitor: "val_wer"
+    monitor: "val_loss"
     mode: "min"
     save_top_k: 3
     save_last: true
-    filename: "amchi_konkani-{epoch:02d}-{val_wer:.3f}"
-
+    filename: "amchi_konkani-{epoch:02d}-{val_loss:.3f}"
 # Additional configuration
 # You can add custom configurations here
 custom_config:

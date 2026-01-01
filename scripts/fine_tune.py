@@ -62,25 +62,59 @@ class ResearchCSVLogger(pl.Callback):
         self._last_train_loss = None
 
     def on_train_epoch_end(self, trainer, pl_module, outputs=None):
-        # Try to capture training loss from callback metrics or logged metrics
+        # Best-effort capture of training loss from a few possible sources:
+        # 1) The `outputs` argument passed by Lightning (may contain per-batch outputs)
+        # 2) trainer.callback_metrics keys ('train_loss', 'loss')
         try:
-            metrics = trainer.callback_metrics
-            train_loss = metrics.get('train_loss', None)
-            if train_loss is None:
-                train_loss = metrics.get('loss', None)
-            self._last_train_loss = float(train_loss) if train_loss is not None else None
+            # 1) Try extracting from outputs if available
+            losses = []
+            def _extract(o):
+                if o is None:
+                    return
+                if isinstance(o, dict):
+                    for k in ('train_loss', 'loss', 'loss_value'):
+                        if k in o:
+                            v = o[k]
+                            try:
+                                # handle tensors
+                                if hasattr(v, 'detach'):
+                                    losses.append(float(v.detach().cpu()))
+                                else:
+                                    losses.append(float(v))
+                            except Exception:
+                                pass
+                    # there may be nested lists/dicts
+                    for v in o.values():
+                        _extract(v)
+                elif isinstance(o, (list, tuple)):
+                    for e in o:
+                        _extract(e)
+            _extract(outputs)
+
+            if losses:
+                self._last_train_loss = float(sum(losses) / len(losses))
+            else:
+                # 2) fallback to trainer callback metrics
+                metrics = trainer.callback_metrics
+                train_loss = metrics.get('train_loss', None) or metrics.get('loss', None) or metrics.get('training_loss', None)
+                self._last_train_loss = float(train_loss) if train_loss is not None else None
         except Exception:
             # Best-effort; do not fail the epoch
             pass
 
     def on_validation_epoch_end(self, trainer, pl_module):
+        # Skip writing metrics during the trainer's sanity check phase (avoids spurious empty rows)
+        if getattr(trainer, 'sanity_checking', False):
+            return
+
         epoch = trainer.current_epoch
         metrics = trainer.callback_metrics
 
         # Train loss: prefer last captured train epoch loss, then fall back to common metric keys
         train_loss = self._last_train_loss
         if train_loss is None:
-            train_loss = metrics.get('train_loss', None) or metrics.get('loss', None) or metrics.get('training_loss', None)
+            # Sometimes PTL exposes aggregated epoch metrics under different keys; try several
+            train_loss = metrics.get('train_loss', None) or metrics.get('loss', None) or metrics.get('training_loss', None) or metrics.get('train/loss', None)
 
         # Validation loss: try a few common keys
         val_loss = metrics.get('val_loss', None) or metrics.get('validation_loss', None) or metrics.get('val/loss', None) or metrics.get('val_epoch_loss', None)
@@ -494,9 +528,43 @@ def setup_model(config: DictConfig):
                 tensorboard_logs = {'loss': loss_value}
                 return {'loss': loss_value, 'log': tensorboard_logs}
 
+            # Validation step to compute val_loss and log it (helps CSV capture val_loss reliably)
+            def _ctc_validation_step(self, batch, batch_nb):
+                import torch
+                # Unpack batch
+                try:
+                    if isinstance(batch, (list, tuple)) and len(batch) >= 6:
+                        signal, signal_len, transcript, transcript_len, sample_ids, language_ids = batch
+                    elif isinstance(batch, dict):
+                        signal = batch['input_signal']
+                        signal_len = batch['input_signal_length']
+                        transcript = batch['labels']
+                        transcript_len = batch['labels_length']
+                        language_ids = batch.get('language_ids', None)
+                    else:
+                        # fallback: try standard unpack
+                        signal, signal_len, transcript, transcript_len = batch
+                        language_ids = None
+                except Exception:
+                    raise
+
+                encoded, encoded_len = self.forward(input_signal=signal, input_signal_length=signal_len)
+                if "multisoftmax" not in getattr(self, 'cfg', {}).get('decoder', {}):
+                    lang_ids = None
+                else:
+                    lang_ids = language_ids
+                log_probs = self.ctc_decoder(encoder_output=encoded, language_ids=lang_ids)
+                val_loss = self.ctc_loss(log_probs=log_probs, targets=transcript, input_lengths=encoded_len, target_lengths=transcript_len)
+                try:
+                    self.log('val_loss', val_loss, on_epoch=True, on_step=False, prog_bar=False)
+                except Exception:
+                    pass
+                return {'val_loss': val_loss}
+
             import types
             model.training_step = types.MethodType(_ctc_training_step, model)
-            logger.info('Patched model.training_step to a CTC-only implementation for pilot runs')
+            model.validation_step = types.MethodType(_ctc_validation_step, model)
+            logger.info('Patched model.training_step and model.validation_step to CTC-only implementations for pilot runs')
     except Exception as e:
         logger.warning(f'Failed to monkey-patch training step for CTC: {e}')
 
