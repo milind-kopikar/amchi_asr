@@ -81,3 +81,16 @@ fi
 
 echo "✅ Environment Setup Complete! GPU and Patch should be active."
 echo "🔐 Reminder: Run 'huggingface-cli login' (or set HF_TOKEN) before downloading AI4Bharat models from Hugging Face."
+
+# Run preflight checks (non-failing by default). Set SKIP_PREFLIGHT=1 to skip.
+if [ "${SKIP_PREFLIGHT:-0}" != "1" ]; then
+  echo "🔍 Running preflight checks (scripts/preflight_checks.py)"
+  if python3 scripts/preflight_checks.py; then
+    echo "✅ Preflight checks passed"
+  else
+    echo "⚠️ Preflight checks reported issues. Please inspect output above and fix issues before training."
+    echo "To skip this step set SKIP_PREFLIGHT=1 when running setup_env.sh"
+  fi
+else
+  echo "⏭️ SKIP_PREFLIGHT=1 set — skipping preflight checks"
+fi
