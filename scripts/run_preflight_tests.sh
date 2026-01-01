@@ -3,6 +3,13 @@ set -euo pipefail
 
 echo "Running full preflight checks and unit tests..."
 
+# Activate canonical venv if present so tests run in the same env as provisioning
+if [ -d "venv_py311" ]; then
+  echo "Activating venv_py311 for reproducible test runs"
+  # shellcheck disable=SC1091
+  source venv_py311/bin/activate
+fi
+
 # Run preflight script
 python3 scripts/preflight_checks.py || { echo "Preflight checks failed"; exit 2; }
 
