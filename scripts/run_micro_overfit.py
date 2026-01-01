@@ -51,18 +51,25 @@ def has_devanagari(s: str) -> bool:
 
 
 def main():
-    # Use the overfit config created earlier, which uses tiny manifests
-    config = 'configs/konkani_finetune_overfit20.yaml'
+    # Use a dedicated single-sample overfit config (train/val/test all point to same tiny manifest)
+    config = 'configs/konkani_finetune_overfit20_single.yaml'
+
+    # Run preflight checks first to avoid known tokenizer/model mismatches
+    print('Running preflight checks before micro-overfit...')
+    ret = subprocess.run([sys.executable, 'scripts/preflight_checks.py'], check=False)
+    if ret.returncode != 0:
+        print('Preflight checks failed; aborting micro-overfit')
+        sys.exit(2)
 
     cmd = [
         'bash', '-lc',
-        'rm -rf results/experiments/* results/checkpoints/* || true && APPLY_CONV_PATCH=1 python3 scripts/fine_tune.py --config configs/konkani_finetune_overfit20.yaml'
+        'rm -rf results/experiments/* results/checkpoints/* || true && APPLY_CONV_PATCH=1 python3 scripts/fine_tune.py --config %s' % config
     ]
     print('Running micro-overfit (this may take a few minutes)...')
     ret = subprocess.run(' '.join(cmd), shell=True)
     if ret.returncode != 0:
         print('micro-overfit training failed')
-        sys.exit(2)
+        sys.exit(3)
 
     exp = find_latest_experiment(Path('results'))
     if not exp:
