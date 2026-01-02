@@ -1,0 +1,182 @@
+# NeMo Configuration for Konkani ASR Fine-tuning
+# Based on AI4Bharat IndicConformer Marathi model
+
+# Model configuration
+model:
+  nemo_model: "models/indicconformer_mr/indicconformer_stt_mr_hybrid_rnnt_large_patched.nemo"
+
+  # Tokenizer configuration
+  tokenizer:
+    dir: "models/tokenizer"  # Directory containing tokenizer files (extracted from the .nemo)
+    type: "bpe"
+
+  # Preprocessor configuration
+  preprocessor:
+    _target_: nemo.collections.asr.modules.AudioToMelSpectrogramPreprocessor
+    sample_rate: 16000
+    normalize: "per_feature"
+    window_size: 0.025
+    window_stride: 0.01
+    window: "hann"
+    features: 80
+    n_fft: 512
+    frame_splicing: 1
+    dither: 0.00001
+    pad_to: 16
+    stft_conv: false
+
+  # Encoder configuration (IndicConformer)
+  encoder:
+    _target_: nemo.collections.asr.modules.ConformerEncoder
+    feat_in: 80
+    feat_out: -1
+    n_layers: 18
+    d_model: 512
+    subsampling: "striding"
+    subsampling_factor: 4
+    subsampling_conv_channels: 512
+    ff_expansion_factor: 4
+    self_attention_model: "rel_pos"
+    n_heads: 8
+    att_context_size: [-1, -1]
+    att_context_style: "regular"
+    xscaling: true
+    untie_biases: true
+    pos_emb_max_len: 5000
+    conv_kernel_size: 31
+    conv_norm_type: "batch_norm"
+    dropout: 0.1
+    dropout_emb: 0.0
+    dropout_att: 0.1
+
+  # Decoder configurations
+  decoder:
+    _target_: nemo.collections.asr.modules.RNNTDecoder
+    vocabulary: null  # Will be set by tokenizer
+    blank_as_pad: true
+    unk: "<unk>"
+
+  joint:
+    _target_: nemo.collections.asr.modules.RNNTJoint
+    vocabulary: null  # Will be set by tokenizer
+    jointnet:
+      _target_: nemo.collections.asr.modules.RNNTJoint
+      encoder_hidden: 512
+      pred_hidden: 320
+      joint_hidden: 512
+      activation: "relu"
+      dropout: 0.0
+
+  # Loss function
+  # Use CTC loss to avoid RNNT/Numba GPU JIT compilation issues
+  loss:
+    loss_name: "ctc"
+
+  # Force decoder type to CTC (safety to ensure RNNT path isn't selected)
+  decoder_type: "ctc"
+
+  # Spec augmentation
+  spec_augment:
+    _target_: nemo.collections.asr.modules.SpectrogramAugmentation
+    freq_masks: 2
+    time_masks: 5
+    freq_width: 27
+    time_width: 0.05
+
+# Training configuration
+trainer:
+  devices: 1
+  accelerator: "gpu"  # Use GPU on RunPod (auto-detects, falls back to CPU)
+  max_epochs: 5
+  max_steps: -1  # -1 means no limit
+  num_nodes: 1
+  accumulate_grad_batches: 1
+  enable_checkpointing: true
+  logger: false  # Can be set to wandb or tensorboard
+  log_every_n_steps: 10
+  check_val_every_n_epoch: 1
+
+  # Strategy configuration
+  strategy: null
+
+# Optimizer configuration
+optim:
+  name: adamw
+  lr: 0.001
+  weight_decay: 0.001
+
+  # Learning rate scheduler
+  sched:
+    name: "CosineAnnealing"
+    warmup_steps: 1000
+    warmup_ratio: null
+    min_lr: 0.000001
+    last_epoch: -1
+
+# Data configuration
+data:
+  # Training data
+  train_ds:
+    manifest_filepath: "tiny_train.jsonl"
+    sample_rate: 16000
+    batch_size: 8
+    shuffle: true
+    num_workers: 4
+    pin_memory: true
+    max_duration: 16.7
+    min_duration: 0.1
+    trim_silence: true
+    load_audio: true
+    use_start_end_token: false
+    return_language_id: false
+
+  # Validation data
+  validation_ds:
+    manifest_filepath: "tiny_val.jsonl"
+    sample_rate: 16000
+    batch_size: 8
+    shuffle: false
+    num_workers: 4
+    pin_memory: true
+    max_duration: 16.7
+    min_duration: 0.1
+    trim_silence: true
+    load_audio: true
+    use_start_end_token: false
+    return_language_id: false
+
+  # Test data (optional)
+  test_ds:
+    manifest_filepath: "tiny_test.jsonl"
+    sample_rate: 16000
+    batch_size: 8
+    shuffle: false
+    num_workers: 4
+    pin_memory: true
+    max_duration: 16.7
+    min_duration: 0.1
+    trim_silence: true
+    load_audio: true
+    use_start_end_token: false
+    return_language_id: true
+
+# Experiment configuration
+exp_manager:
+  exp_dir: "/workspace/amchi_asr/nemo_experiments"
+  name: "Amchi_Konkani_Research"
+  create_tensorboard_logger: true
+  create_checkpoint_callback: true
+  # For pilot runs we avoid saving .nemo artifacts automatically to save space and time.
+  always_save_nemo: false
+  checkpoint_callback_params:
+    monitor: "val_loss"
+    mode: "min"
+    save_top_k: 3
+    save_last: true
+    filename: "amchi_konkani-{epoch:02d}-{val_loss:.3f}"
+# Additional configuration
+# You can add custom configurations here
+custom_config:
+  language: "kok"
+  base_model: "marathi_indicconformer"
+  fine_tune_strategy: "full_finetune"  # Options: full_finetune, adapter, lora

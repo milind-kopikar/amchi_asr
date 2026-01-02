@@ -1,0 +1,13 @@
+# Tiny overfit config with checkpointing disabled for validation
+# Derived from konkani_finetune_tiny_overfit.yaml
+
+${oc:configs/konkani_finetune_tiny_overfit.yaml}
+
+trainer:
+  enable_checkpointing: false
+
+exp_manager:
+  exp_dir: "/tmp/amchi_test"
+  create_checkpoint_callback: false
+  checkpoint_callback_params:
+    save_top_k: 0
