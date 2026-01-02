@@ -58,6 +58,12 @@ except Exception as e:
     raise SystemExit(0)
 PY
 
+# 6) Optional: download base model if requested (AUTO_DOWNLOAD_MODEL=1)
+if [ "${AUTO_DOWNLOAD_MODEL:-0}" = "1" ]; then
+  echo "AUTO_DOWNLOAD_MODEL=1 -> ensuring base .nemo model is present"
+  python3 scripts/download_model_from_hf.py --repo ai4bharat/indicconformer_stt_mr_hybrid_ctc_rnnt_large || echo "Model download failed; continue and let preflight report error"
+fi
+
 # 6) Safety: ensure env vars
 export APPLY_CONV_PATCH=${APPLY_CONV_PATCH:-1}
 if [ -z "${CUDA_VISIBLE_DEVICES:-}" ]; then

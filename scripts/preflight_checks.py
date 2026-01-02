@@ -106,8 +106,22 @@ def check_model_in_config(config_path='configs/konkani_finetune.yaml'):
         model_path = cfg.get('model', {}).get('nemo_model')
         if not model_path:
             return {'ok': False, 'error': 'nemo_model not set in config'}
-        exists = Path(model_path).exists()
-        return {'ok': exists, 'model_path': model_path}
+        path = Path(model_path)
+        if path.exists():
+            return {'ok': True, 'model_path': model_path}
+
+        # If missing, optionally attempt to download when AUTO_DOWNLOAD_MODEL=1
+        if os.environ.get('AUTO_DOWNLOAD_MODEL', '0') == '1':
+            try:
+                print('Model not found; AUTO_DOWNLOAD_MODEL=1 -> attempting download')
+                import subprocess
+                subprocess.run([sys.executable, 'scripts/download_model_from_hf.py', '--repo', 'ai4bharat/indicconformer_stt_mr_hybrid_ctc_rnnt_large'], check=False)
+                if path.exists():
+                    return {'ok': True, 'model_path': model_path, 'downloaded': True}
+            except Exception as e:
+                return {'ok': False, 'error': f'attempted download and failed: {e}'}
+
+        return {'ok': False, 'error': f'model path not found: {model_path}'}
     except Exception as e:
         return {'ok': False, 'error': str(e)}
 
