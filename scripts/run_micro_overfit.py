@@ -137,6 +137,7 @@ def main():
                     losses.append(loss.item())
                 if losses[0] > 0 and losses[-1] <= 0.5 * losses[0]:
                     print('Synthetic micro-overfit PASS: loss reduced', losses[0], '->', losses[-1])
+                    sys.exit(0)
                 else:
                     print('Synthetic micro-overfit FAIL: loss trend', losses[0], '->', losses[-1])
                     sys.exit(3)
