@@ -65,3 +65,15 @@ Remaining checkpoints retained (kept for reproducibility):
 Freed approximately: ~6.6 GB
 Timestamp: 2026-01-02T23:23:40+00:00
 
+### Checkpoint archive (2026-01-02)
+Archived remaining checkpoint files to `/workspace/amchi_asr/archives/checkpoints_20260102_1767396267.tar.gz` (SHA-256: `5298dd288f3b0cec21e99735aba7f0ab659dc504cf153c47ace8ea9e67aeb9bb`).
+
+Files included in archive:
+- nemo_experiments/full_1epoch_lr1e-4/checkpoints/last.ckpt
+- nemo_experiments/full_1epoch_lr1e-4/checkpoints/amchi_marathi_full_1epoch_lr1e-4-epoch=00-val_loss=158.544.ckpt
+- nemo_experiments/checkpoints/amchi_marathi_golden_5epoch_ctc-epoch=04-val_loss=34.602.ckpt
+- nemo_experiments/checkpoints/last.ckpt
+
+Archive size: 4.8G
+Timestamp: 2026-01-02T23:28:00Z
+
