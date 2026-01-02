@@ -1,5 +1,16 @@
 # Amchi Konkani ASR - Automatic Speech Recognition for Konkani Language
 
+## 🚨 QUICK START / REPRODUCTION 🚨
+
+**If you are setting this up on a new environment (e.g., RunPod), please read the [MASTER REPRODUCTION GUIDE](MASTER_REPRODUCTION_GUIDE.md) first.**
+
+It contains the definitive instructions for:
+1.  **Installation:** Exact versions of NeMo, PyTorch, and dependencies.
+2.  **Verification:** How to run the **Master Preflight Script** (`scripts/run_all_preflight.sh`) to verify the entire stack in < 5 minutes.
+3.  **Training:** How to configure and launch fine-tuning.
+
+---
+
 ## 🎯 Project Overview
 
 This project implements Automatic Speech Recognition (ASR) for Konkani language, specifically targeting the "Amchi Konkani" dialect. The system is designed for a science fair demonstration and supports multiple ASR frameworks for flexibility and performance comparison.
