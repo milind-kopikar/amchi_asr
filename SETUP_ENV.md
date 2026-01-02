@@ -184,7 +184,9 @@ Optional micro-overfit check (opt-in) 🔬
   RUN_MICRO_OVERFIT=1 ./scripts/run_preflight_tests.sh
   ```
 
-- The check is implemented in `scripts/run_micro_overfit.py` and will exit non-zero if the final test prediction does not contain Devanagari characters and a low WER (meaning it did not memorize the sample).
+- The check is implemented in `scripts/run_micro_overfit.py` and will exit non-zero if the final test prediction does not contain Devanagari characters and a low WER (meaning it did not memorize the sample). The micro-overfit is intentionally opt-in for full training (`RUN_MICRO_OVERFIT=1`) but can be included in the preflight suite by setting `PREFLIGHT_RUN_MICRO=1`.
+
+- For quick CI/fast validation we support a lightweight synthetic micro-overfit fallback (runs if real training fails) which checks that the PyTorch training loop and GPU are functional.
 
 Quick CI / unit test (fast):
 
@@ -193,6 +195,10 @@ Quick CI / unit test (fast):
   ```bash
   SKIP_MICRO_PREFLIGHT=1 SKIP_MICRO_TRAIN=1 RUN_MICRO_OVERFIT=1 pytest tests/test_micro_overfit_acceptance.py -q
   ```
+
+Cleanup behavior:
+
+- When a micro-overfit is run as part of preflight you will be prompted interactively whether to remove experiment outputs after it finishes. In automated runs (CI or scripts) set `CLEANUP_AFTER_MICRO=1` to automatically delete `results/experiments/*` and `results/checkpoints/*` after a successful micro-overfit.
 
 This test suite checks both the PASS and FAIL branches of the micro-overfit acceptance logic and is intentionally opt-in (`RUN_MICRO_OVERFIT=1`).
 
