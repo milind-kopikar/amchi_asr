@@ -3,11 +3,11 @@
 
 # Model configuration
 model:
-  nemo_model: "models/indicconformer_mr/indicconformer_stt_mr_hybrid_rnnt_large_patched.nemo"
+  nemo_model: "models/konkani_model.nemo"
 
   # Tokenizer configuration
   tokenizer:
-    dir: "models/tokenizer"  # Directory containing tokenizer files (extracted from the .nemo)
+    dir: "tokenizers"  # Directory containing tokenizer files (extracted from the .nemo)
     type: "bpe"
 
   # Preprocessor configuration
