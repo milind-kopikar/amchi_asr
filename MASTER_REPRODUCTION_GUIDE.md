@@ -6,6 +6,11 @@
 
 This guide serves as the **single source of truth** for setting up, verifying, and running the Amchi ASR fine-tuning pipeline on a fresh environment (e.g., RunPod). It consolidates all knowledge gained during the initial setup phase.
 
+**Recent updates (2026-01-02):**
+- Fixed WER calculation in `scripts/fine_tune.py` so validation WER is computed correctly during smoke tests.
+- Resolved Trainer startup crash by preferring `pytorch_lightning` import and removing `LearningRateMonitor` where necessary; extended 5-epoch smoke test now completes successfully and produces checkpoints in `nemo_experiments/checkpoints`.
+- Added robust inference script `scripts/smoke_test_inference.py` that loads checkpoints, patches loss_name, switches to CTC decoding, and performs single-sample transcription for verification.
+
 ---
 
 ## 1. System Requirements

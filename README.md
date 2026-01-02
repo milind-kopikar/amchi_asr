@@ -264,8 +264,8 @@ For AI4Bharat integration or framework comparisons:
 
 ---
 
-**Last Updated**: November 25, 2025  
-**Status**: HuggingFace pipeline fully functional, AI4Bharat integration pending Mac environment setup
+**Last Updated**: January 2, 2026  
+**Status**: Smoke tests (NeMo training + inference) are passing. Recent fixes include a corrected WER calculation and a compatibility fix to avoid a Trainer startup crash caused by LearningRateMonitor / logger mismatch. See `scripts/extended_smoke_test.sh` and `scripts/smoke_test_inference.py` for verification steps.
 
 ## **Work In Progress**
 

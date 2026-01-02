@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import sys; print("DEBUG: Script started", file=sys.stderr)
 """
 Fine-tune AI4Bharat IndicConformer Marathi ASR model for Konkani
 Using NVIDIA NeMo framework
@@ -36,6 +35,27 @@ from typing import Optional, List
 def _compute_wer(ref: str, hyp: str) -> float:
     r = ref.split()
     h = hyp.split()
+    m = len(r)
+    n = len(h)
+    if m == 0:
+        return 0.0 if n == 0 else 1.0
+    dp = [[0] * (n + 1) for _ in range(m + 1)]
+    for i in range(m + 1):
+        dp[i][0] = i
+    for j in range(n + 1):
+        dp[0][j] = j
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            if r[i - 1] == h[j - 1]:
+                cost = 0
+            else:
+                cost = 1
+            dp[i][j] = min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost)
+    return dp[m][n] / m
+
+def _compute_cer(ref: str, hyp: str) -> float:
+    r = list(ref)
+    h = list(hyp)
     m = len(r)
     n = len(h)
     if m == 0:
@@ -126,6 +146,7 @@ class ResearchCSVLogger(pl.Callback):
         # Validation loss: try a few common keys
         val_loss = metrics.get('val_loss', None) or metrics.get('validation_loss', None) or metrics.get('val/loss', None) or metrics.get('val_epoch_loss', None)
         val_wer = metrics.get('val_wer', None) or metrics.get('val_wer_ctc', None) or metrics.get('validation_wer', None) or metrics.get('val/wer', None)
+        val_cer = metrics.get('val_cer', None) or metrics.get('val_cer_ctc', None) or metrics.get('validation_cer', None) or metrics.get('val/cer', None)
 
         lr = None
         try:
@@ -141,6 +162,7 @@ class ResearchCSVLogger(pl.Callback):
                                  float(train_loss) if train_loss is not None else '',
                                  float(val_loss) if val_loss is not None else '',
                                  float(val_wer) if val_wer is not None else '',
+                                 float(val_cer) if val_cer is not None else '',
                                  lr if lr is not None else '',
                                  round(time_elapsed, 2)])
         except Exception as e:
@@ -150,6 +172,7 @@ class ResearchCSVLogger(pl.Callback):
 class SampleLoggerCallback(pl.Callback):
     """Saves a few validation sample transcriptions per epoch into JSON files."""
     def __init__(self, manifest_path: str, outdir: str, max_samples: int = 8):
+        print(f"DEBUG: SampleLoggerCallback.__init__ called with manifest={manifest_path}, outdir={outdir}")
         self.manifest_path = manifest_path
         self.outdir = outdir
         self.max_samples = max_samples
@@ -163,33 +186,10 @@ class SampleLoggerCallback(pl.Callback):
                         continue
                     obj = json.loads(line)
                     self.samples.append({'audio': obj.get('audio_filepath'), 'reference': obj.get('text', '')})
+            print(f"DEBUG: Loaded {len(self.samples)} samples")
         except Exception as e:
             logger.warning(f"Failed to read manifest for SampleLogger: {e}")
-
-
-class ForceLRCallback(pl.Callback):
-    """Force optimizer learning rate to a fixed value at training start.
-
-    This ensures the actual optimizer param_groups['lr'] matches the config value
-    even if model.configure_optimizers or other code attempts to set a different base lr.
-    """
-    def __init__(self, lr: float):
-        self.lr = float(lr)
-    def on_train_start(self, trainer, pl_module):
-        try:
-            for opt in getattr(trainer, 'optimizers', []):
-                for g in opt.param_groups:
-                    g['lr'] = self.lr
-            logger.info(f"Forced optimizer lr to {self.lr}")
-        except Exception as e:
-            logger.warning(f"Failed to force optimizer lr: {e}")
-
-    # Silence validation hooks to avoid accidental calls (no-op)
-    def on_validation_epoch_end(self, trainer, pl_module):
-        return
-
-    def on_train_end(self, trainer, pl_module):
-        return
+            print(f"DEBUG: Failed to read manifest: {e}")
 
     def _is_devanagari(self, text: str) -> bool:
         if not text:
@@ -202,8 +202,28 @@ class ForceLRCallback(pl.Callback):
         return False
 
     def on_validation_epoch_end(self, trainer, pl_module):
-        # Guard against accidental invocation on unrelated callback instances
-        if not hasattr(self, 'samples'):
+        # Ensure samples are loaded (re-load if missing due to pickling issues)
+        if not hasattr(self, 'samples') or not self.samples:
+            print("DEBUG: Reloading samples in on_validation_epoch_end")
+            self.samples = []
+            try:
+                if hasattr(self, 'manifest_path') and self.manifest_path:
+                    with open(self.manifest_path, 'r', encoding='utf-8') as fh:
+                        for i, line in enumerate(fh):
+                            if i >= getattr(self, 'max_samples', 8):
+                                break
+                            if not line.strip():
+                                continue
+                            obj = json.loads(line)
+                            self.samples.append({'audio': obj.get('audio_filepath'), 'reference': obj.get('text', '')})
+                    print(f"DEBUG: Reloaded {len(self.samples)} samples")
+            except Exception as e:
+                print(f"DEBUG: Failed to reload samples: {e}")
+
+        print(f"DEBUG: SampleLoggerCallback.on_validation_epoch_end called. Samples: {len(getattr(self, 'samples', []))}")
+        
+        if not self.samples:
+            print("DEBUG: No samples available to log")
             return
 
         epoch = trainer.current_epoch
@@ -232,13 +252,23 @@ class ForceLRCallback(pl.Callback):
 
         results = []
         wer_list = []
+        cer_list = []
         for i, s in enumerate(self.samples):
             audio = s.get('audio')
             ref = s.get('reference', '')
             pred = preds[i] if i < len(preds) else ''
+            # Normalize prediction to a string (handle NeMo Hypothesis objects)
+            try:
+                if not isinstance(pred, str):
+                    pred = getattr(pred, 'text', None) or str(pred)
+            except Exception:
+                pred = str(pred)
             wer = _compute_wer(ref, pred) if ref and pred is not None else None
+            cer = _compute_cer(ref, pred) if ref and pred is not None else None
             if wer is not None:
                 wer_list.append(wer)
+            if cer is not None:
+                cer_list.append(cer)
             pred_latency_s = (batch_time / max(1, len(audio_paths))) if audio_paths else None
             deva_ok = self._is_devanagari(pred)
             results.append({
@@ -248,7 +278,8 @@ class ForceLRCallback(pl.Callback):
                 'pred': pred,
                 'deva_ok': bool(deva_ok),
                 'pred_latency_s': pred_latency_s,
-                'wer': wer
+                'wer': wer,
+                'cer': cer
             })
 
         # Build summary block
@@ -276,6 +307,7 @@ class ForceLRCallback(pl.Callback):
             param_count = None
 
         overall_wer = sum(wer_list) / max(1, len(wer_list)) if wer_list else None
+        overall_cer = sum(cer_list) / max(1, len(cer_list)) if cer_list else None
 
         # Log aggregate validation WER so ModelCheckpoint can monitor it if requested
         try:
@@ -283,11 +315,15 @@ class ForceLRCallback(pl.Callback):
                 try:
                     if hasattr(pl_module, 'log'):
                         pl_module.log('val_wer', float(overall_wer), on_epoch=True, on_step=False)
+                        if overall_cer is not None:
+                            pl_module.log('val_cer', float(overall_cer), on_epoch=True, on_step=False)
                 except Exception:
                     pass
                 # As a more direct and immediate fallback, inject val_wer into trainer.callback_metrics
                 try:
                     trainer.callback_metrics['val_wer'] = float(overall_wer)
+                    if overall_cer is not None:
+                        trainer.callback_metrics['val_cer'] = float(overall_cer)
                 except Exception:
                     pass
         except Exception as e:
@@ -300,6 +336,7 @@ class ForceLRCallback(pl.Callback):
                 'model_name': model_name,
                 'param_count': param_count,
                 'overall_wer': overall_wer,
+                'overall_cer': overall_cer,
                 'date': datetime.datetime.now().isoformat()
             },
             'samples': results
@@ -309,8 +346,44 @@ class ForceLRCallback(pl.Callback):
         try:
             with open(outpath, 'w', encoding='utf-8') as fh:
                 json.dump(out, fh, indent=2, ensure_ascii=False)
+            # Optionally print sample predictions to stdout for quick verification
+            try:
+                if os.environ.get('PRINT_SAMPLE_OUTPUTS') == '1':
+                    print(f"Samples epoch {epoch}:")
+                    for s in results:
+                        try:
+                            print(f"audio={s.get('audio')}, ref={s.get('ref')}, pred={s.get('pred')}, deva_ok={s.get('deva_ok')}, wer={s.get('wer')}")
+                        except Exception:
+                            pass
+            except Exception:
+                pass
         except Exception as e:
             logger.warning(f"Failed to write sample results to {outpath}: {e}")
+
+
+class ForceLRCallback(pl.Callback):
+    """Force optimizer learning rate to a fixed value at training start.
+
+    This ensures the actual optimizer param_groups['lr'] matches the config value
+    even if model.configure_optimizers or other code attempts to set a different base lr.
+    """
+    def __init__(self, lr: float):
+        self.lr = float(lr)
+    def on_train_start(self, trainer, pl_module):
+        try:
+            for opt in getattr(trainer, 'optimizers', []):
+                for g in opt.param_groups:
+                    g['lr'] = self.lr
+            logger.info(f"Forced optimizer lr to {self.lr}")
+        except Exception as e:
+            logger.warning(f"Failed to force optimizer lr: {e}")
+
+    # Silence validation hooks to avoid accidental calls (no-op)
+    def on_validation_epoch_end(self, trainer, pl_module):
+        return
+
+    def on_train_end(self, trainer, pl_module):
+        return
 
 # NeMo imports
 import nemo
@@ -439,7 +512,7 @@ def setup_model(config: DictConfig):
                             'model_path': 'tokenizers/konkani_tokenizer.model'
                         }
 
-                    # --- NEW: Offline config edit to swap CTC decoder to 256 classes ---
+                    # --- NEW: Offline config edit to ensure aux_ctc decoder num_classes matches tokenizer ---
                     # We only modify the aux_ctc (CTC) decoder. Don't modify the RNNT decoder
                     # signature (it doesn't accept num_classes kwarg) — this avoids instantiate errors.
                     try:
@@ -451,14 +524,35 @@ def setup_model(config: DictConfig):
                         if 'aux_ctc' not in conf or not isinstance(conf['aux_ctc'], dict):
                             conf['aux_ctc'] = {}
                         conf['aux_ctc'].setdefault('loss', {})['loss_name'] = 'ctc'
-                        # For hybrid models, configure aux_ctc.decoder to be small (256)
+                        # Configure aux_ctc.decoder.num_classes to match the tokenizer if possible
                         if 'aux_ctc' in conf and isinstance(conf['aux_ctc'], dict) and 'decoder' in conf['aux_ctc']:
                             conf['aux_ctc']['decoder'].pop('vocabulary', None)
-                            conf['aux_ctc']['decoder']['num_classes'] = 256
-                            # ensure decoder type uses a CTC-compatible decoder
-                            # (do not touch main RNNT decoder to avoid wrong kwargs)
+                            # Try to infer tokenizer model path and read its piece size
+                            try:
+                                tk = conf.get('tokenizer', {}) or {}
+                                tk_model_path = None
+                                if isinstance(tk, dict):
+                                    tk_model_path = tk.get('model_path') or os.path.join(tk.get('dir', ''), 'tokenizer.model')
+                                # If the config points to a path and the file exists, load it
+                                if tk_model_path and os.path.exists(tk_model_path):
+                                    try:
+                                        import sentencepiece as spm
+                                        sp = spm.SentencePieceProcessor()
+                                        sp.Load(tk_model_path)
+                                        vocab_size = sp.GetPieceSize()
+                                        conf['aux_ctc']['decoder']['num_classes'] = int(vocab_size)
+                                    except Exception as e:
+                                        print('DEBUG: Could not load tokenizer model to read piece size:', e)
+                                        # fallback to a conservative default if present
+                                        conf['aux_ctc']['decoder']['num_classes'] = conf['aux_ctc']['decoder'].get('num_classes', 256)
+                                else:
+                                    # If tokenizer path not resolvable yet, default to existing value or 256
+                                    conf['aux_ctc']['decoder']['num_classes'] = conf['aux_ctc']['decoder'].get('num_classes', 256)
+                            except Exception as e:
+                                print('DEBUG: Failed to infer tokenizer piece size:', e)
+                                conf['aux_ctc']['decoder']['num_classes'] = conf['aux_ctc']['decoder'].get('num_classes', 256)
                     except Exception as e:
-                        print('DEBUG: Failed to set aux_ctc small decoder config:', e)
+                        print('DEBUG: Failed to set aux_ctc decoder config:', e)
                 else:
                     # Generic fallback to local tokenizers directory
                     conf['tokenizer'] = {
@@ -1013,10 +1107,17 @@ def setup_trainer(config: DictConfig, output_dir: str):
     callbacks.append(lr_monitor)
 
     # TensorBoard logger
-    tb_logger = TensorBoardLogger(
-        save_dir=os.path.join(output_dir, "logs"),
-        name="konkani_asr_finetune"
-    )
+    use_tb = True
+    if hasattr(config, 'exp_manager'):
+        use_tb = config.exp_manager.get('create_tensorboard_logger', True)
+    
+    if use_tb:
+        tb_logger = TensorBoardLogger(
+            save_dir=os.path.join(output_dir, "logs"),
+            name="konkani_asr_finetune"
+        )
+    else:
+        tb_logger = False
 
     # Create trainer
     trainer_kwargs = dict(
@@ -1121,7 +1222,7 @@ def fine_tune_model(config: DictConfig, output_dir: str):
                 try:
                     with open(csv_path, 'w', newline='') as fh:
                         writer = csv.writer(fh)
-                        writer.writerow(['epoch', 'train_loss', 'val_loss', 'val_wer', 'lr', 'time_elapsed'])
+                        writer.writerow(['epoch', 'train_loss', 'val_loss', 'val_wer', 'val_cer', 'lr', 'time_elapsed'])
                 except Exception as e:
                     logger.warning(f"Failed to create epoch CSV file: {e}")
 
@@ -1130,8 +1231,10 @@ def fine_tune_model(config: DictConfig, output_dir: str):
             try:
                 csv_logger = ResearchCSVLogger(csv_path)
                 sample_logger = SampleLoggerCallback(getattr(config.data.validation_ds, 'manifest_filepath', ''), experiment_dir)
-                trainer.callbacks.append(csv_logger)
+                # Add sample_logger BEFORE csv_logger so metrics injected by sample_logger (like val_cer)
+                # are available when csv_logger writes the row.
                 trainer.callbacks.append(sample_logger)
+                trainer.callbacks.append(csv_logger)
 
                 # Force optimizer LR to config value for reproducibility
                 try:
@@ -1150,16 +1253,19 @@ def fine_tune_model(config: DictConfig, output_dir: str):
             logger.warning(f"Failed to create experiment folder or logging artifacts: {e}")
 
         # Setup experiment manager
-        if hasattr(config, 'exp_manager'):
-            # exp_manager expects a more fully-specified config; try to run it but do not fail training if it errors
-            try:
-                config.exp_manager.exp_dir = output_dir
-                from nemo.utils import exp_manager as em
-                em.exp_manager(config.exp_manager, trainer)
-            except Exception as e:
-                logger.warning(f"exp_manager invocation failed: {e}")
+#         if hasattr(config, 'exp_manager'):
+#             # exp_manager expects a more fully-specified config; try to run it but do not fail training if it errors
+#             try:
+#                 config.exp_manager.exp_dir = output_dir
+#                 from nemo.utils import exp_manager as em
+#                 em.exp_manager(trainer, config.exp_manager)
+#             except Exception as e:
+#                 logger.warning(f"exp_manager invocation failed: {e}")
 
         # Start training
+        # Hack: Remove LearningRateMonitor unconditionally by name
+        trainer.callbacks = [c for c in trainer.callbacks if c.__class__.__name__ != "LearningRateMonitor"]
+        logger.info("Removed LearningRateMonitor unconditionally")
         logger.info("Starting fine-tuning...")
         trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=val_loader)
 
@@ -1190,7 +1296,7 @@ def fine_tune_model(config: DictConfig, output_dir: str):
                     if len(rows) >= 2:
                         header = rows[0]
                         last_row = rows[-1]
-                        # header expected: ['epoch','train_loss','val_loss','val_wer','lr','time_elapsed']
+                        # header expected: ['epoch','train_loss','val_loss','val_wer','val_cer','lr','time_elapsed']
                         try:
                             train_idx = header.index('train_loss')
                             if last_row[train_idx] == '' or last_row[train_idx] is None:
@@ -1328,12 +1434,48 @@ def fine_tune_model(config: DictConfig, output_dir: str):
                                             pred = model.transcribe(paths2audio_files=[audio])[0]
                                     else:
                                         pred = ''
+                                    # Force conversion to string and handle Hypothesis objects
+                                    try:
+                                        if hasattr(pred, 'text'):
+                                            pred = str(pred.text)
+                                        else:
+                                            pred = str(pred)
+                                    except Exception as e:
+                                        logger.warning(f"Error converting prediction to string: {e}")
+                                        pred = str(pred)
+                                    
+                                    # Final safety check
+                                    if not isinstance(pred, str):
+                                        pred = str(pred)
+                                    
                                     wer_val = _compute_wer(ref, pred) if ref else None
+                                    cer_val = _compute_cer(ref, pred) if ref else None
                                 except Exception as e:
                                     logger.warning(f"Failed to transcribe {audio}: {e}")
-                                per_sample.append({'audio': audio, 'reference': ref, 'prediction': pred, 'wer': wer_val})
-                        total_wer = sum([p['wer'] for p in per_sample if p['wer'] is not None]) / max(1, len([p for p in per_sample if p['wer'] is not None]))
-                        out = {'best_checkpoint': best_ckpt, 'summary': {'total_samples': len(per_sample), 'mean_wer': total_wer}, 'per_sample': per_sample}
+                                per_sample.append({'audio': audio, 'reference': ref, 'prediction': pred, 'wer': wer_val, 'cer': cer_val})
+                        
+                        valid_wers = [p['wer'] for p in per_sample if p['wer'] is not None]
+                        valid_cers = [p['cer'] for p in per_sample if p['cer'] is not None]
+                        
+                        total_wer = sum(valid_wers) / max(1, len(valid_wers)) if valid_wers else 0.0
+                        total_cer = sum(valid_cers) / max(1, len(valid_cers)) if valid_cers else 0.0
+                        
+                        logger.info(f"DEBUG: per_sample len: {len(per_sample)}")
+                        logger.info(f"DEBUG: valid_wers: {valid_wers}")
+                        logger.info(f"DEBUG: valid_cers: {valid_cers}")
+                        logger.info(f"DEBUG: total_wer: {total_wer}")
+                        logger.info(f"DEBUG: total_cer: {total_cer}")
+
+                        out = {
+                            'best_checkpoint': best_ckpt, 
+                            'summary': {
+                                'total_samples': len(per_sample), 
+                                'mean_wer': total_wer,
+                                'mean_cer': total_cer
+                            }, 
+                            'per_sample': per_sample
+                        }
+                        logger.info(f"DEBUG: out summary: {out['summary']}")
                         outpath = os.path.join(experiment_dir, 'final_test_results.json')
                         with open(outpath, 'w', encoding='utf-8') as fh:
                             json.dump(out, fh, indent=2, ensure_ascii=False)
@@ -1400,6 +1542,8 @@ def main():
     try:
         # Load configuration
         config = load_config(args.config)
+        print(f"DEBUG: Config keys: {config.keys()}")
+        print(f"DEBUG: Config keys: {config.keys()}")
 
         # Override output directory in config
         config.exp_manager.exp_dir = args.output_dir

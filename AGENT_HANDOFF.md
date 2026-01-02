@@ -7,6 +7,14 @@ Date: 2026-01-02
 ## 1) Short summary (one line)
 Marathi smoke test (Training + Inference) is PASSING. Now switch to Konkani model using the verified pipeline.
 
+**Recent activity (2026-01-02):**
+- Fixed validation WER calculation in `scripts/fine_tune.py` (no longer stuck at 0.0).
+- Fixed a trainer startup crash by preferring `pytorch_lightning` import and ensuring `LearningRateMonitor` is not used when no logger is present; the 5-epoch extended smoke test completed successfully and produced checkpoints.
+- Ran single-sample inference on the best checkpoint and confirmed predictions work using `scripts/smoke_test_inference.py`.
+
+---
+
+
 ## 2) Current state & context
 - **Success:** We successfully ran a 1-epoch smoke test on the Marathi model (`models/indicconformer_stt_mr_hybrid_ctc_rnnt_large/indicconformer_stt_mr_hybrid_rnnt_large.nemo`).
 - **Tokenizer Fix:** We identified the correct Marathi tokenizer (containing 'ळ') and integrated it.
@@ -164,3 +172,60 @@ python3 scripts/smoke_test_inference.py --checkpoint "$CHECKPOINT" --audio "$TES
 ---
 
 If you want, I can also create an automated `make` target or a small wrapper script that performs steps A→F to speed up repeating this work in future.
+
+---
+
+## RunPod stop / resume checklist (cost-savings) ⚠️
+
+If you need to stop the RunPod instance to save compute costs but preserve artifacts and state, follow these steps. Storage is persistent and inexpensive; compute is expensive — so stop compute when idle.
+
+1. Before stopping the instance (on the RunPod UI or via the instance's SSH):
+   - Ensure all important artifacts are on the persistent volume:
+     - `nemo_experiments/experiments/<timestamp>/` — epoch metrics, samples, final_test_results.json
+     - `nemo_experiments/checkpoints/` — saved `.ckpt` files
+     - `results/` — any run artifacts
+   - Optionally, create a small metadata file about the run:
+     ```bash
+     echo "best_checkpoint=$(ls nemo_experiments/checkpoints | sort | tail -n1)" > run_metadata.txt
+     echo "completed_at=$(date -u --iso-8601=seconds)" >> run_metadata.txt
+     git add run_metadata.txt && git commit -m "Add run metadata for runpod stop" || true
+     ```
+2. Stop compute (recommended via RunPod UI):
+   - Use the RunPod control panel to **Stop / Power Off** the instance (this preserves attached storage).
+   - Alternative (if you are on the machine and want to shutdown):
+     ```bash
+     sudo shutdown -h now
+     ```
+3. When you start the instance back up (or create a new RunPod instance and attach the same persistent volume):
+   - Start the instance and `ssh` in.
+   - Pull latest repo state: `git pull origin master`
+   - Recreate the Python environment (`venv`) if required or activate the existing one.
+   - Verify artifacts exist:
+     ```bash
+     ls -la nemo_experiments/checkpoints
+     ls -la nemo_experiments/experiments
+     cat run_metadata.txt || true
+     ```
+   - Run a quick verification (fast):
+     ```bash
+     # Verify environment (fast preflight steps)
+     python scripts/preflight_checks.py
+     # Sanity inference using best checkpoint and a dev sample
+     python scripts/smoke_test_inference.py --checkpoint $(ls nemo_experiments/checkpoints | sort | tail -n1 | sed "s|^|nemo_experiments/checkpoints/|") --audio data/dev/audio/379.wav --device cuda
+     ```
+4. Next actions for a new agent on resume:
+   - If the run was stopped intentionally: decide whether to resume training (change `configs/*.yaml` and re-run `python scripts/fine_tune.py`) or start a new experiment (create new output dir in `nemo_experiments`).
+   - If disk space is low, archive older experiment dirs: `tar -czf archive_20260102.tar.gz nemo_experiments/experiments/20260102_*` and move to a separate storage bucket if you want.
+
+**Note:** Leave `run_metadata.txt` and the most recent `nemo_experiments` directory intact so the next agent can verify the run and continue from the checkpoint.
+
+---
+
+## What the next agent should know (short recap)
+- The critical fixes are in `scripts/fine_tune.py` (WER fix + trainer/Logger fix). The extended smoke test completed and produced checkpoints in `nemo_experiments/checkpoints`.
+- Use the robust scripts for repeatability: `scripts/extended_smoke_test.sh` and `scripts/smoke_test_inference.py`.
+- If you stop/restart a RunPod instance, run the quick verification step above (preflight + a single-sample inference) before attempting to resume training.
+
+---
+
+```}avascript
