@@ -175,6 +175,92 @@ If you want, I can also create an automated `make` target or a small wrapper scr
 
 ---
 
+## Update: 6‑epoch run (in progress) — 2026-01-02
+
+**Summary:** I launched a 6‑epoch run using `configs/full_6epoch_lr1e-4.yaml` with output dir `nemo_experiments/full_6epoch_lr1e-4`.
+
+- Progress: Training completed epochs **0 → 4** (epoch numbering starts at 0). Epoch 4 hit a disk quota error while saving and the run aborted. The `exp_manager` was modified to `resume_if_exists: true` so the run can be resumed cleanly.
+- Checkpoints currently present (local):
+  - `amchi_marathi_full_6epoch_lr1e-4-epoch=02-val_loss=81.633.ckpt` (~1.4G)
+  - `amchi_marathi_full_6epoch_lr1e-4-epoch=03-val_loss=55.738.ckpt` (~1.4G)
+  - `amchi_marathi_full_6epoch_lr1e-4-epoch=04-val_loss=45.202.ckpt` (~1.0G)
+  - `last.ckpt` (~1.4G)
+- To free space so the run could continue, I **deleted** the older checkpoints for epoch 00 and 01 (they were ~1.4G each). This freed enough space for training to continue, but the user cancelled the resumed run; see logs for the disk quota error that caused abort.
+- Metrics for the partial run are recorded here:
+  - `nemo_experiments/full_6epoch_lr1e-4/experiments/<timestamp>/epoch_metrics.csv` (contains epochs 0–4 with `val_loss`, `val_wer`, `val_cer`)
+  - Quick snapshot (from the run):
+    - epoch 0: val_loss=158.876, val_wer=32.90
+    - epoch 1: val_loss=130.277, val_wer=1.00
+    - epoch 2: val_loss=81.633, val_wer=1.00
+    - epoch 3: val_loss=55.738, val_wer=0.946
+    - epoch 4: val_loss=45.202, val_wer=0.977
+
+### Next-agent actions to finish & tidy (step-by-step)
+1. **Pull repo & verify files**
+```bash
+# Pull latest changes (I committed the new config & this handoff update)
+git pull origin master
+```
+2. **Verify disk space & optionally archive**
+```bash
+# Check free space
+df -h .
+# If disk near full, archive older experiments to a separate location or object storage
+mkdir -p /workspace/amchi_asr/archives
+# Example archiving of an experiment dir (change to the right path)
+tar -czf /workspace/amchi_asr/archives/checkpoints_full6_$(date +%s).tar.gz nemo_experiments/full_6epoch_lr1e-4/checkpoints
+sha256sum /workspace/amchi_asr/archives/checkpoints_full6_*.tar.gz
+```
+3. **Resume training** (config already has `resume_if_exists: true`, and I removed the two worst early ckpts to free space)
+```bash
+python3 scripts/fine_tune.py --config configs/full_6epoch_lr1e-4.yaml --output_dir nemo_experiments/full_6epoch_lr1e-4
+```
+- Watch the logs and ensure epochs 5 and 6 get executed and saved. If saving fails again, archive or delete older checkpoints (`rm`) to free space and retry.
+
+4. **After the run finishes (or once you have >=6 epochs), select best 3 epochs to keep**
+- Evaluate metrics: `nemo_experiments/full_6epoch_lr1e-4/experiments/<timestamp>/epoch_metrics.csv`
+- Choose best 3 rows by `val_wer` (lowest) with `val_loss` as tie-breaker. Example helper:
+```bash
+python - <<'PY'
+import csv
+rows = list(csv.DictReader(open('nemo_experiments/full_6epoch_lr1e-4/experiments/`ls -1 nemo_experiments/full_6epoch_lr1e-4/experiments | tail -n1`/epoch_metrics.csv')))
+rows = [r for r in rows if r.get('val_wer') and r['val_wer']!='']
+rows_sorted = sorted(rows, key=lambda r: (float(r['val_wer']), float(r['val_loss'])))
+best = rows_sorted[:3]
+print('best_epochs=', [int(r['epoch']) for r in best])
+PY
+```
+- Keep the ckpts for the three epoch numbers returned and `last.ckpt` if you prefer, then delete the others to free space. Example to delete others:
+```bash
+# Replace 2 3 4 with the chosen epochs
+KEEP=(2 3 4)
+for f in nemo_experiments/full_6epoch_lr1e-4/checkpoints/*.ckpt; do
+  skip=0
+  for e in "${KEEP[@]}"; do
+    if echo "$f" | grep -q "epoch=$e-"; then skip=1; break; fi
+done
+  if [ "$skip" -eq 0 ]; then rm -v "$f"; fi
+done
+```
+
+5. **Archive the kept checkpoints** (recommended)
+```bash
+mkdir -p /workspace/amchi_asr/archives
+tar -czf /workspace/amchi_asr/archives/full6_best_checkpoints_$(date +%s).tar.gz nemo_experiments/full_6epoch_lr1e-4/checkpoints/amchi_marathi_full_6epoch_lr1e-4-epoch=0*_val_loss=*.ckpt
+sha256sum /workspace/amchi_asr/archives/full6_best_checkpoints_*.tar.gz
+```
+
+6. **Run decoding experiments or quick inference** to validate the best checkpoint(s):
+```bash
+# Use smoke_test_inference.py; replace CHECKPOINT with path to the kept ckpt
+python3 scripts/smoke_test_inference.py --checkpoint "nemo_experiments/full_6epoch_lr1e-4/checkpoints/amchi_marathi_full_6epoch_lr1e-4-epoch=03-val_loss=55.738.ckpt" --audio data/dev/audio/379.wav --device cuda
+```
+
+7. **Push relevant changes / artifacts to GitHub**
+- I committed `configs/full_6epoch_lr1e-4.yaml` and this `AGENT_HANDOFF.md` update; make sure to `git pull` and `git push` any further changes. If you generate additional small metadata (e.g., `run_metadata.txt`), commit and push it as well for reproducibility.
+
+---
+
 ## RunPod stop / resume checklist (cost-savings) ⚠️
 
 If you need to stop the RunPod instance to save compute costs but preserve artifacts and state, follow these steps. Storage is persistent and inexpensive; compute is expensive — so stop compute when idle.
