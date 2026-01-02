@@ -48,6 +48,7 @@ File links
 ----------
 - `configs/smoke_1sample_ctc.yaml` — minimal 1-sample 1-epoch CTC test config used for verification.
 - `scripts/fine_tune.py` — implements the offline config-edit + strict=False restore pattern.
+- `scripts/ensure_model_present.sh` — checks for expected `.nemo` files and will optionally download canonical models from Hugging Face (`--model marathi|konkani`). Use `--yes` for non-interactive execution.
 
 Canonical .nemo models & exact operations ✅
 -----------------------------------------
