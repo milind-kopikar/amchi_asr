@@ -231,7 +231,7 @@ def run(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_path", required=True, help="Path to .nemo model file")
-    parser.add_argument("--manifest", required=True, help="Manifest to run")
+    parser.add_argument("--manifest", required=False, default="data/test/manifest.jsonl", help="Manifest to run (default: data/test/manifest.jsonl)")
     parser.add_argument("--output_dir", default="results/AI4Bharat_amchi_konkani")
     args = parser.parse_args()
     run(args)

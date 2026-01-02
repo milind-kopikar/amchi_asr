@@ -127,6 +127,11 @@ def main():
         default=42,
         help="Random seed for reproducible shuffling (default: 42)"
     )
+    parser.add_argument(
+        "--use_story_split",
+        action='store_true',
+        help="If set, split data deterministically by story_id: stories 1,2,3 -> train; 5 -> dev; 4 -> test"
+    )
     
     args = parser.parse_args()
     
@@ -143,21 +148,46 @@ def main():
         if not recordings:
             logger.error("No recordings found")
             return 1
-        
-        # IMPORTANT: Shuffle recordings randomly to mix speakers
-        logger.info(f"🔀 Shuffling {len(recordings)} recordings (seed={args.seed})...")
-        random.seed(args.seed)
-        random.shuffle(recordings)
-        logger.info("✓ Recordings shuffled to mix speakers across splits")
-        
-        # Calculate split indices
-        n_train = int(len(recordings) * args.train_split)
-        n_dev = int(len(recordings) * args.dev_split)
-        # Remaining goes to test (handles rounding)
-        
-        train_recordings = recordings[:n_train]
-        dev_recordings = recordings[n_train:n_train + n_dev]
-        test_recordings = recordings[n_train + n_dev:]
+
+        # Story-based split (deterministic) if requested
+        if args.use_story_split:
+            logger.info("Using story-based splitting by story_id: {1,2,3}->train, 5->dev, 4->test")
+            train_recordings = []
+            dev_recordings = []
+            test_recordings = []
+            other = []
+            for rec in recordings:
+                sid = rec.get('story_id')
+                try:
+                    sid_int = int(sid)
+                except Exception:
+                    sid_int = None
+                if sid_int in (1, 2, 3):
+                    train_recordings.append(rec)
+                elif sid_int == 5:
+                    dev_recordings.append(rec)
+                elif sid_int == 4:
+                    test_recordings.append(rec)
+                else:
+                    other.append(rec)
+            # If any recordings didn't match story ids, append them to train and warn
+            if other:
+                logger.warning(f"{len(other)} recordings had unknown or missing story_id; adding to train set")
+                train_recordings.extend(other)
+            logger.info(f"Split counts -> train: {len(train_recordings)}, dev: {len(dev_recordings)}, test: {len(test_recordings)} (total {len(train_recordings)+len(dev_recordings)+len(test_recordings)})")
+        else:
+            # IMPORTANT: Shuffle recordings randomly to mix speakers
+            logger.info(f"🔀 Shuffling {len(recordings)} recordings (seed={args.seed})...")
+            random.seed(args.seed)
+            random.shuffle(recordings)
+            logger.info("✓ Recordings shuffled to mix speakers across splits")
+            # Calculate split indices
+            n_train = int(len(recordings) * args.train_split)
+            n_dev = int(len(recordings) * args.dev_split)
+            # Remaining goes to test (handles rounding)
+            train_recordings = recordings[:n_train]
+            dev_recordings = recordings[n_train:n_train + n_dev]
+            test_recordings = recordings[n_train + n_dev:]
         
         logger.info("="*80)
         logger.info(f"📊 Data Split (Total: {len(recordings)} samples)")
