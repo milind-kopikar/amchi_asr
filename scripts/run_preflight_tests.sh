@@ -17,8 +17,8 @@ export APPLY_CONV_PATCH=${APPLY_CONV_PATCH:-1}
 python3 scripts/preflight_checks.py || { echo "Preflight checks failed"; exit 2; }
 
 # Run selected pytest tests (tokenizer and preflight units)
-# Ensure the repo root is on PYTHONPATH so `import scripts` works during tests
-export PYTHONPATH="${PYTHONPATH:-}:$(pwd)"
+# Ensure the repo root is first on PYTHONPATH so `import scripts` resolves to local files
+export PYTHONPATH="$(pwd):${PYTHONPATH:-}"
 pytest -q tests/test_unit_preflight.py tests/test_tokenizer_nemo_consistency.py tests/test_char_metric.py || { echo "Unit tests failed"; exit 3; }
 
 # Allow micro-overfit to be run as part of preflight via RUN_MICRO_OVERFIT=1 or PREFLIGHT_RUN_MICRO=1
