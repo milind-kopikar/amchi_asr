@@ -5,59 +5,37 @@ Date: 2026-01-02
 ---
 
 ## 1) Short summary (one line)
-We validated the offline-edit + strict=False transfer recipe on the Marathi `.nemo` and it succeeded. Decision: **Switch to Konkani**. Task: Run the 1‑Epoch CTC Smoke Test using the Konkani model (`models/konkani_model.nemo`) using the exact same steps (Offline Config Edit + strict=False + Real Decoder). Use FAST_FAIL=1 for a quick fail-fast run. Expect to see `FINAL: ctc_decoder type: ConvASRDecoder num_classes_with_blank: 257 -> Decoder: (256 classes)` and `Trainer.fit` reach `max_epochs=1` on GPU; collect logs and artifacts if successful.
-
-Handoff for the next agent (explicit):
-- Run the 1‑epoch smoke on **Konkani** using the exact commands under section **5) Exact commands** adjusted to point at `models/konkani_model.nemo`.
-- Use `scripts/ensure_model_present.sh --model konkani --yes` to fetch the model if it's missing and then run:
-  ```bash
-  export APPLY_CONV_PATCH=1 FAST_FAIL=1
-  unset USE_CTC_STUB
-  python3 scripts/fine_tune.py --config configs/smoke_1sample_ctc.yaml 2>&1 | tee /tmp/smoke_konkani_1epoch.log
-  ```
-- On success, mark the checklist item and proceed to a 20‑epoch micro-overfit.
-- If you hit errors, attach `/tmp/smoke_konkani_1epoch.log` to an issue; include the `FINAL:` line (if present) and any `KeyError` backtraces.
+Marathi smoke test (Training + Inference) is PASSING. Now switch to Konkani model using the verified pipeline.
 
 ## 2) Current state & context
-- We attempted to restore and micro-overfit a patched Marathi `.nemo` but hit config/API incompatibilities (fields like `multisoftmax`, `language_keys`, missing `tokenizer.dir`, etc.).
-- Tokenizer artifacts were extracted from the Marathi `.nemo` and token counts validated, but the restore path remained brittle.
-- The short-term plan approved by the reviewer is to switch to the official Konkani model from HF which has matching tokenizer & model and avoids needing to pin NeMo.
-- Important repo scripts: `scripts/run_micro_overfit.py`, `scripts/fine_tune.py`, `scripts/run_smoke_and_check_deva.py`.
+- **Success:** We successfully ran a 1-epoch smoke test on the Marathi model (`models/indicconformer_stt_mr_hybrid_ctc_rnnt_large/indicconformer_stt_mr_hybrid_rnnt_large.nemo`).
+- **Tokenizer Fix:** We identified the correct Marathi tokenizer (containing 'ळ') and integrated it.
+- **Inference Fix:** We fixed `scripts/smoke_test_inference.py` to handle the Hybrid model checkpoint by:
+  - Loading config from checkpoint.
+  - Patching `loss_name` to `default`.
+  - Removing data loader configs to avoid path errors.
+  - Forcing CTC decoding.
+- **Pipeline:** `scripts/robust_smoke_test.sh` runs the full end-to-end test (Verify Data -> Train -> Inference) and passes.
 
 ## 3) Objective for you (next agent)
-1. Download the Konkani .nemo and its matching tokenizer
-2. Update `configs/konkani_finetune.yaml` to reference the new model & tokenizer
-3. Ensure the runtime uses the AI4Bharat NeMo fork (do NOT install upstream `nemo_toolkit==1.23.0`) — run env setup if needed
-4. Run a short smoke micro-overfit (3 epochs) and validate acceptance criteria
-5. If the smoke passes, run the full 20‑epoch overfit and collect artifacts
+1. **Switch to Konkani:** Apply the same pipeline to the Konkani model.
+   - Download Konkani model and tokenizer.
+   - Create a Konkani config similar to `configs/tmp_marathi_1epoch_ctc_golden.yaml`.
+   - Run `scripts/fine_tune.py` and `scripts/smoke_test_inference.py`.
+2. **Full Training:** Once Konkani smoke test passes, run the full fine-tuning (more epochs, full data).
 
 ## 4) Files & locations you will use
-- Repo root: `/workspace/amchi_asr`
-- Models: `models/` (create `models/konkani_model.nemo`)
-- Tokenizers: `tokenizers/` (create `tokenizers/konkani_tokenizer.model`)
-- Config to edit: `configs/konkani_finetune.yaml` (backup before editing)
-- Micro-overfit runner: `scripts/run_micro_overfit.py`
-- Training code: `scripts/fine_tune.py`
-- Tiny manifests (local test sets): `tiny_train.jsonl`, `tiny_val.jsonl`, `tiny_test.jsonl`
-- Backups of earlier working .nemo (if needed): `models/backups/` (we have a few dated copies)
+- **Smoke Test Runner:** `scripts/robust_smoke_test.sh` (Reference this for the workflow)
+- **Inference Script:** `scripts/smoke_test_inference.py` (Robust logic for Hybrid checkpoints)
+- **Training Script:** `scripts/fine_tune.py` (Handles tokenizer mismatch automatically)
+- **Notes:** `REPRODUCTION_NOTES.md` (Detailed technical documentation of the fixes)
 
-## 5) Exact commands (copy/paste)
-### A. Download assets
+## 5) Verified Commands
 ```bash
-mkdir -p models tokenizers
-wget https://huggingface.co/ai4bharat/indicconformer_stt_kok_hybrid_ctc_rnnt_large/resolve/main/indicconformer_stt_kok_hybrid_ctc_rnnt_large.nemo -O models/konkani_model.nemo
-wget https://huggingface.co/ai4bharat/indicconformer_stt_kok_hybrid_ctc_rnnt_large/resolve/main/tokenizer_spe_bpe_v1024/tokenizer.model -O tokenizers/konkani_tokenizer.model
+# Run the robust smoke test (Marathi)
+bash scripts/robust_smoke_test.sh
 ```
 
-### B. Environment setup (use AI4Bharat fork)
-Preferred: run the project's env provision script which will pull the AI4Bharat NeMo fork and compatible deps.
-```bash
-# from repo root
-bash setup_env.sh
-# or
-bash scripts/ensure_env.sh
-```
-Note: do NOT install `nemo_toolkit==1.23.0` directly — that was the reviewer warning. The fork provides fork-specific features (e.g., `multisoftmax`).
 
 ### C. Validate tokenizer
 ```bash

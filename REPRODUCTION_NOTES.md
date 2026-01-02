@@ -61,6 +61,22 @@ File links
   4. Updated the training config to point to this local tokenizer path.
   5. The `fine_tune.py` script handles the vocabulary size mismatch (256 vs 1024) by adjusting `aux_ctc.decoder.num_classes` automatically.
 
+9) Inference Smoke Test Strategy 🧪
+- **The Problem:** The fine-tuned checkpoint contains a config with `loss_name: ctc` (from the training run) and absolute paths to training data.
+  - Loading with `load_from_checkpoint` crashes because `EncDecHybridRNNTCTCBPEModel` validation rejects `loss_name: ctc` (expects RNNT loss names).
+  - `strict=False` in `load_from_checkpoint` is not enough because the crash happens during *initialization* (before weight loading).
+  - `transcribe()` fails if `validation_ds` is missing from the config, but `__init__` fails if `validation_ds` is present but invalid (e.g. bad paths).
+- **The Solution (`scripts/smoke_test_inference.py`):**
+  1. **Load Config Manually:** Load the config from the checkpoint (`ckpt['hyper_parameters']['cfg']`) using `weights_only=False`.
+  2. **Patch Config:**
+     - Set `loss.loss_name = 'default'` to satisfy the Hybrid model validator.
+     - Remove `train_ds`, `validation_ds`, `test_ds` to prevent `__init__` from trying to setup data loaders with invalid paths.
+  3. **Instantiate Shell:** Create the model instance using the patched config.
+  4. **Restore Data Configs:** Add back empty `validation_ds` and `test_ds` dicts to the model config *after* initialization, because `transcribe()` expects them to exist.
+  5. **Inject Weights:** Load the state dict with `strict=False`.
+  6. **Force CTC Decoding:** Call `model.change_decoding_strategy(decoder_type='ctc')`.
+  7. **Transcribe:** Use `model.transcribe(audio=[...])` (note: use `audio` arg, not `paths2audio_files`).
+
 - `scripts/ensure_model_present.sh` — checks for expected `.nemo` files and will optionally download canonical models from Hugging Face (`--model marathi|konkani`). Use `--yes` for non-interactive execution.
 
 Canonical .nemo models & exact operations ✅
