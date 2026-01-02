@@ -22,6 +22,8 @@
 **What we tried and learned (short):**
 - Attempting the smoke test on Python 3.11 succeeded at downloading the `.nemo` but failed to instantiate the model due to two issues: a) tokenizer `dir` paths embedded in the checkpoint and b) a decoder option (`multisoftmax`) only available on the AI4Bharat fork. We resolved (a) by extracting tokenizer files into a local folder and patching `model_config.yaml`, and confirmed (b) requires the AI4Bharat fork (and hence Python 3.9). See the Troubleshooting section below for details.
 
+**Repro recipe:** See `REPRODUCTION_NOTES.md` at the repo root for the exact offline-edit + strict=False recipe used to run the 1-epoch CTC smoke test (includes the instructions to set `aux_ctc.decoder.num_classes=256`, avoid changing the top-level loss, and load weights with `strict=False`).
+
 ### Installation Steps
 
 ```bash

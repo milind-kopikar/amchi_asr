@@ -3,6 +3,8 @@
 ## Overview 🎯
 This document captures the exact setup, fixes, and patches required to get the AI4Bharat + NeMo ASR experimentation environment working (the *state that took ~6 hours to reproduce*). Use `setup_env.sh` to reapply the environment setup & the critical NeMo patch.
 
+**Repro tip:** For the exact `.nemo` edit & restore recipe used to get the CTC smoke test working (offline aux_ctc edit, strict=False restore, tokenizer guidance, model storage policy), see `REPRODUCTION_NOTES.md` at the repo root. This file is the canonical short recipe you should follow when re-downloading or restoring models.
+
 > Note: This process is specifically for the AI4Bharat + NeMo approach used in this repo.
 
 ---
