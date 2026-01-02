@@ -17,9 +17,15 @@ import argparse
 import logging
 from pathlib import Path
 from omegaconf import OmegaConf, DictConfig
-import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
-from pytorch_lightning.loggers import TensorBoardLogger
+# Normalize Lightning imports: prefer `lightning.pytorch` (newer package) but fall back to `pytorch_lightning`
+try:
+    import lightning.pytorch as pl
+    from lightning.pytorch.callbacks import ModelCheckpoint, LearningRateMonitor
+    from lightning.pytorch.loggers import TensorBoardLogger
+except Exception:
+    import pytorch_lightning as pl
+    from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
+    from pytorch_lightning.loggers import TensorBoardLogger
 
 # Research logger imports
 import datetime, json, csv, time
@@ -46,26 +52,6 @@ def _compute_wer(ref: str, hyp: str) -> float:
                 cost = 1
             dp[i][j] = min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost)
     return dp[m][n] / m
-
-
-def _compute_char_distance(ref: str, hyp: str) -> float:
-    """Normalized character-level Levenshtein distance."""
-    a = list(ref)
-    b = list(hyp)
-    m = len(a)
-    n = len(b)
-    if m == 0:
-        return 0.0 if n == 0 else 1.0
-    dp = [[0] * (n + 1) for _ in range(m + 1)]
-    for i in range(m + 1):
-        dp[i][0] = i
-    for j in range(n + 1):
-        dp[0][j] = j
-    for i in range(1, m + 1):
-        for j in range(1, n + 1):
-            cost = 0 if a[i - 1] == b[j - 1] else 1
-            dp[i][j] = min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost)
-    return float(dp[m][n]) / max(1, m)
 
 
 class ResearchCSVLogger(pl.Callback):
@@ -139,7 +125,6 @@ class ResearchCSVLogger(pl.Callback):
         # Validation loss: try a few common keys
         val_loss = metrics.get('val_loss', None) or metrics.get('validation_loss', None) or metrics.get('val/loss', None) or metrics.get('val_epoch_loss', None)
         val_wer = metrics.get('val_wer', None) or metrics.get('val_wer_ctc', None) or metrics.get('validation_wer', None) or metrics.get('val/wer', None)
-        val_char = metrics.get('val_char_dist', None) or metrics.get('val_char', None)
 
         lr = None
         try:
@@ -155,7 +140,6 @@ class ResearchCSVLogger(pl.Callback):
                                  float(train_loss) if train_loss is not None else '',
                                  float(val_loss) if val_loss is not None else '',
                                  float(val_wer) if val_wer is not None else '',
-                                 float(val_char) if val_char is not None else '',
                                  lr if lr is not None else '',
                                  round(time_elapsed, 2)])
         except Exception as e:
@@ -216,190 +200,6 @@ class ForceLRCallback(pl.Callback):
                 return True
         return False
 
-
-class SampleLoggerDebug(pl.Callback):
-    """Debug replacement for SampleLoggerCallback — logs and writes sample predictions with extra debug prints."""
-    def __init__(self, manifest_path: str, outdir: str, max_samples: int = 8):
-        self.manifest_path = manifest_path
-        self.outdir = outdir
-        self.max_samples = max_samples
-        self.samples = []
-        try:
-            with open(self.manifest_path, 'r', encoding='utf-8') as fh:
-                for i, line in enumerate(fh):
-                    if i >= self.max_samples:
-                        break
-                    if not line.strip():
-                        continue
-                    obj = json.loads(line)
-                    self.samples.append({'audio': obj.get('audio_filepath'), 'reference': obj.get('text', '')})
-        except Exception as e:
-            logger.warning(f"Failed to read manifest for SampleLoggerDebug: {e}")
-
-    def on_validation_epoch_end(self, trainer, pl_module):
-        if not hasattr(self, 'samples'):
-            return
-        epoch = trainer.current_epoch
-        global_step = getattr(trainer, 'global_step', None)
-        audio_paths = [s['audio'] for s in getattr(self, 'samples', []) if s.get('audio')]
-        preds = []
-        start_t = time.time()
-        try:
-            print("DEBUG: SampleLogger started", flush=True)
-            logger.info(f"DEBUG: SampleLogger started - samples_count={len(self.samples)}, audio_count={len(audio_paths)}")
-        except Exception:
-            pass
-
-        def _normalize_pred(p):
-            import ast
-            if isinstance(p, str):
-                try:
-                    parsed = ast.literal_eval(p)
-                    return _normalize_pred(parsed)
-                except Exception:
-                    return p
-            if isinstance(p, (list, tuple)) and len(p) > 0:
-                first = p[0]
-                if isinstance(first, (list, tuple)) and len(first) > 0:
-                    return _normalize_pred(first[0])
-                return _normalize_pred(first)
-            return str(p)
-
-        def _map_language_id(mod, lid_str):
-            mapped = None
-            try:
-                if hasattr(mod, 'joint') and hasattr(mod.joint, 'language_keys'):
-                    mapped = list(mod.joint.language_keys).index(lid_str)
-            except Exception:
-                mapped = None
-            if mapped is None:
-                try:
-                    if hasattr(mod, 'cfg') and 'language_keys' in getattr(mod.cfg, 'joint', {}):
-                        mapped = list(mod.cfg.joint.language_keys).index(lid_str)
-                except Exception:
-                    mapped = None
-            return mapped
-
-        try:
-            if hasattr(pl_module, 'transcribe'):
-                prev_decoder = getattr(pl_module, 'cur_decoder', None)
-                try:
-                    pl_module.cur_decoder = 'ctc'
-                except Exception:
-                    pass
-                try:
-                    for audio in audio_paths:
-                        got = None
-                        candidate_kwargs = [ {'language_id': 'kok', 'batch_size': 1, 'logprobs': False}, {'batch_size': 1, 'logprobs': False}, {'logprobs': False}, {} ]
-                        for kw in candidate_kwargs:
-                            try:
-                                kwargs = dict(kw)
-                                if 'language_id' in kwargs and isinstance(kwargs['language_id'], str):
-                                    mapped = _map_language_id(pl_module, kwargs['language_id'])
-                                    if mapped is not None:
-                                        kwargs['language_id'] = mapped
-                                try:
-                                    out = pl_module.transcribe([audio], **kwargs)
-                                except TypeError:
-                                    try:
-                                        out = pl_module.transcribe(paths2audio_files=[audio], **kwargs)
-                                    except TypeError:
-                                        out = pl_module.transcribe(audio, **kwargs)
-                                got = _normalize_pred(out)
-                                if isinstance(got, str) and got != '':
-                                    break
-                            except Exception:
-                                got = None
-                                continue
-                        preds.append(got if got is not None else '')
-                finally:
-                    try:
-                        if prev_decoder is None:
-                            if hasattr(pl_module, 'cur_decoder'):
-                                delattr(pl_module, 'cur_decoder')
-                        else:
-                            pl_module.cur_decoder = prev_decoder
-                    except Exception:
-                        pass
-            else:
-                preds = [''] * len(audio_paths)
-        except Exception as e:
-            logger.warning(f"SampleLoggerDebug failed to run inference: {e}")
-
-        end_t = time.time()
-        batch_time = end_t - start_t
-
-        results = []
-        wer_list = []
-        for i, s in enumerate(self.samples):
-            audio = s.get('audio')
-            ref = s.get('reference', '')
-            pred = preds[i] if i < len(preds) else ''
-            try:
-                if i == 0:
-                    print(f"DEBUG PREDICTION: {pred}", flush=True)
-                    logger.info(f"DEBUG PREDICTION: {pred}")
-            except Exception:
-                pass
-            wer = _compute_wer(ref, pred) if ref and pred is not None else None
-            if wer is not None:
-                wer_list.append(wer)
-            # char-level distance
-            char_d = None
-            try:
-                char_d = _compute_char_distance(ref, pred) if ref is not None and pred is not None else None
-            except Exception:
-                char_d = None
-            if char_d is not None:
-                char_list.append(char_d)
-            pred_latency_s = (batch_time / max(1, len(audio_paths))) if audio_paths else None
-            deva_ok = any(0x0900 <= ord(ch) <= 0x097F for ch in pred) if pred else False
-            results.append({'index': i, 'audio': audio, 'ref': ref, 'pred': pred, 'deva_ok': bool(deva_ok), 'pred_latency_s': pred_latency_s, 'wer': wer, 'char_dist': char_d})
-
-        overall_wer = sum(wer_list) / max(1, len(wer_list)) if wer_list else None
-        overall_char = sum(char_list) / max(1, len(char_list)) if char_list else None
-        try:
-            if overall_wer is not None:
-                try:
-                    if hasattr(pl_module, 'log'):
-                        pl_module.log('val_wer', float(overall_wer), on_epoch=True, on_step=False)
-                except Exception:
-                    pass
-                try:
-                    trainer.callback_metrics['val_wer'] = float(overall_wer)
-                except Exception:
-                    pass
-            if overall_char is not None:
-                try:
-                    if hasattr(pl_module, 'log'):
-                        pl_module.log('val_char_dist', float(overall_char), on_epoch=True, on_step=False)
-                except Exception:
-                    pass
-                try:
-                    trainer.callback_metrics['val_char_dist'] = float(overall_char)
-                except Exception:
-                    pass
-        except Exception as e:
-            logger.warning(f"Failed to log aggregate val_wer/val_char: {e}")
-
-        out = {'summary': {'epoch': int(epoch), 'global_step': int(global_step) if global_step is not None else None, 'model_name': pl_module.__class__.__name__, 'param_count': int(pl_module.num_parameters()) if hasattr(pl_module, 'num_parameters') else None, 'overall_wer': overall_wer, 'date': datetime.datetime.now().isoformat()}, 'samples': results}
-        outpath = os.path.join(self.outdir, f'samples_epoch_{epoch:02d}.json')
-        try:
-            print(f"DEBUG: Attempting to write file to {outpath}", flush=True)
-            logger.info(f"DEBUG: Attempting to write file to {outpath}")
-        except Exception:
-            pass
-        try:
-            os.makedirs(self.outdir, exist_ok=True)
-            with open(outpath, 'w', encoding='utf-8') as fh:
-                json.dump(out, fh, indent=2, ensure_ascii=False)
-            print(f"DEBUG: Wrote sample results to {outpath}", flush=True)
-            logger.info(f"DEBUG: Wrote sample results to {outpath}")
-        except Exception as e:
-            logger.warning(f"Failed to write sample results to {outpath}: {e}")
-
-
-class SampleLoggerWriter(pl.Callback):
     def on_validation_epoch_end(self, trainer, pl_module):
         # Guard against accidental invocation on unrelated callback instances
         if not hasattr(self, 'samples'):
@@ -411,135 +211,33 @@ class SampleLoggerWriter(pl.Callback):
         audio_paths = [s['audio'] for s in getattr(self, 'samples', []) if s.get('audio')]
         preds = []
         start_t = time.time()
-        preds = []
         try:
-            # Debug: indicate the logger started and how many samples
-            try:
-                print("DEBUG: SampleLogger started", flush=True)
-                print(f"DEBUG: samples_count={len(self.samples)}, audio_count={len(audio_paths)}", flush=True)
-                try:
-                    logger.info(f"DEBUG: SampleLogger started - samples_count={len(self.samples)}, audio_count={len(audio_paths)}")
-                except Exception:
-                    pass
-            except Exception:
-                pass
-            # Use a robust per-sample transcribe strategy similar to the smoke test.
-            # Try mapping a string language id to an index if needed, and attempt
-            # multiple transcribe signatures and kwargs to ensure we get a usable string.
-            def _normalize_pred(p):
-                import ast
-                # If it's a string representation of a Python object, try to parse
-                if isinstance(p, str):
-                    try:
-                        parsed = ast.literal_eval(p)
-                        return _normalize_pred(parsed)
-                    except Exception:
-                        return p
-                if isinstance(p, (list, tuple)) and len(p) > 0:
-                    first = p[0]
-                    if isinstance(first, (list, tuple)) and len(first) > 0:
-                        return _normalize_pred(first[0])
-                    return _normalize_pred(first)
-                return str(p)
-
-            # Helper to map a string language_id -> index when model expects numeric ids
-            def _map_language_id(mod, lid_str):
-                mapped = None
-                try:
-                    if hasattr(mod, 'joint') and hasattr(mod.joint, 'language_keys'):
-                        mapped = list(mod.joint.language_keys).index(lid_str)
-                except Exception:
-                    mapped = None
-                if mapped is None:
-                    try:
-                        if hasattr(mod, 'cfg') and 'language_keys' in getattr(mod.cfg, 'joint', {}):
-                            mapped = list(mod.cfg.joint.language_keys).index(lid_str)
-                    except Exception:
-                        mapped = None
-                return mapped
-
+            # Try common transcribe signatures
             if hasattr(pl_module, 'transcribe'):
-                # Force CTC decoder during these short validation calls to avoid using an untrained RNNT decoder
-                prev_decoder = getattr(pl_module, 'cur_decoder', None)
                 try:
+                    preds = pl_module.transcribe(audio_paths)
+                except TypeError:
                     try:
-                        pl_module.cur_decoder = 'ctc'
+                        preds = pl_module.transcribe(paths2audio_files=audio_paths)
                     except Exception:
-                        pass
-
-                    for audio in audio_paths:
-                        got = None
-                        # Try options: prefer passing batch/list but fall back to singular forms
-                        candidate_kwargs = [ {'language_id': 'kok', 'batch_size': 1, 'logprobs': False}, {'batch_size': 1, 'logprobs': False}, {'logprobs': False}, {} ]
-                        for kw in candidate_kwargs:
-                            try:
-                                kwargs = dict(kw)
-                                if 'language_id' in kwargs and isinstance(kwargs['language_id'], str):
-                                    mapped = _map_language_id(pl_module, kwargs['language_id'])
-                                    if mapped is not None:
-                                        kwargs['language_id'] = mapped
-                                # Try common call forms
-                                try:
-                                    out = pl_module.transcribe([audio], **kwargs)
-                                except TypeError:
-                                    try:
-                                        out = pl_module.transcribe(paths2audio_files=[audio], **kwargs)
-                                    except TypeError:
-                                        out = pl_module.transcribe(audio, **kwargs)
-                                got = _normalize_pred(out)
-                                # Acceptable result (non-empty)
-                                if isinstance(got, str) and got != '':
-                                    break
-                            except Exception:
-                                # try next kw / call form
-                                got = None
-                                continue
-                        preds.append(got if got is not None else '')
-                finally:
-                    # restore previous decoder if it existed
-                    try:
-                        if prev_decoder is None:
-                            if hasattr(pl_module, 'cur_decoder'):
-                                delattr(pl_module, 'cur_decoder')
-                        else:
-                            pl_module.cur_decoder = prev_decoder
-                    except Exception:
-                        pass
+                        preds = []
             else:
-                preds = [''] * len(audio_paths)
+                preds = []
         except Exception as e:
             logger.warning(f"SampleLoggerCallback failed to run inference: {e}")
+            preds = []
         end_t = time.time()
         batch_time = end_t - start_t
 
         results = []
         wer_list = []
-        char_list = []
         for i, s in enumerate(self.samples):
             audio = s.get('audio')
             ref = s.get('reference', '')
             pred = preds[i] if i < len(preds) else ''
-            # Debug: print the first prediction to stderr/stdout so we see it even if file write fails
-            try:
-                if i == 0:
-                    print(f"DEBUG PREDICTION: {pred}", flush=True)
-                    try:
-                        logger.info(f"DEBUG PREDICTION: {pred}")
-                    except Exception:
-                        pass
-            except Exception:
-                pass
             wer = _compute_wer(ref, pred) if ref and pred is not None else None
             if wer is not None:
                 wer_list.append(wer)
-            # char-level distance
-            char_d = None
-            try:
-                char_d = _compute_char_distance(ref, pred) if ref is not None and pred is not None else None
-            except Exception:
-                char_d = None
-            if char_d is not None:
-                char_list.append(char_d)
             pred_latency_s = (batch_time / max(1, len(audio_paths))) if audio_paths else None
             deva_ok = self._is_devanagari(pred)
             results.append({
@@ -549,8 +247,7 @@ class SampleLoggerWriter(pl.Callback):
                 'pred': pred,
                 'deva_ok': bool(deva_ok),
                 'pred_latency_s': pred_latency_s,
-                'wer': wer,
-                'char_dist': char_d
+                'wer': wer
             })
 
         # Build summary block
@@ -578,9 +275,8 @@ class SampleLoggerWriter(pl.Callback):
             param_count = None
 
         overall_wer = sum(wer_list) / max(1, len(wer_list)) if wer_list else None
-        overall_char = sum(char_list) / max(1, len(char_list)) if char_list else None
 
-        # Log aggregate validation WER and char distance so ModelCheckpoint can monitor them if requested
+        # Log aggregate validation WER so ModelCheckpoint can monitor it if requested
         try:
             if overall_wer is not None:
                 try:
@@ -593,18 +289,8 @@ class SampleLoggerWriter(pl.Callback):
                     trainer.callback_metrics['val_wer'] = float(overall_wer)
                 except Exception:
                     pass
-            if overall_char is not None:
-                try:
-                    if hasattr(pl_module, 'log'):
-                        pl_module.log('val_char_dist', float(overall_char), on_epoch=True, on_step=False)
-                except Exception:
-                    pass
-                try:
-                    trainer.callback_metrics['val_char_dist'] = float(overall_char)
-                except Exception:
-                    pass
         except Exception as e:
-            logger.warning(f"Failed to log aggregate val_wer/val_char: {e}")
+            logger.warning(f"Failed to log aggregate val_wer: {e}")
 
         out = {
             'summary': {
@@ -618,8 +304,12 @@ class SampleLoggerWriter(pl.Callback):
             'samples': results
         }
 
-        # Duplicate SampleLogger write block removed from ForceLRCallback; this method is a no-op here.
-        return
+        outpath = os.path.join(self.outdir, f'samples_epoch_{epoch:02d}.json')
+        try:
+            with open(outpath, 'w', encoding='utf-8') as fh:
+                json.dump(out, fh, indent=2, ensure_ascii=False)
+        except Exception as e:
+            logger.warning(f"Failed to write sample results to {outpath}: {e}")
 
 # NeMo imports
 import nemo
@@ -660,68 +350,189 @@ def setup_model(config: DictConfig):
     """
     logger.info("Setting up ASR model...")
 
-    # Optionally skip restoring from .nemo (useful for fast micro-overfit/testing)
-    if os.environ.get('MICRO_SKIP_MODEL_RESTORE', '0') == '1':
-        # Try to instantiate model from a local model_config.yaml if present
-        local_mc = 'model_config.yaml'
-        if os.path.exists(local_mc):
-            import yaml
-            logger.info('MICRO_SKIP_MODEL_RESTORE=1 -> instantiating model from local model_config.yaml')
-            with open(local_mc, 'r', encoding='utf-8') as fh:
-                conf = yaml.safe_load(fh)
+    # Load base model
+    model_path = config.model.nemo_model
+    if not os.path.exists(model_path):
+        raise FileNotFoundError(f"Model file not found: {model_path}")
+
+    logger.info(f"Loading base model: {model_path}")
+    try:
+        model = nemo_asr.models.EncDecHybridRNNTCTCBPEModel.restore_from(model_path, strict=False)
+    except Exception as e:
+        # Fallback: attempt partial restore loading only matching-shape params
+        import tarfile, tempfile, torch, yaml
+        print(f"🔧 Partial restore from {model_path} due to: {e}")
+        with tempfile.TemporaryDirectory() as td:
+            with tarfile.open(model_path, 'r') as tar:
+                members = {m.name: m for m in tar.getmembers()}
+                member_names = set(members.keys())
+                # Accept members with or without './' prefixes
+                def _find_member(ending):
+                    for n in member_names:
+                        if n.endswith(ending):
+                            return n
+                    return None
+                model_cfg_member = _find_member('model_config.yaml')
+                ckpt_member = _find_member('model_weights.ckpt')
+                if not model_cfg_member or not ckpt_member:
+                    raise RuntimeError('model_config.yaml or model_weights.ckpt missing in .nemo')
+                tar.extract(model_cfg_member, path=td)
+                tar.extract(ckpt_member, path=td)
+
+            config_path = os.path.join(td, model_cfg_member)
+            ckpt_path = os.path.join(td, ckpt_member)
+            with open(config_path, 'r') as f:
+                conf = yaml.safe_load(f)
+
+            # Sanitize tokenizer config when .nemo contains a multilingual tokenizer
+            # (some .nemo configs use a 'multilingual' tokenizer mapping with absolute
+            # paths that don't exist locally). Prefer a local monolingual tokenizer in `tokenizers/`.
+            tok = conf.get('tokenizer', {})
+            if isinstance(tok, dict) and tok.get('type') == 'multilingual':
+                langs = tok.get('langs', {}) or {}
+                if 'kok' in langs:
+                    # Prefer using the tokenizer path from the user config if provided
+                    user_tok_dir = None
+                    user_tok_model = None
+                    try:
+                        user_tok_dir = config.model.tokenizer.dir
+                    except Exception:
+                        user_tok_dir = None
+                    try:
+                        user_tok_model = config.model.tokenizer.model_path
+                    except Exception:
+                        user_tok_model = None
+
+                    if user_tok_dir:
+                        # If user specified a dir but not model_path, try to locate tokenizer.model inside it
+                        model_path_candidate = None
+                        if user_tok_model:
+                            model_path_candidate = user_tok_model
+                        else:
+                            p = os.path.join(user_tok_dir, 'tokenizer.model')
+                            if os.path.exists(p):
+                                model_path_candidate = p
+                            else:
+                                model_path_candidate = 'tokenizers/konkani_tokenizer.model'
+
+                        # If the user tokenizer directory doesn't have a vocab.txt, fall back to our local tokenizers/
+                        vocab_candidate = os.path.join(user_tok_dir, 'vocab.txt')
+                        if not os.path.exists(vocab_candidate):
+                            print(f"DEBUG: User tokenizer dir {user_tok_dir} lacks vocab.txt; falling back to local tokenizers/")
+                            conf['tokenizer'] = {
+                                'type': 'bpe',
+                                'dir': 'tokenizers',
+                                'model_path': 'tokenizers/konkani_tokenizer.model',
+                            }
+                        else:
+                            conf['tokenizer'] = {
+                                'type': 'bpe',
+                                'dir': user_tok_dir,
+                                'model_path': model_path_candidate,
+                            }
+                            print(f"DEBUG: Using user tokenizer from config: dir={user_tok_dir}, model_path={model_path_candidate}")
+                    else:
+                        conf['tokenizer'] = {
+                            'type': 'bpe',
+                            'dir': 'tokenizers',
+                            'model_path': 'tokenizers/konkani_tokenizer.model'
+                        }
+
+                    # --- NEW: Offline config edit to swap CTC decoder to 256 classes ---
+                    # We only modify the aux_ctc (CTC) decoder. Don't modify the RNNT decoder
+                    # signature (it doesn't accept num_classes kwarg) — this avoids instantiate errors.
+                    try:
+                        conf['decoder_type'] = 'ctc'
+                        # Do NOT set the top-level RNNT `loss.loss_name` to 'ctc' as the RNNT
+                        # loss resolver does not accept 'ctc'. Instead, configure the
+                        # auxiliary CTC loss explicitly under 'aux_ctc.loss'. This keeps
+                        # the RNNT config intact and allows instantiation to succeed.
+                        if 'aux_ctc' not in conf or not isinstance(conf['aux_ctc'], dict):
+                            conf['aux_ctc'] = {}
+                        conf['aux_ctc'].setdefault('loss', {})['loss_name'] = 'ctc'
+                        # For hybrid models, configure aux_ctc.decoder to be small (256)
+                        if 'aux_ctc' in conf and isinstance(conf['aux_ctc'], dict) and 'decoder' in conf['aux_ctc']:
+                            conf['aux_ctc']['decoder'].pop('vocabulary', None)
+                            conf['aux_ctc']['decoder']['num_classes'] = 256
+                            # ensure decoder type uses a CTC-compatible decoder
+                            # (do not touch main RNNT decoder to avoid wrong kwargs)
+                    except Exception as e:
+                        print('DEBUG: Failed to set aux_ctc small decoder config:', e)
+                else:
+                    # Generic fallback to local tokenizers directory
+                    conf['tokenizer'] = {
+                        'type': 'bpe',
+                        'dir': 'tokenizers'
+                    }
+
+            # Remove or normalize keys that upstream NeMo (or our installed version)
+            # might not accept. For example, some AI4Bharat configs include 'multisoftmax'
+            # in the decoder and 'language_keys' in the joint block which can cause
+            # instantiation errors with certain NeMo installs. Strip them for safety.
+            if isinstance(conf.get('decoder'), dict) and 'multisoftmax' in conf['decoder']:
+                conf['decoder'].pop('multisoftmax', None)
+            if isinstance(conf.get('joint'), dict):
+                # Remove fields that may not be supported in this NeMo install
+                conf['joint'].pop('language_keys', None)
+                conf['joint'].pop('multilingual', None)
+
             try:
-                model = nemo_asr.models.ASRModel.from_config_dict(conf, trainer=None)
-            except Exception:
+                print('Sanitized tokenizer config (before ASRModel.from_config_dict):', conf.get('tokenizer'))
+                # DEBUG: show aux_ctc decoder config so we can confirm num_classes was set offline
+                print('DEBUG: aux_ctc config:', conf.get('aux_ctc'))
+                # Instantiate the concrete model with the edited config (small decoders)
+                try:
+                    model = nemo_asr.models.EncDecHybridRNNTCTCBPEModel.from_config_dict(conf, trainer=None)
+                except Exception as e:
+                    print('EncDecHybridRNNTCTCBPEModel.from_config_dict failed:', e)
+                    model = nemo_asr.models.ASRModel.from_config_dict(conf, trainer=None)
+            except Exception as e:
+                print('ASRModel.from_config_dict failed; retrying with fallback ASRModel from same conf. Exception:', e)
                 from nemo.collections.asr.models import ASRModel as _ASRModel
                 model = _ASRModel.from_config_dict(conf, trainer=None)
-        else:
-            raise RuntimeError('MICRO_SKIP_MODEL_RESTORE=1 but local model_config.yaml not found')
-        
-    else:
-        # Load base model
-        model_path = config.model.nemo_model
-        if not os.path.exists(model_path):
-            raise FileNotFoundError(f"Model file not found: {model_path}")
 
-        logger.info(f"Loading base model: {model_path}")
-        try:
-            model = nemo_asr.models.EncDecHybridRNNTCTCBPEModel.restore_from(model_path, strict=False)
-        except Exception as e:
-            # Fallback: attempt partial restore loading only matching-shape params
-            import tarfile, tempfile, torch, yaml
-            print(f"🔧 Partial restore from {model_path} due to: {e}")
-            with tempfile.TemporaryDirectory() as td:
-                with tarfile.open(model_path, 'r') as tar:
-                    members = {m.name: m for m in tar.getmembers()}
-                    if 'model_config.yaml' not in members or 'model_weights.ckpt' not in members:
-                        raise RuntimeError('model_config.yaml or model_weights.ckpt missing in .nemo')
-                    tar.extract('model_config.yaml', path=td)
-                    tar.extract('model_weights.ckpt', path=td)
-
-                config_path = os.path.join(td, 'model_config.yaml')
-                ckpt_path = os.path.join(td, 'model_weights.ckpt')
-                with open(config_path, 'r') as f:
-                    conf = yaml.safe_load(f)
-
-                try:
-                    model = nemo_asr.models.ASRModel.from_config_dict(conf, trainer=None)
-                except Exception:
-                    from nemo.collections.asr.models import ASRModel as _ASRModel
-                    model = _ASRModel.from_config_dict(conf, trainer=None)
-
-                ckpt = torch.load(ckpt_path, map_location='cpu')
-                state = ckpt.get('state_dict', ckpt)
-                model_sd = model.state_dict()
-                filtered = {}
-                matched = skipped = 0
-                for k, v in state.items():
-                    if k in model_sd and list(v.shape) == list(model_sd[k].shape):
-                        filtered[k] = v
-                        matched += 1
+            ckpt = torch.load(ckpt_path, map_location='cpu')
+            state = ckpt.get('state_dict', ckpt)
+            model_sd = model.state_dict()
+            filtered = {}
+            matched = skipped = 0
+            for k, v in state.items():
+                if k in model_sd and list(v.shape) == list(model_sd[k].shape):
+                    filtered[k] = v
+                    matched += 1
                 else:
                     skipped += 1
             print(f"🔁 Matched {matched} params, skipped {skipped} params")
             model.load_state_dict(filtered, strict=False)
+
+    # If a user-provided small tokenizer exists, attempt to change the model vocabulary
+    # to that tokenizer. This will replace the large multilingual decoder with a smaller
+    # decoder compatible with the tokenizer (NeMo's change_vocabulary API).
+    try:
+        new_tok = None
+        try:
+            new_tok = getattr(config.model, 'tokenizer', {}).get('model_path')
+        except Exception:
+            new_tok = None
+        if not new_tok:
+            for cand in ('tokenizers/konkani_tokenizer.model', 'tokenizers/konkani_tokenizer.model', 'models/tokenizer/tokenizer.model'):
+                if os.path.exists(cand):
+                    new_tok = cand
+                    break
+        if new_tok:
+            print(f"🔁 Attempting change_vocabulary with tokenizer: {new_tok}")
+            try:
+                if hasattr(model, 'change_vocabulary'):
+                    model.change_vocabulary(new_tokenizer=new_tok, change_output_layer=True)
+                    print('✅ change_vocabulary completed')
+                else:
+                    print('⚠️ change_vocabulary API not present on model; skipping')
+            except Exception as e:
+                print('⚠️ change_vocabulary failed:', e)
+        else:
+            print('No suitable local tokenizer found for change_vocabulary; proceeding')
+    except Exception as e:
+        print('Unexpected error while attempting change_vocabulary:', e)
 
     # Freeze encoder layers (optional - for faster training with less data)
     if hasattr(config, 'freeze_encoder') and config.freeze_encoder:
@@ -774,9 +585,9 @@ def setup_model(config: DictConfig):
                         # encoder_output: [B, C, T] expected by ConvASRDecoder; convert to [B, T, C]
                         if encoder_output.dim() == 3:
                             b, c, t = encoder_output.shape
-                            out = torch.zeros((b, t, self._num_classes_with_blank), device=encoder_output.device, dtype=encoder_output.dtype)
+                            out = torch.zeros((b, t, self._num_classes_with_blank), device=encoder_output.device, dtype=encoder_output.dtype, requires_grad=True)
                         else:
-                            out = torch.zeros((1, 1, self._num_classes_with_blank), device=next(self.parameters()).device if any(p.requires_grad for p in self.parameters()) else 'cpu')
+                            out = torch.zeros((1, 1, self._num_classes_with_blank), device=next(self.parameters()).device if any(p.requires_grad for p in self.parameters()) else 'cpu', requires_grad=True)
                         return out
 
                 try:
@@ -798,56 +609,7 @@ def setup_model(config: DictConfig):
     # Update model configuration for fine-tuning
     if hasattr(config.model, 'decoder'):
         # Update decoder vocabulary if needed
-        try:
-            # If the decoder vocabulary is missing in the config or model, try to populate it from
-            # the local SentencePiece tokenizer so we don't fall back to a dummy 256-token vocab.
-            import sentencepiece as spm
-            tk_dir = getattr(config.model, 'tokenizer', {}).get('dir', None) if hasattr(config.model, 'tokenizer') else None
-            sp_model_path = None
-            if tk_dir and os.path.isdir(tk_dir):
-                for f in os.listdir(tk_dir):
-                    if f.endswith('.model'):
-                        sp_model_path = os.path.join(tk_dir, f)
-                        break
-            if sp_model_path is not None:
-                sp = spm.SentencePieceProcessor(model_file=sp_model_path)
-                pieces = [sp.id_to_piece(i) for i in range(sp.get_piece_size())]
-
-                cfg_decoder = getattr(config.model, 'decoder', None)
-                try:
-                    cfg_vocab = cfg_decoder.vocabulary if cfg_decoder is not None and hasattr(cfg_decoder, 'vocabulary') else None
-                except Exception:
-                    cfg_vocab = None
-
-                model_vocab = None
-                try:
-                    model_vocab = getattr(getattr(model, 'decoder', None), 'vocabulary', None)
-                except Exception:
-                    model_vocab = None
-
-                if not cfg_vocab or cfg_vocab in (None, [], '') or model_vocab in (None, [], ''):
-                    logger.info('Populating decoder vocabulary from SentencePiece tokenizer (size=%d) to avoid dummy 256 fill-in', len(pieces))
-                    try:
-                        # set in config where possible
-                        if cfg_decoder is not None:
-                            try:
-                                cfg_decoder.vocabulary = pieces
-                            except Exception:
-                                try:
-                                    setattr(config.model.decoder, 'vocabulary', pieces)
-                                except Exception:
-                                    pass
-                        # set on model runtime attribute
-                        if getattr(model, 'decoder', None) is not None:
-                            try:
-                                setattr(model.decoder, 'vocabulary', pieces)
-                            except Exception:
-                                pass
-                    except Exception as e:
-                        logger.warning(f'Failed to populate decoder vocabulary from tokenizer: {e}')
-        except Exception:
-            # If sentencepiece is not available or fails, skip this best-effort step
-            pass
+        pass
 
     # If the user explicitly requested CTC via config (decoder_type or loss_name),
     # force the model to use CTC loss to avoid RNNT/Numba GPU JIT compilation.
@@ -1009,6 +771,20 @@ def setup_model(config: DictConfig):
     except Exception as e:
         logger.warning(f'Failed to monkey-patch training step for CTC: {e}')
 
+    # Final verification prints for debug/repro (report the actual CTC decoder type/size)
+    try:
+        ctc_decoder = getattr(model, 'ctc_decoder', None)
+        # Some model variants keep ctc decoder under aux_ctc config; try to resolve
+        if ctc_decoder is None and hasattr(model, 'aux_ctc') and isinstance(model.aux_ctc, dict):
+            ctc_decoder = model.aux_ctc.get('decoder', None)
+        nc = getattr(ctc_decoder, 'num_classes_with_blank', None)
+        if isinstance(nc, int):
+            print(f"FINAL: ctc_decoder type: {type(ctc_decoder).__name__} num_classes_with_blank: {nc} -> Decoder: ({nc-1} classes)")
+        else:
+            print('FINAL: ctc_decoder type:', type(ctc_decoder).__name__ if ctc_decoder is not None else None, 'num_classes_with_blank:', nc)
+    except Exception as e:
+        print('FINAL: failed to read ctc_decoder info:', e)
+
     logger.info("Model setup completed")
     return model
 
@@ -1061,7 +837,6 @@ def setup_data_module(config: DictConfig, model=None):
             min_duration=config.data.train_ds.min_duration,
             trim=config.data.train_ds.trim_silence,
             use_start_end_token=config.data.train_ds.use_start_end_token,
-            return_language_id=config.data.train_ds.return_language_id
         )
         collate = getattr(dataset, 'collate_fn', None)
         train_loader = DataLoader(dataset, batch_size=config.data.train_ds.batch_size, shuffle=config.data.train_ds.shuffle, num_workers=config.data.train_ds.num_workers, collate_fn=collate)
@@ -1075,7 +850,6 @@ def setup_data_module(config: DictConfig, model=None):
             min_duration=config.data.validation_ds.min_duration,
             trim=config.data.validation_ds.trim_silence,
             use_start_end_token=config.data.validation_ds.use_start_end_token,
-            return_language_id=config.data.validation_ds.return_language_id
         )
         val_collate = getattr(val_dataset, 'collate_fn', None)
         val_loader = DataLoader(val_dataset, batch_size=config.data.validation_ds.batch_size, shuffle=config.data.validation_ds.shuffle, num_workers=config.data.validation_ds.num_workers, collate_fn=val_collate)
@@ -1274,7 +1048,20 @@ def setup_trainer(config: DictConfig, output_dir: str):
         trainer_kwargs['accelerator'] = 'cpu'
         trainer_kwargs['devices'] = 1
 
-    trainer = pl.Trainer(**trainer_kwargs)
+    # Use the Trainer implementation that matches the Lightning base class
+    # used by the installed NeMo. Prefer `lightning.pytorch.Trainer` when
+    # available (newer package name), otherwise fall back to `pytorch_lightning.Trainer`.
+    try:
+        import lightning.pytorch as lpt
+        TrainerClass = lpt.Trainer
+    except Exception:
+        try:
+            import pytorch_lightning as pl
+            TrainerClass = pl.Trainer
+        except Exception as e:
+            raise RuntimeError(f"No suitable PyTorch Lightning Trainer found: {e}")
+
+    trainer = TrainerClass(**trainer_kwargs)
 
     logger.info("Trainer setup completed")
     return trainer
@@ -1333,7 +1120,7 @@ def fine_tune_model(config: DictConfig, output_dir: str):
                 try:
                     with open(csv_path, 'w', newline='') as fh:
                         writer = csv.writer(fh)
-                        writer.writerow(['epoch', 'train_loss', 'val_loss', 'val_wer', 'val_char_dist', 'lr', 'time_elapsed'])
+                        writer.writerow(['epoch', 'train_loss', 'val_loss', 'val_wer', 'lr', 'time_elapsed'])
                 except Exception as e:
                     logger.warning(f"Failed to create epoch CSV file: {e}")
 
@@ -1341,7 +1128,7 @@ def fine_tune_model(config: DictConfig, output_dir: str):
             # Instantiate callbacks and attach to trainer
             try:
                 csv_logger = ResearchCSVLogger(csv_path)
-                sample_logger = SampleLoggerDebug(getattr(config.data.validation_ds, 'manifest_filepath', ''), experiment_dir)
+                sample_logger = SampleLoggerCallback(getattr(config.data.validation_ds, 'manifest_filepath', ''), experiment_dir)
                 trainer.callbacks.append(csv_logger)
                 trainer.callbacks.append(sample_logger)
 
@@ -1517,22 +1304,6 @@ def fine_tune_model(config: DictConfig, output_dir: str):
                 except Exception as e:
                     logger.warning(f"Failed to load best checkpoint: {e}")
 
-                # Force CTC decoding for final evaluation (avoid RNNT decoder path if untrained)
-                try:
-                    if hasattr(model, 'change_decoding_strategy'):
-                        print("Forcing CTC decoding for final test phase...", flush=True)
-                        logger.info('Forcing CTC decoding for final test phase...')
-                        try:
-                            model.change_decoding_strategy(decoder_type='ctc')
-                        except Exception:
-                            pass
-                    try:
-                        model.cur_decoder = 'ctc'
-                    except Exception:
-                        pass
-                except Exception:
-                    pass
-
                 # Evaluate on validation manifest (create per-sample and summary results)
                 manifest = getattr(config.data.validation_ds, 'manifest_filepath', None)
                 if manifest and os.path.exists(manifest):
@@ -1549,76 +1320,11 @@ def fine_tune_model(config: DictConfig, output_dir: str):
                                 wer_val = None
                                 try:
                                     if hasattr(model, 'transcribe') and audio:
-                                        # Robust per-sample transcription: try multiple call forms and kwargs and prefer non-empty outputs
-                                        prev_dec = getattr(model, 'cur_decoder', None)
+                                        # model.transcribe expects a list of paths
                                         try:
-                                            try:
-                                                model.cur_decoder = 'ctc'
-                                            except Exception:
-                                                pass
-
-                                            def _normalize_pred(p):
-                                                import ast
-                                                if isinstance(p, str):
-                                                    try:
-                                                        parsed = ast.literal_eval(p)
-                                                        return _normalize_pred(parsed)
-                                                    except Exception:
-                                                        return p
-                                                if isinstance(p, (list, tuple)) and len(p) > 0:
-                                                    first = p[0]
-                                                    if isinstance(first, (list, tuple)) and len(first) > 0:
-                                                        return _normalize_pred(first[0])
-                                                    return _normalize_pred(first)
-                                                return str(p)
-
-                                            def _map_language_id(mod, lid_str):
-                                                mapped = None
-                                                try:
-                                                    if hasattr(mod, 'joint') and hasattr(mod.joint, 'language_keys'):
-                                                        mapped = list(mod.joint.language_keys).index(lid_str)
-                                                except Exception:
-                                                    mapped = None
-                                                if mapped is None:
-                                                    try:
-                                                        if hasattr(mod, 'cfg') and 'language_keys' in getattr(mod.cfg, 'joint', {}):
-                                                            mapped = list(mod.cfg.joint.language_keys).index(lid_str)
-                                                    except Exception:
-                                                        mapped = None
-                                                return mapped
-
-                                            got = None
-                                            candidate_kwargs = [ {'language_id': 'kok', 'batch_size': 1, 'logprobs': False}, {'batch_size': 1, 'logprobs': False}, {'logprobs': False}, {} ]
-                                            for kw in candidate_kwargs:
-                                                try:
-                                                    kwargs = dict(kw)
-                                                    if 'language_id' in kwargs and isinstance(kwargs['language_id'], str):
-                                                        mapped = _map_language_id(model, kwargs['language_id'])
-                                                        if mapped is not None:
-                                                            kwargs['language_id'] = mapped
-                                                    try:
-                                                        out = model.transcribe([audio], **kwargs)
-                                                    except TypeError:
-                                                        try:
-                                                            out = model.transcribe(paths2audio_files=[audio], **kwargs)
-                                                        except TypeError:
-                                                            out = model.transcribe(audio, **kwargs)
-                                                    got = _normalize_pred(out)
-                                                    if isinstance(got, str) and got != '':
-                                                        break
-                                                except Exception:
-                                                    got = None
-                                                    continue
-                                            pred = got if got is not None else ''
-                                        finally:
-                                            try:
-                                                if prev_dec is None:
-                                                    if hasattr(model, 'cur_decoder'):
-                                                        delattr(model, 'cur_decoder')
-                                                else:
-                                                    model.cur_decoder = prev_dec
-                                            except Exception:
-                                                pass
+                                            pred = model.transcribe([audio])[0]
+                                        except TypeError:
+                                            pred = model.transcribe(paths2audio_files=[audio])[0]
                                     else:
                                         pred = ''
                                     wer_val = _compute_wer(ref, pred) if ref else None

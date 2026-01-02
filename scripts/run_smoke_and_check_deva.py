@@ -80,29 +80,87 @@ def run(args):
     out_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"Loading model: {model_path}")
-    # Try a tolerant restore similar to the smoke script: try ASRModel.restore_from(strict=False),
-    # otherwise perform a partial restore that loads matching-shape params only.
+    # Try restoring with specific model class first
+    from nemo.collections.asr.models import EncDecHybridRNNTCTCBPEModel
     from nemo.collections.asr.models import ASRModel as _ASRModel
     def partial_restore_from_nemo(nemo_path):
         import tarfile, tempfile, torch, yaml
         print(f"🔧 Attempting partial restore from: {nemo_path}")
+        
+        def _find_member(tar, name):
+            """Find member with or without ./ prefix"""
+            if name in {m.name for m in tar.getmembers()}:
+                return name
+            alt_name = f"./{name}"
+            if alt_name in {m.name for m in tar.getmembers()}:
+                return alt_name
+            return None
+        
         with tempfile.TemporaryDirectory() as td:
             with tarfile.open(nemo_path, 'r') as tar:
-                members = {m.name: m for m in tar.getmembers()}
-                if 'model_config.yaml' not in members or 'model_weights.ckpt' not in members:
+                config_member = _find_member(tar, 'model_config.yaml')
+                weights_member = _find_member(tar, 'model_weights.ckpt')
+                tokenizer_member = _find_member(tar, 'tokenizer.model')
+                
+                if not config_member or not weights_member:
                     raise RuntimeError('model_config.yaml or model_weights.ckpt missing in .nemo')
-                tar.extract('model_config.yaml', path=td)
-                tar.extract('model_weights.ckpt', path=td)
+                
+                tar.extract(config_member, path=td)
+                tar.extract(weights_member, path=td)
+                if tokenizer_member:
+                    tar.extract(tokenizer_member, path=td)
+                
+                # Handle ./ prefix in extracted paths
+                config_path = os.path.join(td, config_member.lstrip('./'))
+                ckpt_path = os.path.join(td, weights_member.lstrip('./'))
 
-            config_path = os.path.join(td, 'model_config.yaml')
-            ckpt_path = os.path.join(td, 'model_weights.ckpt')
             with open(config_path, 'r', encoding='utf-8') as f:
                 conf = yaml.safe_load(f)
-
+            
+            # Convert multilingual tokenizer to BPE format while preserving native vocab size
+            # NeMo's standard install doesn't support type='multilingual', but the model
+            # weights expect 5632 classes. Solution: convert tokenizer to BPE but keep
+            # the full 5632-class decoder vocabularies intact.
+            if 'tokenizer' in conf:
+                tok_cfg = conf['tokenizer']
+                if tok_cfg.get('type') == 'multilingual':
+                    langs = tok_cfg.get('langs', {})
+                    if isinstance(langs, dict) and 'kok' in langs:
+                        print("DEBUG: Converting multilingual tokenizer to BPE (keeping 5632 vocab)")
+                        # Extract kok tokenizer config and convert to monolingual BPE
+                        kok_cfg = langs['kok']
+                        conf['tokenizer'] = {
+                            'type': 'bpe',
+                            'dir': 'tokenizers',
+                            'model_path': 'tokenizers/konkani_tokenizer.model'
+                        }
+                        # CRITICAL: Prevent the tokenizer from creating a 256-length vocabulary
+                        # and injecting it into decoder config before we can change_vocabulary.
+                        if 'decoder' in conf:
+                            conf['decoder']['vocabulary'] = None
+                        if 'aux_ctc' in conf and 'decoder' in conf['aux_ctc']:
+                            conf['aux_ctc']['decoder']['vocabulary'] = None
+                        print(f"DEBUG: Tokenizer converted; decoder vocab references cleared (weights remain 5632)")
+                    else:
+                        print(f"DEBUG: Multilingual tokenizer langs: {list(langs.keys()) if isinstance(langs, dict) else langs}")
+                        # Fallback: still convert to BPE
+                        conf['tokenizer'] = {
+                            'type': 'bpe',
+                            'dir': 'tokenizers'
+                        }
+            
+            # Remove unsupported config keys that cause instantiation errors
+            if 'decoder' in conf:
+                conf['decoder'].pop('multisoftmax', None)
+            if 'joint' in conf:
+                conf['joint'].pop('language_keys', None)
+                conf['joint'].pop('multilingual', None)
+            
             try:
+                model_instance = EncDecHybridRNNTCTCBPEModel.from_config_dict(conf, trainer=None)
+            except Exception as e:
+                print(f"EncDecHybridRNNTCTCBPEModel.from_config_dict failed: {e}")
                 model_instance = _ASRModel.from_config_dict(conf, trainer=None)
-            except Exception:
-                model_instance = nemo_asr.models.ASRModel.from_config_dict(conf, trainer=None)
 
             ckpt = torch.load(ckpt_path, map_location='cpu')
             state = ckpt.get('state_dict', ckpt)
@@ -120,13 +178,20 @@ def run(args):
             return model_instance
 
     try:
-        model = _ASRModel.restore_from(model_path, strict=False)
+        model = EncDecHybridRNNTCTCBPEModel.restore_from(model_path, strict=False)
     except Exception as e:
         print('Restore_from failed with:', e)
         print('Falling back to partial state dict restore...')
         model = partial_restore_from_nemo(model_path)
 
     model.eval()
+    
+    # Disable CUDA graphs to avoid CUDA failure with mismatched vocab sizes
+    if hasattr(model, 'decoding') and hasattr(model.decoding, 'decoding_computer'):
+        if hasattr(model.decoding.decoding_computer, 'use_cuda_graphs'):
+            print("DEBUG: Disabling CUDA graphs for inference compatibility")
+            model.decoding.decoding_computer.use_cuda_graphs = False
+    
     if torch.cuda.is_available():
         model = model.cuda()
 
