@@ -48,6 +48,19 @@ File links
 ----------
 - `configs/smoke_1sample_ctc.yaml` — minimal 1-sample 1-epoch CTC test config used for verification.
 - `scripts/fine_tune.py` — implements the offline config-edit + strict=False restore pattern.
+
+8) Marathi Tokenizer Discovery & Fix 🕵️‍♂️
+- **The Problem:** The default `model_config.yaml` inside the Marathi `.nemo` file points to a tokenizer file (`ce92...`) that contains Assamese/Bengali characters (e.g., `ৰ`, `ৱ`) instead of Marathi. This causes the model to output gibberish or fail to produce Devanagari text.
+- **The Solution:** The `.nemo` archive (which is a tarball) contains multiple tokenizer files. We must identify the correct one.
+- **Identification Method:** Scan all extracted tokenizer models (`.model` files) for the unique Marathi character 'ळ' (U+0933).
+- **The Correct File:** In our case, the file `d8761317c86f47acb14f125a77ad359a_tokenizer.model` was the only one containing 'ळ' and valid Devanagari coverage.
+- **Action Taken:**
+  1. Extracted the `.nemo` file.
+  2. Identified the correct tokenizer.
+  3. Copied it to `tokenizers/marathi_tokenizer.model`.
+  4. Updated the training config to point to this local tokenizer path.
+  5. The `fine_tune.py` script handles the vocabulary size mismatch (256 vs 1024) by adjusting `aux_ctc.decoder.num_classes` automatically.
+
 - `scripts/ensure_model_present.sh` — checks for expected `.nemo` files and will optionally download canonical models from Hugging Face (`--model marathi|konkani`). Use `--yes` for non-interactive execution.
 
 Canonical .nemo models & exact operations ✅

@@ -48,6 +48,30 @@ Data splitting policy (story-based):
 ## What we learned / environment details 📚
 - Python version used: **3.11** (venv: `venv_py311`).
 - Main NeMo workspace (fork used during debugging): `/workspace/NeMo_ai4bharat/` (local editable copy).
+
+## Preflight & Smoke Testing 🚀
+Before running full experiments, it is critical to verify the environment and model configuration.
+
+1.  **Configure the .nemo Model:**
+    The AI4Bharat .nemo models may require specific configuration tweaks (e.g., fixing tokenizer paths, handling vocabulary mismatches).
+    **CRITICAL:** Review `/workspace/amchi_asr/REPRODUCTION_NOTES.md` for the exact steps to identify the correct tokenizer and configure the model. For Marathi, this involves finding the tokenizer containing 'ळ'.
+
+2.  **Run the Robust Smoke Test:**
+    We have a dedicated script to verify the model, tokenizer, data availability, and GPU training pipeline.
+    
+    ```bash
+    ./scripts/robust_smoke_test.sh
+    ```
+    
+    This script will:
+    - Verify the correct tokenizer is present.
+    - Verify the base model exists.
+    - Check that all audio files referenced in the manifest actually exist.
+    - Run a 1-epoch fine-tuning job on the GPU.
+    - Ensure the pipeline produces valid output.
+
+    If this test passes, your environment is ready for full-scale training.
+
 - Important packages & versions (examples):
   - torch / torchvision / torchaudio: installed from the official PyTorch CUDA 11.8 wheel (matching CUDA available in the runpod).
   - nemo_toolkit: `pip install "nemo_toolkit[all]"` (used for training & decoding features).

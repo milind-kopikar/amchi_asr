@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import sys; print("DEBUG: Script started", file=sys.stderr)
 """
 Fine-tune AI4Bharat IndicConformer Marathi ASR model for Konkani
 Using NVIDIA NeMo framework

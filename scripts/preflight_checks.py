@@ -126,6 +126,31 @@ def check_model_in_config(config_path='configs/konkani_finetune.yaml'):
         return {'ok': False, 'error': str(e)}
 
 
+def check_robust_smoke_test():
+    """Run the robust smoke test script to verify end-to-end pipeline."""
+    import subprocess
+    script_path = Path('scripts/robust_smoke_test.sh')
+    if not script_path.exists():
+        return {'ok': False, 'error': f'smoke test script not found: {script_path}'}
+    
+    try:
+        # Run the shell script
+        result = subprocess.run(
+            [str(script_path)], 
+            capture_output=True, 
+            text=True, 
+            check=False
+        )
+        if result.returncode == 0:
+            return {'ok': True, 'output': 'Smoke test passed successfully'}
+        else:
+            # Return last few lines of output for debugging
+            error_tail = '\n'.join(result.stdout.splitlines()[-10:] + result.stderr.splitlines()[-10:])
+            return {'ok': False, 'error': f'Smoke test failed (code {result.returncode})', 'details': error_tail}
+    except Exception as e:
+        return {'ok': False, 'error': f'Failed to execute smoke test: {e}'}
+
+
 def run_all():
     results = {
         'python': check_python_version(),
@@ -135,6 +160,7 @@ def run_all():
         'tokenizer': check_tokenizer(),
         'disk': check_disk_space(),
         'model_config': check_model_in_config(),
+        'smoke_test': check_robust_smoke_test(),
     }
     # Env check: ensure APPLY_CONV_PATCH is set (recommended)
     env_val = os.environ.get('APPLY_CONV_PATCH', None)
