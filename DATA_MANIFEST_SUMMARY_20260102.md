@@ -49,3 +49,19 @@ If you'd like I can also:
 - Produce a CSV listing of all audio IDs and their story_id / durations for easy inspection.
 
 Timestamp: 2026-01-02T22:45:00Z
+
+## Checkpoint cleanup (2026-01-02)
+Deleted the following checkpoint files to free space:
+- nemo_experiments/tmp_lr1e-4_2epoch/checkpoints/amchi_marathi_2epoch_lr1e-4-epoch=00-val_loss=299.917.ckpt
+- nemo_experiments/tmp_lr1e-4_2epoch/checkpoints/amchi_marathi_2epoch_lr1e-4-epoch=01-val_loss=284.989.ckpt
+- nemo_experiments/tmp_lr1e-4_2epoch/checkpoints/last.ckpt
+- nemo_experiments/checkpoints/amchi_marathi_golden_5epoch_ctc-epoch=01-val_loss=68.786.ckpt
+- nemo_experiments/checkpoints/amchi_marathi_golden_5epoch_ctc-epoch=03-val_loss=50.445.ckpt
+
+Remaining checkpoints retained (kept for reproducibility):
+- nemo_experiments/checkpoints/amchi_marathi_golden_5epoch_ctc-epoch=04-val_loss=34.602.ckpt
+- nemo_experiments/full_1epoch_lr1e-4/checkpoints/amchi_marathi_full_1epoch_lr1e-4-epoch=00-val_loss=158.544.ckpt
+
+Freed approximately: ~6.6 GB
+Timestamp: 2026-01-02T23:23:40+00:00
+
