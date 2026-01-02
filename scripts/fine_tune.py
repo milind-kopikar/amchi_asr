@@ -660,15 +660,33 @@ def setup_model(config: DictConfig):
     """
     logger.info("Setting up ASR model...")
 
-    # Load base model
-    model_path = config.model.nemo_model
-    if not os.path.exists(model_path):
-        raise FileNotFoundError(f"Model file not found: {model_path}")
+    # Optionally skip restoring from .nemo (useful for fast micro-overfit/testing)
+    if os.environ.get('MICRO_SKIP_MODEL_RESTORE', '0') == '1':
+        # Try to instantiate model from a local model_config.yaml if present
+        local_mc = 'model_config.yaml'
+        if os.path.exists(local_mc):
+            import yaml
+            logger.info('MICRO_SKIP_MODEL_RESTORE=1 -> instantiating model from local model_config.yaml')
+            with open(local_mc, 'r', encoding='utf-8') as fh:
+                conf = yaml.safe_load(fh)
+            try:
+                model = nemo_asr.models.ASRModel.from_config_dict(conf, trainer=None)
+            except Exception:
+                from nemo.collections.asr.models import ASRModel as _ASRModel
+                model = _ASRModel.from_config_dict(conf, trainer=None)
+        else:
+            raise RuntimeError('MICRO_SKIP_MODEL_RESTORE=1 but local model_config.yaml not found')
+        
+    else:
+        # Load base model
+        model_path = config.model.nemo_model
+        if not os.path.exists(model_path):
+            raise FileNotFoundError(f"Model file not found: {model_path}")
 
-    logger.info(f"Loading base model: {model_path}")
-    try:
-        model = nemo_asr.models.EncDecHybridRNNTCTCBPEModel.restore_from(model_path, strict=False)
-    except Exception as e:
+        logger.info(f"Loading base model: {model_path}")
+        try:
+            model = nemo_asr.models.EncDecHybridRNNTCTCBPEModel.restore_from(model_path, strict=False)
+        except Exception as e:
         # Fallback: attempt partial restore loading only matching-shape params
         import tarfile, tempfile, torch, yaml
         print(f"🔧 Partial restore from {model_path} due to: {e}")
