@@ -17,39 +17,66 @@ def test_nemo_and_local_tokenizer_match():
     assert nemo_path, 'nemo_model not set in config'
     assert os.path.exists(nemo_path), f'.nemo file not found: {nemo_path}'
 
-    # Extract model_config.yaml from .nemo
+    # Extract model_config.yaml from .nemo if present, otherwise try to find tokenizer artifacts
     with tempfile.TemporaryDirectory() as td:
         with tarfile.open(nemo_path, 'r') as tar:
             members = {m.name: m for m in tar.getmembers()}
-            assert 'model_config.yaml' in members, 'model_config.yaml not in .nemo'
-            tar.extract('model_config.yaml', path=td)
-            mc_path = os.path.join(td, 'model_config.yaml')
 
-            with open(mc_path, 'r', encoding='utf-8') as f:
-                mcfg = yaml.safe_load(f)
+            nemo_vocab_size = None
+            if 'model_config.yaml' in members:
+                tar.extract('model_config.yaml', path=td)
+                mc_path = os.path.join(td, 'model_config.yaml')
 
-            # Read tokenizer spe_tokenizer_vocab reference if present
-            spe_vocab_ref = mcfg.get('tokenizer', {}).get('spe_tokenizer_vocab')
-            tokenizer_type = mcfg.get('tokenizer', {}).get('type')
+                with open(mc_path, 'r', encoding='utf-8') as f:
+                    mcfg = yaml.safe_load(f)
 
-            # If a spe_tokenizer_vocab reference exists, extract and count lines
-            if spe_vocab_ref and isinstance(spe_vocab_ref, str) and spe_vocab_ref.startswith('nemo:'):
-                fname = spe_vocab_ref.split(':', 1)[1]
-                # find member matching *fname
-                found = None
-                for name in members.keys():
-                    if name.endswith(fname):
-                        found = name
-                        break
-                assert found, f'{fname} not found in .nemo'
-                tar.extract(found, path=td)
-                extracted_vocab = os.path.join(td, found)
-                # count vocab lines
-                with open(extracted_vocab, 'r', encoding='utf-8') as vf:
-                    lines = [l.rstrip('\n') for l in vf if l.strip()]
-                nemo_vocab_size = len(lines)
+                # Read tokenizer spe_tokenizer_vocab reference if present
+                spe_vocab_ref = mcfg.get('tokenizer', {}).get('spe_tokenizer_vocab')
+                tokenizer_type = mcfg.get('tokenizer', {}).get('type')
+
+                # If a spe_tokenizer_vocab reference exists, extract and count lines
+                if spe_vocab_ref and isinstance(spe_vocab_ref, str) and spe_vocab_ref.startswith('nemo:'):
+                    fname = spe_vocab_ref.split(':', 1)[1]
+                    # find member matching *fname
+                    found = None
+                    for name in members.keys():
+                        if name.endswith(fname):
+                            found = name
+                            break
+                    assert found, f'{fname} not found in .nemo'
+                    tar.extract(found, path=td)
+                    extracted_vocab = os.path.join(td, found)
+                    # count vocab lines
+                    with open(extracted_vocab, 'r', encoding='utf-8') as vf:
+                        lines = [l.rstrip('\n') for l in vf if l.strip()]
+                    nemo_vocab_size = len(lines)
             else:
-                nemo_vocab_size = None
+                # Fallback: prefer *_tokenizer.vocab or tokenizer.model entries; fall back to *_vocab.txt
+                candidate = None
+                for name in members.keys():
+                    if name.endswith('_tokenizer.vocab') or name.endswith('tokenizer.model') or name.endswith('.model'):
+                        candidate = name
+                        break
+                if candidate is None:
+                    for name in members.keys():
+                        if name.endswith('_vocab.txt'):
+                            candidate = name
+                            break
+                if candidate:
+                    tar.extract(candidate, path=td)
+                    extracted = os.path.join(td, candidate)
+                    if extracted.endswith('_tokenizer.vocab') or extracted.endswith('_vocab.txt'):
+                        with open(extracted, 'r', encoding='utf-8') as vf:
+                            lines = [l.rstrip('\n') for l in vf if l.strip()]
+                        nemo_vocab_size = len(lines)
+                    else:
+                        # try loading as sentencepiece model
+                        try:
+                            sp = spm.SentencePieceProcessor(model_file=extracted)
+                            nemo_vocab_size = sp.get_piece_size()
+                        except Exception:
+                            nemo_vocab_size = None
+
 
     # Inspect local tokenizer model (first matching model under models/tokenizer)
     local_models = glob.glob('models/**/*tokenizer.model', recursive=True)

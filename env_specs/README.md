@@ -36,6 +36,10 @@ Usage:
 
 If you'd like, I can now provision the canonical environment here (requires installing packages). Confirm and I will proceed to run `scripts/ensure_env.sh`, snapshot the environment with `dump_env_info.py`, then run the micro-overfit check under the canonical environment.
 
+Automatic base model download (optional):
+
+- Set `AUTO_DOWNLOAD_MODEL=1` to have `scripts/ensure_env.sh` attempt to download the base `.nemo` model (AI4Bharat IndicConformer) and extract tokenizer files into `models/tokenizer/` during provisioning. `scripts/preflight_checks.py` will also try to fetch the model when `AUTO_DOWNLOAD_MODEL=1` if the model path in your config is missing.
+
 Quick unit-test for micro-overfit acceptance (fast mode):
 
 - You can run a fast, unit-level acceptance check without running full training by setting env vars to skip preflight and training and pointing to prepopulated results (used by our tests):

@@ -37,6 +37,8 @@ Data splitting policy (story-based):
 
 - **Hugging Face login reminder:** The `setup_env.sh` script will now print a final reminder to run `huggingface-cli login` (or set `HF_TOKEN`) after the setup finishes so you're ready to download model files.
 
+- **Automatic base model download (optional):** If you set `AUTO_DOWNLOAD_MODEL=1` in your environment, `setup_env.sh` will attempt to download the base `.nemo` model (AI4Bharat IndicConformer) and extract tokenizer files into `models/tokenizer/`. Preflight checks (`scripts/preflight_checks.py`) also support `AUTO_DOWNLOAD_MODEL=1` and will try to fetch the model if it's missing during preflight.
+
 - **Experiments / checkpointing / log location:** By default training configs point to a persistent experiments directory at `/workspace/amchi_asr/experiments`. The default checkpoint policy is to **save only the top 5** checkpoints (`save_top_k: 5`) to limit disk usage. You can change `exp_manager.exp_dir` in your config files if you prefer a different mount path.
 
 ---
