@@ -209,6 +209,25 @@ python scripts/download_data_from_railway.py \
 
 ---
 
+### SSH & VS Code Remote-SSH (Windows)
+
+When connecting from **Windows** using VS Code Remote-SSH, add a Host entry to your local `~/.ssh/config` with a Windows-style IdentityFile path (use double quotes as shown):
+
+```ssh
+Host runpod-<alias>
+  HostName <IP_ADDRESS>
+  Port <PORT>
+  User root
+  IdentityFile "C:/Users/Milind Kopikare/.ssh/runpod_ed25519"
+  IdentitiesOnly yes
+```
+
+Then in VS Code: **Remote-SSH → Connect to Host...** → select `runpod-<alias>`.
+
+For more details see [RUNPOD_DEPLOYMENT_CHECKLIST.md](RUNPOD_DEPLOYMENT_CHECKLIST.md) and `runpod/README.dev.md`.
+
+---
+
 ## 💾 Download Trained Model to Local Machine
 
 ```bash

@@ -44,6 +44,20 @@ cd konkani_asr
 bash setup_runpod.sh
 ```
 
+**Note (Windows / VS Code users):** add a Host entry to your local `~/.ssh/config` and use that alias in VS Code Remote-SSH. Example (Windows path format is important):
+
+```ssh
+Host runpod-<alias>
+  HostName <runpod-ip>
+  Port <port>
+  User root
+  IdentityFile "C:/Users/Milind Kopikare/.ssh/runpod_ed25519"
+  IdentitiesOnly yes
+```
+
+Then in VS Code: **Remote-SSH → Connect to Host...** → select `runpod-<alias>`.
+
+
 **Expected output:**
 ```
 ✓ Python virtual environment created

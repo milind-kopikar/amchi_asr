@@ -349,6 +349,20 @@ This section documents the process of fine-tuning the Konkani ASR model on RunPo
 - **CUDA**: 12.4 compatible
 - **Disk Space**: Minimum 40GB (increase from default 20GB to avoid space issues)
 
+### SSH & VS Code Remote-SSH (Windows)
+When connecting from **Windows** with VS Code, add a Host entry to your `~/.ssh/config` and use that alias in VS Code Remote-SSH. Example (use the Windows-style path for the IdentityFile):
+
+```ssh
+Host runpod-<alias>
+  HostName <IP_ADDRESS>
+  Port <PORT>
+  User root
+  IdentityFile "C:/Users/Milind Kopikare/.ssh/runpod_ed25519"
+  IdentitiesOnly yes
+```
+
+See the RunPod quick start for more details: [RUNPOD_QUICK_START.md](RUNPOD_QUICK_START.md)
+
 ### Setup Steps
 1. **Clone Repository**:
    ```bash
