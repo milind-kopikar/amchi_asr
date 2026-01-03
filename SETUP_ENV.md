@@ -12,12 +12,17 @@ This document captures the exact setup, fixes, and patches required to get the A
 ## Quick usage 🔧
 1. Make the script executable: `chmod +x setup_env.sh`
 2. Run it as root (it installs system packages): `sudo ./setup_env.sh`
+3. Run the Konkani setup script: `bash scripts/setup_konkani.sh`
 
-The script will:
+The `setup_env.sh` script will:
 - Install `ffmpeg` to fix pydub warnings
 - Reinstall PyTorch wheels for CUDA (cu118) to enable GPU
 - Install required Python packages (nemo_toolkit and key libs)
 - Copy our vendored `patches/conv_asr_fixed.py` over the installed NeMo `conv_asr.py`
+
+The `scripts/setup_konkani.sh` script will:
+- Download the AI4Bharat Konkani model.
+- Extract the **correct** Konkani-specific tokenizer from the multilingual `.nemo` archive. (This is critical as the default HuggingFace `tokenizer.model` often lacks Devanagari support).
 
 Important environment variables set/used by the project:
 - `APPLY_CONV_PATCH=1` (recommended): enables the runtime conv_asr patch that fixes language-id and mask handling.

@@ -33,7 +33,20 @@ data/
 results/
 models/
 # Experiment outputs created by NeMo/this repo
-nemo_experiments/
+nemo_experiments/**
+!nemo_experiments/
+!nemo_experiments/**/
+!nemo_experiments/**/*.json
+!nemo_experiments/**/*.csv
+!nemo_experiments/**/*.txt
+!nemo_experiments/**/*.yaml
+
+# Still exclude heavy binaries within experiments
+nemo_experiments/**/*.ckpt
+nemo_experiments/**/*.nemo
+nemo_experiments/**/*.pt
+nemo_experiments/**/*.pth
+nemo_experiments/**/*.bin
 
 # Python virtual environments
 venv/

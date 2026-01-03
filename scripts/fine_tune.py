@@ -260,7 +260,15 @@ class SampleLoggerCallback(pl.Callback):
             # Normalize prediction to a string (handle NeMo Hypothesis objects)
             try:
                 if not isinstance(pred, str):
-                    pred = getattr(pred, 'text', None) or str(pred)
+                    # If it's a list/tuple, take the first element (common in Hybrid models)
+                    if isinstance(pred, (list, tuple)) and len(pred) > 0:
+                        pred = pred[0]
+                    
+                    # If it's a Hypothesis object, try to get .text
+                    if hasattr(pred, 'text'):
+                        pred = pred.text
+                    else:
+                        pred = str(pred)
             except Exception:
                 pred = str(pred)
             wer = _compute_wer(ref, pred) if ref and pred is not None else None
@@ -902,7 +910,13 @@ def setup_data_module(config: DictConfig, model=None):
 
     # find sentencepiece model
     sp_model = None
-    if os.path.isdir(tokenizer_dir):
+    # Try to use model_path from config first
+    if hasattr(config.model.tokenizer, 'model_path') and config.model.tokenizer.model_path:
+        if os.path.exists(config.model.tokenizer.model_path):
+            sp_model = config.model.tokenizer.model_path
+            logger.info(f"Using tokenizer model from config: {sp_model}")
+    
+    if sp_model is None and os.path.isdir(tokenizer_dir):
         for f in os.listdir(tokenizer_dir):
             if f.endswith('_tokenizer.model'):
                 sp_model = os.path.join(tokenizer_dir, f)
@@ -1230,7 +1244,7 @@ def fine_tune_model(config: DictConfig, output_dir: str):
             # Instantiate callbacks and attach to trainer
             try:
                 csv_logger = ResearchCSVLogger(csv_path)
-                sample_logger = SampleLoggerCallback(getattr(config.data.validation_ds, 'manifest_filepath', ''), experiment_dir)
+                sample_logger = SampleLoggerCallback(getattr(config.data.validation_ds, 'manifest_filepath', ''), experiment_dir, max_samples=100)
                 # Add sample_logger BEFORE csv_logger so metrics injected by sample_logger (like val_cer)
                 # are available when csv_logger writes the row.
                 trainer.callbacks.append(sample_logger)

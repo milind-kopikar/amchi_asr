@@ -1,0 +1,276 @@
+{
+  "best_checkpoint": "/workspace/amchi_asr/nemo_experiments/pilot_1epoch_test/checkpoints/konkani_asr-epoch=00-val_wer=26.875.ckpt",
+  "summary": {
+    "total_samples": 38,
+    "mean_wer": 1.0,
+    "mean_cer": 0.9936309449747299
+  },
+  "per_sample": [
+    {
+      "audio": "data/dev/audio/570.wav",
+      "reference": "रोहन होड ज़ाल्लो!",
+      "prediction": "",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/571.wav",
+      "reference": "धा वर्सांचो रोहन उत्साहाने आनि खुशालेने उड्तशिलो -",
+      "prediction": "",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/572.wav",
+      "reference": "तो आप्णागले भारत देशु रज्जेन्तु वत्तशिलो!",
+      "prediction": "",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/573.wav",
+      "reference": "आम्माने आन्नुने सांगिल्ताका काण्यो सुमार -",
+      "prediction": " ⁇ ि",
+      "wer": 1.0,
+      "cer": 0.9285714285714286
+    },
+    {
+      "audio": "data/dev/audio/380.wav",
+      "reference": "धा वर्सांचो रोहन उत्साहाने आनि खुशालेने उड्तशिलो -",
+      "prediction": "",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/381.wav",
+      "reference": "तो आप्णागले भारत देशु रज्जेन्तु वत्तशिलो!",
+      "prediction": "",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/382.wav",
+      "reference": "आम्माने आन्नुने सांगिल्ताका काण्यो सुमार -",
+      "prediction": " ⁇ ि",
+      "wer": 1.0,
+      "cer": 0.9285714285714286
+    },
+    {
+      "audio": "data/dev/audio/383.wav",
+      "reference": "तांगेले चेर्ल्ड्पणाचे गम्मते खब्र्यो, आंग्णांतु खेऴ्तालिं भरपूर",
+      "prediction": "्",
+      "wer": 1.0,
+      "cer": 0.9841269841269841
+    },
+    {
+      "audio": "data/dev/audio/384.wav",
+      "reference": "मुंबई - थंयि थाव्नु गोवा वच्चेशिलीं तीं",
+      "prediction": "",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/385.wav",
+      "reference": "कुलदेवतांगेले दर्शन घेव्नु समुद्र तटाचेरि खेऴ्चेशिलीं!",
+      "prediction": "्",
+      "wer": 1.0,
+      "cer": 0.9814814814814815
+    },
+    {
+      "audio": "data/dev/audio/386.wav",
+      "reference": "ताक्का सांगिलें आनि एक विशेष गम्मति आस्स म्हुणु",
+      "prediction": "",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/387.wav",
+      "reference": "शिरालींतु युवांखतिरि एक शिबीर - वाह! राक्तशिलो रोहनु!",
+      "prediction": "",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/388.wav",
+      "reference": "प्रार्थना वर्गांतु भारतीय संस्कृति वैभवाबद्दल तान्ने आय्कलेलें-",
+      "prediction": "",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/390.wav",
+      "reference": "ज़ाल्यारि प्रत्यक्ष पोऴोंचे आनुभवु विंगड आश्शिलें!",
+      "prediction": "",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/392.wav",
+      "reference": "परम पूज्य स्वाम्यांक पऴय्लेले तान्ने चित्रांतु",
+      "prediction": "",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/393.wav",
+      "reference": "स्वाम्यांगले खब्र्यो सांग्तालिं पाच्च्यो प्रार्थना वर्गांतु!",
+      "prediction": "",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/394.wav",
+      "reference": "आह! आय्लो तो गोम्टो दिवसु, तागले हेर्दे धडधड्तशिलें -",
+      "prediction": "",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/395.wav",
+      "reference": "शिरालींतु श्री चित्रापुर मठ इद्रारि दिस्तशिलें",
+      "prediction": "",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/396.wav",
+      "reference": "चारिदिक्काने आशिलीं लोक मार्गदर्शन आनि सहायु कोरूक",
+      "prediction": "ज",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/397.wav",
+      "reference": "चिके सानु आस्सुनूय, गर्वाने रोहनानै शिबिरान्तु भागु घेत्लो",
+      "prediction": "",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/398.wav",
+      "reference": "तेचि वेऴारि तांका थंचे स्कूलाक व्हेल्ले",
+      "prediction": "",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/399.wav",
+      "reference": "थंयि तान्ने तागले प्रायेचे चेर्ल्डवांक इंग्लिश शिकय्लें!",
+      "prediction": "",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/400.wav",
+      "reference": "ते वर्गांतुलो कार्तिक आनि  रोहनु उल्लय्त बस्लीं",
+      "prediction": "",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/401.wav",
+      "reference": "प्रति दिवसांतु कलकले कर्ताति म्हुणु एकमेकांक सांग्तशिलीं",
+      "prediction": "",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/403.wav",
+      "reference": "रोहनाने आप्णागले खेऴ्सामानु, गेजेट्स आनि स्विमिंग पूला बद्दल सांग्लें",
+      "prediction": "",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/404.wav",
+      "reference": "कार्तिकाने सांगिले आय्कतना, रोहनाक अग्दि आश्चर्य ज़ाल्लें!",
+      "prediction": "",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/406.wav",
+      "reference": "गाद्यान्तु मस्त परिश्रम तो कर्तालो नित्य बाप्सु सांगाति",
+      "prediction": "",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/407.wav",
+      "reference": "विशेष ज़ाव्नु केद्ना भात तैयार ज़ाव्नु म्हण्ताले-\" माका व्हराति!\"",
+      "prediction": "",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/408.wav",
+      "reference": "तो आनि तागलि भय्णि घाराय सहायु कर्ताति - हें आय्कुनु",
+      "prediction": "",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/409.wav",
+      "reference": "कित्लो प्रभावु ज़ाल्लो रोहनाचेरि म्हुणु कऴ्ताले ताक्का पोऴोव्नु!",
+      "prediction": "",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/410.wav",
+      "reference": "ह्रदयाक स्पर्श ज़ाल्ले आनि वच्च वेऴारि पोटोऴ्नु घेत्लें कार्तिकाक",
+      "prediction": "ू",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/411.wav",
+      "reference": "स्कूलान्थाव्नु भाय्रसर्तना खुशालेने आंग हल्के दिस्लें रोहनाक!",
+      "prediction": "ज",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/412.wav",
+      "reference": "मोडा वय्रि चम्कतशिल वारि अनुभवु ज़ाल्ले",
+      "prediction": "",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/413.wav",
+      "reference": "कार्तिका बद्दल सग्ऴ्यांक सांग्या म्हुणु दिस्लें",
+      "prediction": " ⁇ ",
+      "wer": 1.0,
+      "cer": 0.9574468085106383
+    },
+    {
+      "audio": "data/dev/audio/414.wav",
+      "reference": "प्रथम सांग्ले परम पूज्य स्वाम्यांकचि तान्ने सहज़",
+      "prediction": "",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/415.wav",
+      "reference": "प्रसन्न ज़ाल्लीं स्वामीजी, दिस्सुनु आय्लें तांका हाज्जि गरज़!",
+      "prediction": "",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/416.wav",
+      "reference": "घारा पाव्नु आप्णागलि काम कर्तालो तो उत्साहेने",
+      "prediction": "",
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "audio": "data/dev/audio/417.wav",
+      "reference": "होडु ज़ाल्लो आम्गेलो रोहनु  तें एक स्पर्शाने!",
+      "prediction": "प",
+      "wer": 1.0,
+      "cer": 0.9777777777777777
+    }
+  ]
+}

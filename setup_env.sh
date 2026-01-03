@@ -81,6 +81,7 @@ fi
 
 echo "✅ Environment Setup Complete! GPU and Patch should be active."
 echo "🔐 Reminder: Run 'huggingface-cli login' (or set HF_TOKEN) before downloading AI4Bharat models from Hugging Face."
+echo "👉 Next Step: Run 'bash scripts/setup_konkani.sh' to download the model and extract the correct tokenizer."
 
 # Run preflight checks (non-failing by default). Set SKIP_PREFLIGHT=1 to skip.
 if [ "${SKIP_PREFLIGHT:-0}" != "1" ]; then

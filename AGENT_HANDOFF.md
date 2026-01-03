@@ -1,103 +1,58 @@
 # AGENT HANDOFF — Resume instructions for next agent
 
-Date: 2026-01-02
+Date: 2026-01-03
 
 ---
 
 ## 1) Short summary (one line)
-Marathi smoke test (Training + Inference) is PASSING. Now switch to Konkani model using the verified pipeline.
+Konkani Pilot Training (1-epoch) is VERIFIED with correct Devanagari output. Ready for 20-epoch full run.
 
-**Recent activity (2026-01-02):**
-- Fixed validation WER calculation in `scripts/fine_tune.py` (no longer stuck at 0.0).
-- Fixed a trainer startup crash by preferring `pytorch_lightning` import and ensuring `LearningRateMonitor` is not used when no logger is present; the 5-epoch extended smoke test completed successfully and produced checkpoints.
-- Ran single-sample inference on the best checkpoint and confirmed predictions work using `scripts/smoke_test_inference.py`.
+**Recent activity (2026-01-03):**
+- **Tokenizer Fix:** Discovered that the default Konkani tokenizer from HuggingFace was missing Devanagari support. Extracted the correct BPE model (`def9dd6f2f9b4f5fb30c152c456a65cd`) directly from the `.nemo` archive.
+- **Data Loading Fix:** Increased `max_duration` to 30.0s in config to prevent filtering of long audio samples (processed all 38 validation samples).
+- **Logging Improvement:** Updated `SampleLoggerCallback` in `scripts/fine_tune.py` to log up to 100 samples and correctly handle NeMo `Hypothesis` objects.
+- **Pilot Run:** Successfully completed a 1-epoch pilot run on the full Konkani dataset. Verified that Devanagari characters (like 'ळ') are correctly predicted.
 
 ---
 
-
 ## 2) Current state & context
-- **Success:** We successfully ran a 1-epoch smoke test on the Marathi model (`models/indicconformer_stt_mr_hybrid_ctc_rnnt_large/indicconformer_stt_mr_hybrid_rnnt_large.nemo`).
-- **Tokenizer Fix:** We identified the correct Marathi tokenizer (containing 'ळ') and integrated it.
-- **Inference Fix:** We fixed `scripts/smoke_test_inference.py` to handle the Hybrid model checkpoint by:
-  - Loading config from checkpoint.
-  - Patching `loss_name` to `default`.
-  - Removing data loader configs to avoid path errors.
-  - Forcing CTC decoding.
-- **Pipeline:** `scripts/robust_smoke_test.sh` runs the full end-to-end test (Verify Data -> Train -> Inference) and passes.
+- **Success:** 1-epoch pilot run finished with `overall_wer: 26.87` (epoch 0).
+- **Tokenizer:** Correct Konkani tokenizer is at `tokenizers/konkani_tokenizer.model`.
+- **Config:** `configs/konkani_pilot_20epoch.yaml` is ready, configured for 20 epochs, 30s max duration, and saving the top 3 checkpoints.
+- **Environment:** RunPod environment is stable. AI4Bharat NeMo fork is installed and patched.
 
 ## 3) Objective for you (next agent)
-1. **Switch to Konkani:** Apply the same pipeline to the Konkani model.
-   - Download Konkani model and tokenizer.
-   - Create a Konkani config similar to `configs/tmp_marathi_1epoch_ctc_golden.yaml`.
-   - Run `scripts/fine_tune.py` and `scripts/smoke_test_inference.py`.
-2. **Full Training:** Once Konkani smoke test passes, run the full fine-tuning (more epochs, full data).
+1. **Start 20-Epoch Training:** Run the full pilot training.
+   ```bash
+   python scripts/fine_tune.py --config configs/konkani_pilot_20epoch.yaml --output_dir nemo_experiments/pilot_20epoch
+   ```
+2. **Monitor Progress:** Check `nemo_experiments/pilot_20epoch/experiments/<timestamp>/epoch_metrics.csv` for WER/CER trends.
+3. **Review Samples:** Check `samples_epoch_XX.json` to see how predictions improve over time.
 
 ## 4) Files & locations you will use
-- **Smoke Test Runner:** `scripts/robust_smoke_test.sh` (Reference this for the workflow)
-- **Inference Script:** `scripts/smoke_test_inference.py` (Robust logic for Hybrid checkpoints)
-- **Training Script:** `scripts/fine_tune.py` (Handles tokenizer mismatch automatically)
-- **Notes:** `REPRODUCTION_NOTES.md` (Detailed technical documentation of the fixes)
+- **Training Script:** `scripts/fine_tune.py` (Patched for better logging and tokenizer handling)
+- **Konkani Config:** `configs/konkani_pilot_20epoch.yaml`
+- **Setup Script:** `scripts/setup_konkani.sh` (Automates model/tokenizer setup)
+- **Results:** `nemo_experiments/pilot_20epoch/`
 
 ## 5) Verified Commands
 ```bash
-# Run the robust smoke test (Marathi)
-bash scripts/robust_smoke_test.sh
+# Setup everything from scratch
+bash setup_env.sh
+bash scripts/setup_konkani.sh
+
+# Run 20-epoch training
+python scripts/fine_tune.py --config configs/konkani_pilot_20epoch.yaml --output_dir nemo_experiments/pilot_20epoch
 ```
 
 ## 6) Recovery / Restart Guide 🆘
-**If the environment is lost (e.g., Runpod restart), follow these exact steps to restore the current state:**
-
-### A. Setup Environment
-```bash
-# 1. Clone the repo (if not already present)
-git clone https://github.com/milind-kopikar/amchi_asr.git
-cd amchi_asr
-
-# 2. Install dependencies and patches
-bash setup_env.sh
-```
-
-### B. Restore Marathi Model & Tokenizer
-The smoke test expects the Marathi model and tokenizer to be present.
-```bash
-# 1. Create directories
-mkdir -p models/indicconformer_stt_mr_hybrid_ctc_rnnt_large tokenizers
-
-# 2. Download Marathi Model
-wget https://huggingface.co/ai4bharat/indicconformer_stt_mr_hybrid_rnnt_large/resolve/main/indicconformer_stt_mr_hybrid_rnnt_large.nemo \
-  -O models/indicconformer_stt_mr_hybrid_ctc_rnnt_large/indicconformer_stt_mr_hybrid_rnnt_large.nemo
-
-# 3. Extract & Install Correct Tokenizer
-# We need the specific tokenizer file that supports Marathi (contains 'ळ')
-# It is inside the .nemo archive with hash d8761317...
-tar -xf models/indicconformer_stt_mr_hybrid_ctc_rnnt_large/indicconformer_stt_mr_hybrid_rnnt_large.nemo \
-  -C tokenizers d8761317c86f47acb14f125a77ad359a_tokenizer.model
-
-# 4. Rename it to what the scripts expect
-mv tokenizers/d8761317c86f47acb14f125a77ad359a_tokenizer.model tokenizers/marathi_tokenizer.model
-```
-
-### C. Verify Restoration
-Run the robust smoke test. It should pass immediately if the restore was successful.
-```bash
-bash scripts/robust_smoke_test.sh
-```
+If the RunPod restarts:
+1. Run `bash setup_env.sh`.
+2. Run `bash scripts/setup_konkani.sh`.
+3. Resume training (or restart if checkpoints weren't saved yet).
 
 ---
 
-## 7) Konkani Setup Instructions (Next Steps) 🚀
-**Once the Marathi smoke test is verified (Section 5/6), proceed with Konkani:**
-
-### A. Download Konkani Assets
-```bash
-mkdir -p models tokenizers
-wget https://huggingface.co/ai4bharat/indicconformer_stt_kok_hybrid_ctc_rnnt_large/resolve/main/indicconformer_stt_kok_hybrid_ctc_rnnt_large.nemo -O models/konkani_model.nemo
-wget https://huggingface.co/ai4bharat/indicconformer_stt_kok_hybrid_ctc_rnnt_large/resolve/main/tokenizer_spe_bpe_v1024/tokenizer.model -O tokenizers/konkani_tokenizer.model
-```
-
-### B. Validate Tokenizer
-```bash
-python - <<'PY'
 import sentencepiece as spm
 s=spm.SentencePieceProcessor()
 s.load('tokenizers/konkani_tokenizer.model')

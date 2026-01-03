@@ -27,18 +27,15 @@ This project implements Automatic Speech Recognition (ASR) for Konkani language,
 ### Framework Architecture
 The system uses a configurable framework approach with three supported ASR backends:
 
-1. **HuggingFace Transformers** (✅ Working on Windows)
+1. **NVIDIA NeMo / AI4Bharat** (✅ Primary - Linux/RunPod)
+   - Base: `ai4bharat/indicconformer_stt_kok_hybrid_ctc_rnnt_large`
+   - Status: Fully functional training pipeline with custom CTC-only fine-tuning.
+   - Best for: High-performance training, Indian language specialization.
+
+2. **HuggingFace Transformers** (✅ Working on Windows)
    - Base: `hriteshMaikap/marathi-asr-model` (Wav2Vec2-BERT)
-   - Status: Fully functional with training and testing
-   - Best for: Windows development, quick prototyping
-
-2. **NVIDIA NeMo** (🔄 Planned)
-   - Status: Windows compatibility issues (os.uname, signal.SIGKILL)
-   - Best for: Production deployment, advanced features
-
-3. **AI4Bharat** (🔄 Planned)
-   - Status: Requires Linux/Mac environment
-   - Best for: Indian language specialization, academic research
+   - Status: Functional for quick prototyping on Windows.
+   - Best for: Windows development.
 
 ### Code Structure
 ```

@@ -1,0 +1,103 @@
+# Konkani Pilot Training - 20 Epochs
+# Uses data/train, data/dev, data/test
+
+model:
+  nemo_model: "models/konkani_model.nemo"
+  tokenizer:
+    dir: "tokenizers"
+    model_path: "tokenizers/konkani_tokenizer.model"
+    type: "bpe"
+  preprocessor:
+    _target_: nemo.collections.asr.modules.AudioToMelSpectrogramPreprocessor
+    sample_rate: 16000
+    normalize: "per_feature"
+    window_size: 0.025
+    window_stride: 0.01
+    window: "hann"
+    features: 80
+    n_fft: 512
+    frame_splicing: 1
+    dither: 0.00001
+    pad_to: 16
+    stft_conv: false
+  encoder:
+    _target_: nemo.collections.asr.modules.ConformerEncoder
+    feat_in: 80
+    feat_out: -1
+    n_layers: 18
+    d_model: 512
+  loss:
+    loss_name: "ctc"
+  decoder_type: "ctc"
+
+trainer:
+  devices: 1
+  accelerator: "gpu"
+  max_epochs: 20
+  max_steps: -1
+  num_nodes: 1
+  accumulate_grad_batches: 1
+  enable_checkpointing: true
+  logger: true
+  log_every_n_steps: 10
+  check_val_every_n_epoch: 1
+  strategy: null
+
+optim:
+  name: adamw
+  lr: 0.0001
+  weight_decay: 0.001
+
+data:
+  train_ds:
+    manifest_filepath: "data/train/manifest.jsonl"
+    sample_rate: 16000
+    batch_size: 8
+    shuffle: true
+    num_workers: 4
+    pin_memory: true
+    max_duration: 30.0
+    min_duration: 0.1
+    trim_silence: true
+    load_audio: true
+    use_start_end_token: false
+    return_language_id: false
+  validation_ds:
+    manifest_filepath: "data/dev/manifest.jsonl"
+    sample_rate: 16000
+    batch_size: 8
+    shuffle: false
+    num_workers: 4
+    pin_memory: true
+    max_duration: 30.0
+    min_duration: 0.1
+    trim_silence: true
+    load_audio: true
+    use_start_end_token: false
+    return_language_id: false
+  test_ds:
+    manifest_filepath: "data/test/manifest.jsonl"
+    sample_rate: 16000
+    batch_size: 8
+    shuffle: false
+    num_workers: 4
+    pin_memory: true
+    max_duration: 30.0
+    min_duration: 0.1
+    trim_silence: true
+    load_audio: true
+    use_start_end_token: false
+    return_language_id: false
+
+exp_manager:
+  exp_dir: "/workspace/amchi_asr/nemo_experiments"
+  name: "Amchi_Konkani_Pilot_20epoch"
+  create_tensorboard_logger: true
+  create_checkpoint_callback: true
+  always_save_nemo: true
+  checkpoint_callback_params:
+    monitor: "val_wer"
+    mode: "min"
+    save_top_k: 3
+    save_best_model: true
+    save_top_k: 5
