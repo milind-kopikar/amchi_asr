@@ -1,0 +1,57 @@
+{
+  "best_checkpoint": "/workspace/amchi_asr/results/marathi_deaf_pilot_v1/checkpoints/konkani_asr-epoch=29-val_wer=0.986.ckpt",
+  "summary": {
+    "total_samples": 8,
+    "mean_wer": 0.9861111111111112
+  },
+  "per_sample": [
+    {
+      "audio": "data/test/audio/79.wav",
+      "reference": "सिंहाला हे पटले.",
+      "prediction": "रली ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/test/audio/41.wav",
+      "reference": "थोडे पुढे गेल्यावर तिला एक वाघ भेटला.",
+      "prediction": "ोलालाला ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/test/audio/45.wav",
+      "reference": "पुढे गेल्यावर तिला एक कोल्हा भेटला.",
+      "prediction": "लाेला ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/test/audio/56.wav",
+      "reference": "दुसऱ्या दिवशी आजी त्या भोपळ्यात बसली.",
+      "prediction": "दिळ दि ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/test/audio/59.wav",
+      "reference": "आजी आतून म्हणू लागली, “चल रे भोपळ्या टुनुक टुनुक! चल रे भोपळ्या टुनुक टुनुक!”।",
+      "prediction": "लत्तळशत् ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/test/audio/63.wav",
+      "reference": "मूर्ख कोल्ह्याने विश्वास ठेवला आणि भोपळा पुढे निघून गेला.।",
+      "prediction": "कोोस आणि उ ठलाला ⁇ ",
+      "wer": 0.8888888888888888
+    },
+    {
+      "audio": "data/test/audio/78.wav",
+      "reference": "घराबाहेर एक मोठे जंगल होते.",
+      "prediction": "ोनेेलाे ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/test/audio/42.wav",
+      "reference": "वाघानेही तिला खाण्याची धमकी दिली.",
+      "prediction": "ळलायेला ⁇ ",
+      "wer": 1.0
+    }
+  ]
+}

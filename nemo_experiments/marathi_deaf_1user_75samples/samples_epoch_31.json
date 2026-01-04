@@ -1,0 +1,92 @@
+{
+  "summary": {
+    "epoch": 31,
+    "global_step": 480,
+    "model_name": "EncDecHybridRNNTCTCBPEModel",
+    "param_count": 119592962,
+    "overall_wer": 1.0,
+    "date": "2026-01-04T20:21:54.914672"
+  },
+  "samples": [
+    {
+      "index": 0,
+      "audio": "data/test/audio/79.wav",
+      "ref": "सिंहाला हे पटले.",
+      "pred": "रली ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.05941268801689148,
+      "wer": 1.0,
+      "cer": 0.8888888888888888
+    },
+    {
+      "index": 1,
+      "audio": "data/test/audio/41.wav",
+      "ref": "थोडे पुढे गेल्यावर तिला एक वाघ भेटला.",
+      "pred": "ोलाकलाली ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.05941268801689148,
+      "wer": 1.0,
+      "cer": 0.875
+    },
+    {
+      "index": 2,
+      "audio": "data/test/audio/45.wav",
+      "ref": "पुढे गेल्यावर तिला एक कोल्हा भेटला.",
+      "pred": "लाला ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.05941268801689148,
+      "wer": 1.0,
+      "cer": 0.9090909090909091
+    },
+    {
+      "index": 3,
+      "audio": "data/test/audio/56.wav",
+      "ref": "दुसऱ्या दिवशी आजी त्या भोपळ्यात बसली.",
+      "pred": "दिळ दिला ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.05941268801689148,
+      "wer": 1.0,
+      "cer": 0.8333333333333334
+    },
+    {
+      "index": 4,
+      "audio": "data/test/audio/59.wav",
+      "ref": "आजी आतून म्हणू लागली, “चल रे भोपळ्या टुनुक टुनुक! चल रे भोपळ्या टुनुक टुनुक!”।",
+      "pred": "ाोेळत्चळत्े ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.05941268801689148,
+      "wer": 1.0,
+      "cer": 0.94
+    },
+    {
+      "index": 5,
+      "audio": "data/test/audio/63.wav",
+      "ref": "मूर्ख कोल्ह्याने विश्वास ठेवला आणि भोपळा पुढे निघून गेला.।",
+      "pred": "एकूनकेसला आणिलाला ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.05941268801689148,
+      "wer": 1.0,
+      "cer": 0.7714285714285715
+    },
+    {
+      "index": 6,
+      "audio": "data/test/audio/78.wav",
+      "ref": "घराबाहेर एक मोठे जंगल होते.",
+      "pred": "लाला ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.05941268801689148,
+      "wer": 1.0,
+      "cer": 0.9444444444444444
+    },
+    {
+      "index": 7,
+      "audio": "data/test/audio/42.wav",
+      "ref": "वाघानेही तिला खाण्याची धमकी दिली.",
+      "pred": "लाला ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.05941268801689148,
+      "wer": 1.0,
+      "cer": 0.8947368421052632
+    }
+  ]
+}

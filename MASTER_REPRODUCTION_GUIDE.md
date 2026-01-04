@@ -108,9 +108,27 @@ Results are stored in `nemo_experiments/marathi_pilot_v3/`, including:
 - `samples_epoch_19.json`: Final epoch transcriptions.
 - `epoch_metrics.csv`: Training curves.
 
+**Note:** A full snapshot of the data configuration used for this run is available in [DATA_SNAPSHOT_AMCHI_KONKANI.md](DATA_SNAPSHOT_AMCHI_KONKANI.md).
+
 ---
 
-## 5. Configuration Guide (YAML)
+## 5. Deaf Speech Training Guide 👂
+
+Training for deaf speech requires different hyperparameters due to the high acoustic variance and typically smaller datasets.
+
+### Recommended Settings
+- **Epochs:** 50+ (Small datasets need more passes).
+- **Batch Size:** 4 (Provides more gradient updates per epoch).
+- **Learning Rate:** 1e-4 (Stable for adaptation).
+- **Normalization:** Ensure punctuation stripping is enabled in `fine_tune.py`.
+
+### Data Protocol
+- **Multi-User:** Always prefer combining data from multiple deaf speakers to help the model learn a generalized "deaf speech" acoustic profile.
+- **Augmentation:** Speed and pitch perturbation are highly recommended for future runs.
+
+---
+
+## 6. Configuration Guide (YAML)
 
 ### Key Parameters
 *   **Model:** `models/indicconformer_stt_mr_hybrid_ctc_rnnt_large/indicconformer_stt_mr_hybrid_rnnt_large.nemo`

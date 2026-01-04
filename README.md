@@ -86,18 +86,13 @@ sentence_02.m4a	[konkani text here]
 - **Architecture**: Hybrid RNNT/CTC (Fine-tuned as CTC-only)
 - **Status**: **Marathi Pilot Complete** (Jan 4, 2026)
 - **Performance**: **WER 0.351 / CER 0.142** on Story 5 test set.
-- **Training Data**: Story 1, 2, 3 (Marathi)
-- **Validation Data**: Story 4 (Dev), Story 5 (Test)
+- **Deaf Speech Status**: **1-User Pilot Complete** (Jan 4, 2026). See [nemo_experiments/marathi_deaf_1user_75samples/LEARNINGS.md](nemo_experiments/marathi_deaf_1user_75samples/LEARNINGS.md).
 
 ### Configuration Files
 - **Main Config**: `configs/main_config.yaml`
-  - Controls active framework
-  - Defines source/target languages
-  - Sets model directories
-
 - **Marathi Pilot Config**: `configs/marathi_pilot_20epoch.yaml`
-  - 20 epochs, LR 1e-4, Story 4/5 splits.
-  - Custom research logging enabled.
+- **Deaf Speech Config**: `configs/marathi_deaf_pilot_50epoch.yaml` (50 epochs, LR 1e-4, Batch 4).
+
 
 ## 🚀 Setup & Installation
 
