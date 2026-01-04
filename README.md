@@ -81,12 +81,13 @@ sentence_02.m4a	[konkani text here]
 ## 🤖 Models & Configurations
 
 ### Current Working Model
-- **Framework**: HuggingFace
-- **Base Model**: `hriteshMaikap/marathi-asr-model`
-- **Architecture**: Wav2Vec2-BERT
-- **Model Path**: `D:/konkani_asr_models/huggingface_konkani/checkpoint-5`
-- **Training Data**: 1 sample (for testing)
-- **Performance**: WER ~83% (expected to improve with more data)
+- **Framework**: NVIDIA NeMo / AI4Bharat
+- **Base Model**: `ai4bharat/indicconformer_stt_mr_hybrid_ctc_rnnt_large` (Marathi)
+- **Architecture**: Hybrid RNNT/CTC (Fine-tuned as CTC-only)
+- **Status**: **Marathi Pilot Complete** (Jan 4, 2026)
+- **Performance**: **WER 0.351 / CER 0.142** on Story 5 test set.
+- **Training Data**: Story 1, 2, 3 (Marathi)
+- **Validation Data**: Story 4 (Dev), Story 5 (Test)
 
 ### Configuration Files
 - **Main Config**: `configs/main_config.yaml`
@@ -94,10 +95,9 @@ sentence_02.m4a	[konkani text here]
   - Defines source/target languages
   - Sets model directories
 
-- **Framework Configs**:
-  - `configs/huggingface_config.yaml`: Training parameters, model settings
-  - `configs/nemo_config.yaml`: NeMo-specific settings (placeholder)
-  - `configs/ai4bharat_config.yaml`: AI4Bharat settings (placeholder)
+- **Marathi Pilot Config**: `configs/marathi_pilot_20epoch.yaml`
+  - 20 epochs, LR 1e-4, Story 4/5 splits.
+  - Custom research logging enabled.
 
 ## 🚀 Setup & Installation
 

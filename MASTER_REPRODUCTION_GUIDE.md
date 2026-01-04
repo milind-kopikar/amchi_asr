@@ -80,11 +80,37 @@ Loading fine-tuned checkpoints for inference requires specific handling because 
 We have implemented a custom `SampleLoggerCallback` that provides per-epoch insights.
 - **JSON Samples:** Saves `samples_epoch_XX.json` containing reference, hypothesis, WER, and **CER** (Character Error Rate).
 - **CER Metric:** Crucial for Devanagari scripts where word-level errors (WER) can be misleadingly high due to small spelling variations.
+- **Normalization:** The script now automatically strips Devanagari punctuation and normalizes whitespace before calculating WER/CER to ensure fair evaluation.
 - **Visibility:** By default, it logs up to 40 samples to cover the entire validation set.
 
 ---
 
-## 4. Configuration Guide (YAML)
+## 4. Marathi Pilot Results (January 4, 2026) 🏆
+
+We conducted a 20-epoch pilot using the Marathi `indicconformer` model on the Story 4/5 dataset.
+
+### Protocol
+- **Training Set:** Story 1, 2, 3.
+- **Dev Set:** Story 4 (used for validation during training).
+- **Test Set:** Story 5 (used for final evaluation).
+- **Note:** This protocol ensures consistency with previous Konkani experiments.
+
+### Performance
+- **Final Test WER:** 0.351
+- **Final Test CER:** 0.142
+- **Epochs:** 20
+- **Learning Rate:** 0.0001
+- **Optimizer:** AdamW with Noam Annealing.
+
+### Artifacts
+Results are stored in `nemo_experiments/marathi_pilot_v3/`, including:
+- `final_test_results.json`: Summary of final metrics.
+- `samples_epoch_19.json`: Final epoch transcriptions.
+- `epoch_metrics.csv`: Training curves.
+
+---
+
+## 5. Configuration Guide (YAML)
 
 ### Key Parameters
 *   **Model:** `models/indicconformer_stt_mr_hybrid_ctc_rnnt_large/indicconformer_stt_mr_hybrid_rnnt_large.nemo`

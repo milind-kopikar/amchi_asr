@@ -1,55 +1,50 @@
 # AGENT HANDOFF — Resume instructions for next agent
 
-Date: 2026-01-03
+Date: 2026-01-04
 
 ---
 
 ## 1) Short summary (one line)
-Konkani Pilot Training (1-epoch) is VERIFIED with correct Devanagari output. Ready for 20-epoch full run.
+Marathi Pilot Training (20-epoch) is COMPLETE with **WER 0.351**. Ready for Konkani or other language scaling.
 
-**Recent activity (2026-01-03):**
-- **Tokenizer Fix:** Discovered that the default Konkani tokenizer from HuggingFace was missing Devanagari support. Extracted the correct BPE model (`def9dd6f2f9b4f5fb30c152c456a65cd`) directly from the `.nemo` archive.
-- **Data Loading Fix:** Increased `max_duration` to 30.0s in config to prevent filtering of long audio samples (processed all 38 validation samples).
-- **Logging Improvement:** Updated `SampleLoggerCallback` in `scripts/fine_tune.py` to log up to 100 samples and correctly handle NeMo `Hypothesis` objects.
-- **Pilot Run:** Successfully completed a 1-epoch pilot run on the full Konkani dataset. Verified that Devanagari characters (like 'ळ') are correctly predicted.
+**Recent activity (2026-01-04):**
+- **Marathi Pilot Success:** Achieved WER 0.351 and CER 0.142 on Story 5 (Test) after 20 epochs of fine-tuning.
+- **Data Protocol:** Aligned splits to Story 4 (Dev) and Story 5 (Test) to match Konkani experiment standards.
+- **Normalization Fix:** Added automatic Devanagari punctuation stripping and whitespace normalization to `fine_tune.py` for accurate metrics.
+- **Robust Logging:** Fixed `Hypothesis` object handling in `SampleLoggerCallback` to prevent serialization crashes.
+- **Results Persisted:** Final metrics and epoch-wise JSON logs are saved in `nemo_experiments/marathi_pilot_v3/`.
 
 ---
 
 ## 2) Current state & context
-- **Success:** 1-epoch pilot run finished with `overall_wer: 26.87` (epoch 0).
-- **Tokenizer:** Correct Konkani tokenizer is at `tokenizers/konkani_tokenizer.model`.
-- **Config:** `configs/konkani_pilot_20epoch.yaml` is ready, configured for 20 epochs, 30s max duration, and saving the top 3 checkpoints.
+- **Success:** Marathi 20-epoch run finished. Results are synced to GitHub.
+- **Tokenizer:** Marathi tokenizer is at `tokenizers/marathi_tokenizer.model`.
+- **Config:** `configs/marathi_pilot_20epoch.yaml` is the reference for high-quality Marathi fine-tuning.
 - **Environment:** RunPod environment is stable. AI4Bharat NeMo fork is installed and patched.
 
 ## 3) Objective for you (next agent)
-1. **Start 20-Epoch Training:** Run the full pilot training.
-   ```bash
-   python scripts/fine_tune.py --config configs/konkani_pilot_20epoch.yaml --output_dir nemo_experiments/pilot_20epoch
-   ```
-2. **Monitor Progress:** Check `nemo_experiments/pilot_20epoch/experiments/<timestamp>/epoch_metrics.csv` for WER/CER trends.
-3. **Review Samples:** Check `samples_epoch_XX.json` to see how predictions improve over time.
+1. **Konkani Scaling:** Now that the Marathi baseline is established (WER 0.351), apply the same protocol (Story 4 Dev / Story 5 Test) to the Konkani model.
+2. **Cross-Language Comparison:** Compare the Marathi-on-Marathi performance with Konkani-on-Konkani or Marathi-on-Konkani.
+3. **Monitor Progress:** Use the custom JSON logs in `nemo_experiments/` to analyze specific transcription errors.
 
 ## 4) Files & locations you will use
-- **Training Script:** `scripts/fine_tune.py` (Patched for better logging and tokenizer handling)
-- **Konkani Config:** `configs/konkani_pilot_20epoch.yaml`
-- **Setup Script:** `scripts/setup_konkani.sh` (Automates model/tokenizer setup)
-- **Results:** `nemo_experiments/pilot_20epoch/`
+- **Training Script:** `scripts/fine_tune.py` (Now includes normalization and robust logging)
+- **Marathi Config:** `configs/marathi_pilot_20epoch.yaml`
+- **Manifest Utility:** `scripts/swap_manifests.py` (Use this to swap Story 4/5 if needed)
+- **Results:** `nemo_experiments/marathi_pilot_v3/`
 
 ## 5) Verified Commands
 ```bash
-# Setup everything from scratch
-bash setup_env.sh
-bash scripts/setup_konkani.sh
-
-# Run 20-epoch training
-python scripts/fine_tune.py --config configs/konkani_pilot_20epoch.yaml --output_dir nemo_experiments/pilot_20epoch
+# Run Marathi 20-epoch training (already done, but for reference)
+export APPLY_CONV_PATCH=1
+python scripts/fine_tune.py --config configs/marathi_pilot_20epoch.yaml --output_dir results/marathi_pilot_v3
 ```
 
 ## 6) Recovery / Restart Guide 🆘
 If the RunPod restarts:
 1. Run `bash setup_env.sh`.
-2. Run `bash scripts/setup_konkani.sh`.
-3. Resume training (or restart if checkpoints weren't saved yet).
+2. Ensure `export APPLY_CONV_PATCH=1` is set before running any NeMo scripts.
+3. Results in `results/` are ignored by git; always move successful runs to `nemo_experiments/` for persistence.
 
 ---
 
