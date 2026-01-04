@@ -1,0 +1,22 @@
+{
+  "summary": {
+    "epoch": 0,
+    "global_step": 1,
+    "model_name": "EncDecHybridRNNTCTCBPEModel",
+    "param_count": 119592962,
+    "overall_wer": 1.0,
+    "date": "2026-01-04T16:20:55.823700"
+  },
+  "samples": [
+    {
+      "index": 0,
+      "audio": "data/dev/audio/570.wav",
+      "ref": "रोहन होड ज़ाल्लो!",
+      "pred": "ह॓ची रऒेतााज",
+      "deva_ok": true,
+      "pred_latency_s": 0.10537481307983398,
+      "wer": 1.0,
+      "cer": 0.8823529411764706
+    }
+  ]
+}

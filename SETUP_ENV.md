@@ -29,10 +29,19 @@ Important environment variables set/used by the project:
 - `LD_LIBRARY_PATH` should include your CUDA lib directory (for example `/usr/local/cuda/lib64`) if CUDA is installed in a non-standard location.
 
 Data splitting policy (story-based):
-- The `download_data_from_railway.py` script supports a `--use_story_split` flag that enforces deterministic, leakage-free splits: story_id 1/2/3 → train, story_id 5 → dev, story_id 4 → test. This is the canonical split used for experiments to avoid speaker/story leakage.
+- The `download_data_from_railway.py` script supports a `--use_story_split` flag that enforces deterministic, leakage-free splits.
+- **Canonical Split (Marathi Pilot):**
+  - **Train:** Stories 1, 2, 3 (472 samples)
+  - **Validation (Dev):** Story 4 - "भोलागली रेलयात्रा" (37 samples)
+  - **Test:** Story 5 - "रोहन होड ज़ाल्लो!" (37 samples)
+- This split ensures that the model is tested on entirely unseen stories and speakers.
 
 ## Bootstrap / First-Time Host Notes 🐣
-- **Hugging Face login (manual step):** The script cannot guess your Hugging Face token. On a new machine you'll need to run `huggingface-cli login` manually (or set `HF_TOKEN` in your environment) before attempting to download AI4Bharat models from the Hub.
+- **Hugging Face login (CRITICAL):** The AI4Bharat models are gated or require authentication. On a new machine, you **must** run `huggingface-cli login` and provide your token before the training script can download the weights.
+  ```bash
+  huggingface-cli login --token YOUR_HF_TOKEN
+  ```
+- **Model Weights:** If the `.nemo` file is 0 bytes, it means the LFS download failed. Use `scripts/download_model_from_hf.py` after logging in to fetch the real weights.
 
 - **Chicken & Egg (bootstrap command):** This repository and the setup script may not exist yet on a fresh host. Use this command to bootstrap a fresh machine in one step (replace YOUR_USER):
 

@@ -38,9 +38,18 @@ This script installs system dependencies (ffmpeg, build-essential), reinstalls P
 bash setup_env.sh
 \`\`\`
 
-### Step 3: Setup Konkani Model & Tokenizer
-This script downloads the AI4Bharat Konkani model and extracts the **correct** Konkani-specific tokenizer from the multilingual .nemo archive.
+### Step 3: Setup Marathi/Konkani Model & Tokenizer
+This script downloads the AI4Bharat model and extracts the **correct** language-specific tokenizer from the multilingual .nemo archive.
 
+**For Marathi:**
+\`\`\`bash
+# Ensure you have logged in to Hugging Face
+huggingface-cli login --token YOUR_TOKEN
+python scripts/download_model_from_hf.py --repo_id ai4bharat/indicconformer_stt_mr_hybrid_ctc_rnnt_large --local_dir models/indicconformer_stt_mr_hybrid_ctc_rnnt_large
+# The fine_tune.py script will automatically extract the tokenizer on first run
+\`\`\`
+
+**For Konkani:**
 \`\`\`bash
 bash scripts/setup_konkani.sh
 \`\`\`
@@ -67,13 +76,19 @@ NeMo's default max_duration is often set to 16.7s or 20s. If your audio is longe
 Loading fine-tuned checkpoints for inference requires specific handling because the checkpoint config may contain absolute paths or training-specific loss names that crash standard NeMo loaders.
 - **Solution:** Use scripts/smoke_test_inference.py which patches the config in memory before instantiation.
 
+### E. Research Logging & CER 📈
+We have implemented a custom `SampleLoggerCallback` that provides per-epoch insights.
+- **JSON Samples:** Saves `samples_epoch_XX.json` containing reference, hypothesis, WER, and **CER** (Character Error Rate).
+- **CER Metric:** Crucial for Devanagari scripts where word-level errors (WER) can be misleadingly high due to small spelling variations.
+- **Visibility:** By default, it logs up to 40 samples to cover the entire validation set.
+
 ---
 
 ## 4. Configuration Guide (YAML)
 
 ### Key Parameters
-*   **Model:** models/konkani_model.nemo
-*   **Tokenizer:** tokenizers/konkani_tokenizer.model
+*   **Model:** `models/indicconformer_stt_mr_hybrid_ctc_rnnt_large/indicconformer_stt_mr_hybrid_rnnt_large.nemo`
+*   **Tokenizer:** `tokenizers/marathi_tokenizer.model`
 *   **Trainer:**
     *   max_epochs: 20
     *   accumulate_grad_batches: 1
@@ -88,12 +103,13 @@ Loading fine-tuned checkpoints for inference requires specific handling because 
 ### Preflight Check
 Before a long run, verify the stack with a 1-epoch test:
 \`\`\`bash
-python scripts/fine_tune.py --config configs/konkani_pilot_1epoch_test.yaml --output_dir nemo_experiments/pilot_1epoch_test
+python scripts/fine_tune.py --config configs/marathi_pilot_1epoch_test.yaml --output_dir nemo_experiments/marathi_pilot_1epoch_test
 \`\`\`
 
 ### Full Pilot Training (20 Epochs)
 \`\`\`bash
-python scripts/fine_tune.py --config configs/konkani_pilot_20epoch.yaml --output_dir nemo_experiments/pilot_20epoch
+export APPLY_CONV_PATCH=1
+python scripts/fine_tune.py --config configs/marathi_pilot_20epoch.yaml --output_dir nemo_experiments/marathi_pilot_20epoch
 \`\`\`
 
 ---

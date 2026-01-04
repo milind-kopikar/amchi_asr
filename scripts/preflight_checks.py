@@ -97,7 +97,7 @@ def check_disk_space():
     return {'ok': ok, 'free_gb': round(free_gb, 2), 'min_gb': min_gb}
 
 
-def check_model_in_config(config_path='configs/konkani_finetune.yaml'):
+def check_model_in_config(config_path='configs/marathi_pilot_20epoch.yaml'):
     if not Path(config_path).exists():
         return {'ok': False, 'error': f'config not found: {config_path}'}
     try:

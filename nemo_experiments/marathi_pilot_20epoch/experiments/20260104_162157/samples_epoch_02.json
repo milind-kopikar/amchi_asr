@@ -1,0 +1,92 @@
+{
+  "summary": {
+    "epoch": 2,
+    "global_step": 180,
+    "model_name": "EncDecHybridRNNTCTCBPEModel",
+    "param_count": 119592962,
+    "overall_wer": 1.0,
+    "date": "2026-01-04T16:23:59.404091"
+  },
+  "samples": [
+    {
+      "index": 0,
+      "audio": "data/dev/audio/570.wav",
+      "ref": "रोहन होड ज़ाल्लो!",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.03639879822731018,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 1,
+      "audio": "data/dev/audio/571.wav",
+      "ref": "धा वर्सांचो रोहन उत्साहाने आनि खुशालेने उड्तशिलो -",
+      "pred": "िाश",
+      "deva_ok": true,
+      "pred_latency_s": 0.03639879822731018,
+      "wer": 1.0,
+      "cer": 0.94
+    },
+    {
+      "index": 2,
+      "audio": "data/dev/audio/572.wav",
+      "ref": "तो आप्णागले भारत देशु रज्जेन्तु वत्तशिलो!",
+      "pred": "श",
+      "deva_ok": true,
+      "pred_latency_s": 0.03639879822731018,
+      "wer": 1.0,
+      "cer": 0.975609756097561
+    },
+    {
+      "index": 3,
+      "audio": "data/dev/audio/573.wav",
+      "ref": "आम्माने आन्नुने सांगिल्ताका काण्यो सुमार -",
+      "pred": "्ुलल",
+      "deva_ok": true,
+      "pred_latency_s": 0.03639879822731018,
+      "wer": 1.0,
+      "cer": 0.9285714285714286
+    },
+    {
+      "index": 4,
+      "audio": "data/dev/audio/380.wav",
+      "ref": "धा वर्सांचो रोहन उत्साहाने आनि खुशालेने उड्तशिलो -",
+      "pred": "ि",
+      "deva_ok": true,
+      "pred_latency_s": 0.03639879822731018,
+      "wer": 1.0,
+      "cer": 0.98
+    },
+    {
+      "index": 5,
+      "audio": "data/dev/audio/381.wav",
+      "ref": "तो आप्णागले भारत देशु रज्जेन्तु वत्तशिलो!",
+      "pred": "श",
+      "deva_ok": true,
+      "pred_latency_s": 0.03639879822731018,
+      "wer": 1.0,
+      "cer": 0.975609756097561
+    },
+    {
+      "index": 6,
+      "audio": "data/dev/audio/382.wav",
+      "ref": "आम्माने आन्नुने सांगिल्ताका काण्यो सुमार -",
+      "pred": "्ु",
+      "deva_ok": true,
+      "pred_latency_s": 0.03639879822731018,
+      "wer": 1.0,
+      "cer": 0.9523809523809523
+    },
+    {
+      "index": 7,
+      "audio": "data/dev/audio/383.wav",
+      "ref": "तांगेले चेर्ल्ड्पणाचे गम्मते खब्र्यो, आंग्णांतु खेऴ्तालिं भरपूर",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.03639879822731018,
+      "wer": 1.0,
+      "cer": 1.0
+    }
+  ]
+}

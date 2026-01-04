@@ -53,6 +53,27 @@ def _compute_wer(ref: str, hyp: str) -> float:
             dp[i][j] = min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost)
     return dp[m][n] / m
 
+def _compute_cer(ref: str, hyp: str) -> float:
+    r = list(ref)
+    h = list(hyp)
+    m = len(r)
+    n = len(h)
+    if m == 0:
+        return 0.0 if n == 0 else 1.0
+    dp = [[0] * (n + 1) for _ in range(m + 1)]
+    for i in range(m + 1):
+        dp[i][0] = i
+    for j in range(n + 1):
+        dp[0][j] = j
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            if r[i - 1] == h[j - 1]:
+                cost = 0
+            else:
+                cost = 1
+            dp[i][j] = min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost)
+    return dp[m][n] / m
+
 
 class ResearchCSVLogger(pl.Callback):
     """Lightweight CSV logger that appends epoch metrics to a CSV file.
@@ -165,31 +186,6 @@ class SampleLoggerCallback(pl.Callback):
         except Exception as e:
             logger.warning(f"Failed to read manifest for SampleLogger: {e}")
 
-
-class ForceLRCallback(pl.Callback):
-    """Force optimizer learning rate to a fixed value at training start.
-
-    This ensures the actual optimizer param_groups['lr'] matches the config value
-    even if model.configure_optimizers or other code attempts to set a different base lr.
-    """
-    def __init__(self, lr: float):
-        self.lr = float(lr)
-    def on_train_start(self, trainer, pl_module):
-        try:
-            for opt in getattr(trainer, 'optimizers', []):
-                for g in opt.param_groups:
-                    g['lr'] = self.lr
-            logger.info(f"Forced optimizer lr to {self.lr}")
-        except Exception as e:
-            logger.warning(f"Failed to force optimizer lr: {e}")
-
-    # Silence validation hooks to avoid accidental calls (no-op)
-    def on_validation_epoch_end(self, trainer, pl_module):
-        return
-
-    def on_train_end(self, trainer, pl_module):
-        return
-
     def _is_devanagari(self, text: str) -> bool:
         if not text:
             return False
@@ -201,14 +197,13 @@ class ForceLRCallback(pl.Callback):
         return False
 
     def on_validation_epoch_end(self, trainer, pl_module):
-        # Guard against accidental invocation on unrelated callback instances
-        if not hasattr(self, 'samples'):
-            return
-
         epoch = trainer.current_epoch
         global_step = getattr(trainer, 'global_step', None)
 
         audio_paths = [s['audio'] for s in getattr(self, 'samples', []) if s.get('audio')]
+        if not audio_paths:
+            return
+
         preds = []
         start_t = time.time()
         try:
@@ -235,7 +230,15 @@ class ForceLRCallback(pl.Callback):
             audio = s.get('audio')
             ref = s.get('reference', '')
             pred = preds[i] if i < len(preds) else ''
+            
+            # Handle Hypothesis objects if returned by transcribe
+            if hasattr(pred, 'text'):
+                pred = pred.text
+            elif isinstance(pred, (list, tuple)) and len(pred) > 0 and hasattr(pred[0], 'text'):
+                pred = pred[0].text
+            
             wer = _compute_wer(ref, pred) if ref and pred is not None else None
+            cer = _compute_cer(ref, pred) if ref and pred is not None else None
             if wer is not None:
                 wer_list.append(wer)
             pred_latency_s = (batch_time / max(1, len(audio_paths))) if audio_paths else None
@@ -247,11 +250,11 @@ class ForceLRCallback(pl.Callback):
                 'pred': pred,
                 'deva_ok': bool(deva_ok),
                 'pred_latency_s': pred_latency_s,
-                'wer': wer
+                'wer': wer,
+                'cer': cer
             })
 
         # Build summary block
-        # model_name: prefer config name if present, fall back to class name
         try:
             cfg_name = None
             if hasattr(pl_module, '_cfg') and isinstance(pl_module._cfg, dict) and 'name' in pl_module._cfg:
@@ -263,7 +266,6 @@ class ForceLRCallback(pl.Callback):
 
         model_name = cfg_name if cfg_name else pl_module.__class__.__name__
 
-        # param_count
         try:
             if hasattr(pl_module, 'num_parameters') and callable(getattr(pl_module, 'num_parameters')):
                 param_count = int(pl_module.num_parameters())
@@ -276,7 +278,7 @@ class ForceLRCallback(pl.Callback):
 
         overall_wer = sum(wer_list) / max(1, len(wer_list)) if wer_list else None
 
-        # Log aggregate validation WER so ModelCheckpoint can monitor it if requested
+        # Log aggregate validation WER
         try:
             if overall_wer is not None:
                 try:
@@ -284,7 +286,6 @@ class ForceLRCallback(pl.Callback):
                         pl_module.log('val_wer', float(overall_wer), on_epoch=True, on_step=False)
                 except Exception:
                     pass
-                # As a more direct and immediate fallback, inject val_wer into trainer.callback_metrics
                 try:
                     trainer.callback_metrics['val_wer'] = float(overall_wer)
                 except Exception:
@@ -310,6 +311,24 @@ class ForceLRCallback(pl.Callback):
                 json.dump(out, fh, indent=2, ensure_ascii=False)
         except Exception as e:
             logger.warning(f"Failed to write sample results to {outpath}: {e}")
+
+
+class ForceLRCallback(pl.Callback):
+    """Force optimizer learning rate to a fixed value at training start.
+
+    This ensures the actual optimizer param_groups['lr'] matches the config value
+    even if model.configure_optimizers or other code attempts to set a different base lr.
+    """
+    def __init__(self, lr: float):
+        self.lr = float(lr)
+    def on_train_start(self, trainer, pl_module):
+        try:
+            for opt in getattr(trainer, 'optimizers', []):
+                for g in opt.param_groups:
+                    g['lr'] = self.lr
+            logger.info(f"Forced optimizer lr to {self.lr}")
+        except Exception as e:
+            logger.warning(f"Failed to force optimizer lr: {e}")
 
 # NeMo imports
 import nemo
@@ -388,9 +407,10 @@ def setup_model(config: DictConfig):
             # (some .nemo configs use a 'multilingual' tokenizer mapping with absolute
             # paths that don't exist locally). Prefer a local monolingual tokenizer in `tokenizers/`.
             tok = conf.get('tokenizer', {})
+            lang_key = getattr(config.model, 'language', 'kok')
             if isinstance(tok, dict) and tok.get('type') == 'multilingual':
                 langs = tok.get('langs', {}) or {}
-                if 'kok' in langs:
+                if lang_key in langs or 'kok' in langs:
                     # Prefer using the tokenizer path from the user config if provided
                     user_tok_dir = None
                     user_tok_model = None
@@ -413,7 +433,7 @@ def setup_model(config: DictConfig):
                             if os.path.exists(p):
                                 model_path_candidate = p
                             else:
-                                model_path_candidate = 'tokenizers/konkani_tokenizer.model'
+                                model_path_candidate = f'tokenizers/{lang_key}_tokenizer.model'
 
                         # If the user tokenizer directory doesn't have a vocab.txt, fall back to our local tokenizers/
                         vocab_candidate = os.path.join(user_tok_dir, 'vocab.txt')
@@ -422,7 +442,7 @@ def setup_model(config: DictConfig):
                             conf['tokenizer'] = {
                                 'type': 'bpe',
                                 'dir': 'tokenizers',
-                                'model_path': 'tokenizers/konkani_tokenizer.model',
+                                'model_path': model_path_candidate if model_path_candidate else f'tokenizers/{lang_key}_tokenizer.model',
                             }
                         else:
                             conf['tokenizer'] = {
@@ -435,7 +455,7 @@ def setup_model(config: DictConfig):
                         conf['tokenizer'] = {
                             'type': 'bpe',
                             'dir': 'tokenizers',
-                            'model_path': 'tokenizers/konkani_tokenizer.model'
+                            'model_path': f'tokenizers/{lang_key}_tokenizer.model'
                         }
 
                     # --- NEW: Offline config edit to swap CTC decoder to 256 classes ---
@@ -529,7 +549,8 @@ def setup_model(config: DictConfig):
         except Exception:
             new_tok = None
         if not new_tok:
-            for cand in ('tokenizers/konkani_tokenizer.model', 'tokenizers/konkani_tokenizer.model', 'models/tokenizer/tokenizer.model'):
+            lang_key = getattr(config.model, 'language', 'kok')
+            for cand in (f'tokenizers/{lang_key}_tokenizer.model', 'tokenizers/konkani_tokenizer.model', 'models/tokenizer/tokenizer.model'):
                 if os.path.exists(cand):
                     new_tok = cand
                     break
@@ -537,8 +558,35 @@ def setup_model(config: DictConfig):
             print(f"🔁 Attempting change_vocabulary with tokenizer: {new_tok}")
             try:
                 if hasattr(model, 'change_vocabulary'):
-                    model.change_vocabulary(new_tokenizer=new_tok, change_output_layer=True)
-                    print('✅ change_vocabulary completed')
+                    # Try different argument styles for change_vocabulary
+                    success = False
+                    # Style 1: new_tokenizer (modern NeMo)
+                    try:
+                        model.change_vocabulary(new_tokenizer=new_tok, change_output_layer=True)
+                        success = True
+                    except TypeError:
+                        pass
+                    
+                    # Style 2: new_tokenizer_dir + new_tokenizer_model
+                    if not success:
+                        try:
+                            model.change_vocabulary(new_tokenizer_dir=os.path.dirname(new_tok), new_tokenizer_model=os.path.basename(new_tok))
+                            success = True
+                        except TypeError:
+                            pass
+                            
+                    # Style 3: new_tokenizer_dir only (expects tokenizer.model inside)
+                    if not success:
+                        try:
+                            model.change_vocabulary(new_tokenizer_dir=os.path.dirname(new_tok))
+                            success = True
+                        except TypeError:
+                            pass
+                    
+                    if success:
+                        print('✅ change_vocabulary completed')
+                    else:
+                        print('⚠️ change_vocabulary failed: could not find matching signature')
                 else:
                     print('⚠️ change_vocabulary API not present on model; skipping')
             except Exception as e:
@@ -587,7 +635,7 @@ def setup_model(config: DictConfig):
             try:
                 # Validate a dry-run forward to see if ctc_decoder accepts our language id form
                 dummy_in = torch.randn(1, model.preprocessor.features, 16)
-                _ = model.ctc_decoder(dummy_in, language_ids=[getattr(config, 'custom_config', {}).get('language', 'kok')])
+                _ = model.ctc_decoder(dummy_in, language_ids=[getattr(config.model, 'language', 'kok')])
             except Exception as e:
                 logger.warning(f"CTC decoder raised during dry-run: {e}. Replacing with a safe stub for pilot runs (USE_CTC_STUB=1).")
 
@@ -904,14 +952,15 @@ def setup_data_module(config: DictConfig, model=None):
                         # Provide language_ids as a list of LanguageIdentifier objects so both conv_asr
                         # (which does int(lid)) and joint.ModuleDict (which expects string keys) work.
                         if self.model is not None and hasattr(self.model, 'joint') and hasattr(self.model.joint, 'language_keys'):
-                            lang_key = getattr(config, 'custom_config', {}).get('language', 'kok') if hasattr(config, 'custom_config') else 'kok'
+                            lang_key = getattr(config.model, 'language', 'kok')
                             try:
                                 lang_idx = list(self.model.joint.language_keys).index(lang_key)
                             except Exception:
                                 lang_idx = 0
                             language_ids = [LanguageIdentifier(lang_key, lang_idx) for _ in range(bs)]
                         else:
-                            language_ids = [LanguageIdentifier('kok', 0) for _ in range(bs)]
+                            lang_key = getattr(config.model, 'language', 'kok')
+                            language_ids = [LanguageIdentifier(lang_key, 0) for _ in range(bs)]
                         yield (signal, signal_len, labels, labels_len, sample_ids, language_ids)
                     else:
                         # Pass through other batch formats unchanged
@@ -1142,7 +1191,7 @@ def fine_tune_model(config: DictConfig, output_dir: str):
             # Instantiate callbacks and attach to trainer
             try:
                 csv_logger = ResearchCSVLogger(csv_path)
-                sample_logger = SampleLoggerCallback(getattr(config.data.validation_ds, 'manifest_filepath', ''), experiment_dir)
+                sample_logger = SampleLoggerCallback(getattr(config.data.validation_ds, 'manifest_filepath', ''), experiment_dir, max_samples=40)
                 trainer.callbacks.append(csv_logger)
                 trainer.callbacks.append(sample_logger)
 

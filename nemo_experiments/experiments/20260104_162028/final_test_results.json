@@ -1,0 +1,11 @@
+{
+  "best_checkpoint": "/workspace/amchi_asr/nemo_experiments/checkpoints/amchi_marathi_golden_5epoch_ctc-epoch=04-val_loss=19.281.ckpt",
+  "summary": {
+    "total_samples": 1,
+    "mean_wer": 0.0
+  },
+  "per_sample": [
+    {
+      "audio": "data/dev/audio/570.wav",
+      "reference": "रोहन होड ज़ाल्लो!",
+      "prediction": 
