@@ -86,12 +86,15 @@ sentence_02.m4a	[konkani text here]
 - **Architecture**: Hybrid RNNT/CTC (Fine-tuned as CTC-only)
 - **Status**: **Marathi Pilot Complete** (Jan 4, 2026)
 - **Performance**: **WER 0.351 / CER 0.142** on Story 5 test set.
-- **Deaf Speech Status**: **1-User Pilot Complete** (Jan 4, 2026). See [nemo_experiments/marathi_deaf_1user_75samples/LEARNINGS.md](nemo_experiments/marathi_deaf_1user_75samples/LEARNINGS.md).
+- **Deaf Speech Status**: 
+  - **1-User Pilot**: Complete (Jan 4, 2026). WER 0.97. See [nemo_experiments/marathi_deaf_1user_75samples/LEARNINGS.md](nemo_experiments/marathi_deaf_1user_75samples/LEARNINGS.md).
+  - **Multi-User Pilot**: Complete (Jan 4, 2026). WER 0.948. See [nemo_experiments/marathi_deaf_multi_user_101samples/LEARNINGS.md](nemo_experiments/marathi_deaf_multi_user_101samples/LEARNINGS.md).
 
 ### Configuration Files
 - **Main Config**: `configs/main_config.yaml`
 - **Marathi Pilot Config**: `configs/marathi_pilot_20epoch.yaml`
-- **Deaf Speech Config**: `configs/marathi_deaf_pilot_50epoch.yaml` (50 epochs, LR 1e-4, Batch 4).
+- **Deaf Speech Config (1-User)**: `configs/marathi_deaf_pilot_50epoch.yaml`
+- **Deaf Speech Config (Multi-User)**: `configs/marathi_deaf_multi_user_50epoch.yaml`
 
 
 ## 🚀 Setup & Installation
