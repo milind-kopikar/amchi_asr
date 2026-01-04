@@ -1,0 +1,122 @@
+{
+  "summary": {
+    "epoch": 27,
+    "global_step": 560,
+    "model_name": "EncDecHybridRNNTCTCBPEModel",
+    "param_count": 119592962,
+    "overall_wer": 1.0,
+    "date": "2026-01-04T22:01:47.606789"
+  },
+  "samples": [
+    {
+      "index": 0,
+      "audio": "data_all_users/test/audio/71.wav",
+      "ref": "सिंहानेही विश्वास ठेवला.।",
+      "pred": "त ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.06944537162780762,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 1,
+      "audio": "data_all_users/test/audio/91.wav",
+      "ref": "तो म्हणाला, “अरे, माझं हृदय तर मी झाडावरच ठेवून आलो! मला आधी परत झाडाजवळ घेऊन चल.”।",
+      "pred": " ⁇ ",
+      "deva_ok": false,
+      "pred_latency_s": 0.06944537162780762,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 2,
+      "audio": "data_all_users/test/audio/125.wav",
+      "ref": "माकड लगेच झाडावर उडी मारून गेला आणि म्हणाला, “मित्रावर विश्वास ठेवणं चांगलं, पण अंधविश्वास नाही.”।",
+      "pred": " ⁇ ",
+      "deva_ok": false,
+      "pred_latency_s": 0.06944537162780762,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 3,
+      "audio": "data_all_users/test/audio/27.wav",
+      "ref": "खूप शोधल्यानंतर त्याला रस्त्याच्या कडेला एक घडा दिसला.।",
+      "pred": " ⁇ ",
+      "deva_ok": false,
+      "pred_latency_s": 0.06944537162780762,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 4,
+      "audio": "data_all_users/test/audio/15.wav",
+      "ref": "एका घरात एक आजी एकटी राहत होती.",
+      "pred": "ला ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.06944537162780762,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 5,
+      "audio": "data_all_users/test/audio/33.wav",
+      "ref": "त्या गावात आजीची मुलगी तिच्या कुटुंबासोबत राहत होती.।",
+      "pred": "तड एक पे ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.06944537162780762,
+      "wer": 1.0,
+      "cer": 0.875
+    },
+    {
+      "index": 6,
+      "audio": "data_all_users/test/audio/37.wav",
+      "ref": "सिंह म्हणाला, “ए आजी! मला फार भूक लागली आहे. मी तुला खाणार आहे. इकडे ये!”।",
+      "pred": "कोळा ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.06944537162780762,
+      "wer": 1.0,
+      "cer": 0.9782608695652174
+    },
+    {
+      "index": 7,
+      "audio": "data_all_users/test/audio/99.wav",
+      "ref": "कावळ्याची चोच तिथपर्यंत पोहोचत नव्हती.",
+      "pred": "तो ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.06944537162780762,
+      "wer": 1.0,
+      "cer": 0.96
+    },
+    {
+      "index": 8,
+      "audio": "data_all_users/test/audio/115.wav",
+      "ref": "एके दिवशी नदीत राहणाऱ्या मगराच्या तोंडात ती फळं पडली.",
+      "pred": "रा ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.06944537162780762,
+      "wer": 1.0,
+      "cer": 0.9714285714285714
+    },
+    {
+      "index": 9,
+      "audio": "data_all_users/test/audio/20.wav",
+      "ref": "मगर रिकाम्या हाताने परत नदीत गेला.",
+      "pred": "वाळ ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.06944537162780762,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 10,
+      "audio": "data_all_users/test/audio/86.wav",
+      "ref": "मग आणखी फळं खायची लालसा त्याला झाली.।",
+      "pred": " ⁇ ",
+      "deva_ok": false,
+      "pred_latency_s": 0.06944537162780762,
+      "wer": 1.0,
+      "cer": 1.0
+    }
+  ]
+}

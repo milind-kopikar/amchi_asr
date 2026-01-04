@@ -37,8 +37,8 @@ def download_file(url: str, output_path: str):
                 f.write(chunk)
                 pbar.update(len(chunk))
 
-def fetch_recordings_list(base_url: str, user_prefix: str):
-    """Fetch list of approved recordings from Railway API and filter by user"""
+def fetch_recordings_list(base_url: str, user_prefix: str = None):
+    """Fetch list of approved recordings from Railway API and filter by user if prefix provided"""
     api_url = f"{base_url}/api/recordings"
     logger.info(f"Fetching recordings from {api_url}")
     
@@ -47,24 +47,26 @@ def fetch_recordings_list(base_url: str, user_prefix: str):
     
     recordings = response.json()
     
-    # Filter for approved recordings and specific user
-    # User email starts with t***y@gmail.com
-    filtered = [
-        r for r in recordings 
-        if r.get('status') == 'approved' and r.get('user_id', '').startswith(user_prefix)
-    ]
+    # Filter for approved recordings
+    filtered = [r for r in recordings if r.get('status') == 'approved']
     
-    logger.info(f"Found {len(filtered)} approved recordings for user {user_prefix}* out of {len(recordings)} total")
+    # Further filter by user if prefix provided
+    if user_prefix:
+        filtered = [r for r in filtered if r.get('user_id', '').startswith(user_prefix)]
+        logger.info(f"Found {len(filtered)} approved recordings for user {user_prefix}* out of {len(recordings)} total")
+    else:
+        logger.info(f"Found {len(filtered)} approved recordings for ALL users out of {len(recordings)} total")
+        
     return filtered
 
-def create_manifest(recordings: list, output_path: str, split: str):
+def create_manifest(recordings: list, output_path: str, split: str, output_dir: str):
     """Create NeMo-compatible manifest file"""
     logger.info(f"Creating {split} manifest...")
     
     manifest_lines = []
     for idx, rec in enumerate(recordings):
         manifest_entry = {
-            "audio_filepath": f"data/{split}/audio/{rec['id']}.wav",
+            "audio_filepath": f"{output_dir}/{split}/audio/{rec['id']}.wav",
             "text": rec['sentence_text'],
             "duration": rec.get('duration', 0),
             "lang": "mr",
@@ -108,8 +110,8 @@ def main():
     parser.add_argument(
         "--user_prefix",
         type=str,
-        required=True,
-        help="Prefix of the user email (e.g., 't')"
+        default=None,
+        help="Prefix of the user email (e.g., 't'). If omitted, downloads all users."
     )
     parser.add_argument(
         "--output_dir",
@@ -150,7 +152,7 @@ def main():
     
     for split_name, split_recs in splits:
         split_dir = Path(args.output_dir) / split_name
-        create_manifest(split_recs, str(split_dir / "manifest.jsonl"), split_name)
+        create_manifest(split_recs, str(split_dir / "manifest.jsonl"), split_name, args.output_dir)
         download_recordings(args.base_url, split_recs, str(split_dir))
 
 if __name__ == "__main__":
