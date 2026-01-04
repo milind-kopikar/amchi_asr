@@ -5,39 +5,51 @@ Date: 2026-01-04
 ---
 
 ## 1) Short summary (one line)
-Marathi Pilot Training (20-epoch) is COMPLETE with **WER 0.351**. Ready for Konkani or other language scaling.
+Marathi Story Pilot (WER 0.351) and Deaf Speech Multi-User Pilot (WER 0.948) are COMPLETE. Ready for large-scale deaf speech data collection.
 
 **Recent activity (2026-01-04):**
-- **Marathi Pilot Success:** Achieved WER 0.351 and CER 0.142 on Story 5 (Test) after 20 epochs of fine-tuning.
-- **Data Protocol:** Aligned splits to Story 4 (Dev) and Story 5 (Test) to match Konkani experiment standards.
-- **Normalization Fix:** Added automatic Devanagari punctuation stripping and whitespace normalization to `fine_tune.py` for accurate metrics.
-- **Robust Logging:** Fixed `Hypothesis` object handling in `SampleLoggerCallback` to prevent serialization crashes.
-- **Results Persisted:** Final metrics and epoch-wise JSON logs are saved in `nemo_experiments/marathi_pilot_v3/`.
+- **Marathi Pilot Success:** Achieved WER 0.351 and CER 0.142 on Story 5 (Test) after 20 epochs.
+- **Deaf Speech Track:**
+  - **1-User Pilot:** Trained on 75 samples from a single deaf user (`tnshenoy@gmail.com`). Achieved WER 0.97.
+  - **Multi-User Pilot:** Trained on 101 samples from all approved users on Railway. Achieved **WER 0.948**.
+  - **Data Acquisition:** Created `scripts/download_deaf_speech.py` to pull and split data from the Railway API.
+  - **Learnings:** Diversity (multi-user) is showing better generalization than single-user data, even at small scales.
+- **Results Persisted:** 
+  - Marathi Story: `nemo_experiments/marathi_pilot_v3/`
+  - Deaf Speech (1-User): `nemo_experiments/marathi_deaf_1user_75samples/`
+  - Deaf Speech (Multi-User): `nemo_experiments/marathi_deaf_multi_user_101samples/`
 
 ---
 
 ## 2) Current state & context
-- **Success:** Marathi 20-epoch run finished. Results are synced to GitHub.
+- **Success:** Both standard Marathi and Deaf Speech pilots are finished and synced to GitHub.
+- **Data:** 
+  - Standard: `data/train`, `data/dev`, `data/test`
+  - Deaf (All Users): `data_all_users/train`, `data_all_users/dev`, `data_all_users/test`
 - **Tokenizer:** Marathi tokenizer is at `tokenizers/marathi_tokenizer.model`.
-- **Config:** `configs/marathi_pilot_20epoch.yaml` is the reference for high-quality Marathi fine-tuning.
 - **Environment:** RunPod environment is stable. AI4Bharat NeMo fork is installed and patched.
 
 ## 3) Objective for you (next agent)
-1. **Konkani Scaling:** Now that the Marathi baseline is established (WER 0.351), apply the same protocol (Story 4 Dev / Story 5 Test) to the Konkani model.
-2. **Cross-Language Comparison:** Compare the Marathi-on-Marathi performance with Konkani-on-Konkani or Marathi-on-Konkani.
-3. **Monitor Progress:** Use the custom JSON logs in `nemo_experiments/` to analyze specific transcription errors.
+1. **Deaf Speech Scaling:** We need more data. The current trend suggests 500-1000 samples are needed for usable WER.
+2. **Data Augmentation:** Experiment with speed/pitch perturbation in `configs/marathi_deaf_multi_user_50epoch.yaml` to simulate more deaf speech variations.
+3. **Konkani Scaling:** Apply the same protocol to the Konkani model (`models/konkani_model.nemo`).
 
 ## 4) Files & locations you will use
-- **Training Script:** `scripts/fine_tune.py` (Now includes normalization and robust logging)
-- **Marathi Config:** `configs/marathi_pilot_20epoch.yaml`
-- **Manifest Utility:** `scripts/swap_manifests.py` (Use this to swap Story 4/5 if needed)
-- **Results:** `nemo_experiments/marathi_pilot_v3/`
+- **Training Script:** `scripts/fine_tune.py`
+- **Data Script:** `scripts/download_deaf_speech.py` (Pulls from Railway API)
+- **Configs:** 
+  - `configs/marathi_pilot_20epoch.yaml` (Standard)
+  - `configs/marathi_deaf_multi_user_50epoch.yaml` (Deaf)
+- **Results:** `nemo_experiments/`
 
 ## 5) Verified Commands
 ```bash
-# Run Marathi 20-epoch training (already done, but for reference)
+# Download all approved deaf speech data
+python3 scripts/download_deaf_speech.py --output_dir data_all_users
+
+# Run Multi-User Deaf Speech Training
 export APPLY_CONV_PATCH=1
-python scripts/fine_tune.py --config configs/marathi_pilot_20epoch.yaml --output_dir results/marathi_pilot_v3
+python3 scripts/fine_tune.py --config configs/marathi_deaf_multi_user_50epoch.yaml
 ```
 
 ## 6) Recovery / Restart Guide 🆘
