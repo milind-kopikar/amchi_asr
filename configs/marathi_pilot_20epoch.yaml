@@ -64,7 +64,7 @@ data:
     use_start_end_token: false
     return_language_id: false
   validation_ds:
-    manifest_filepath: "data/dev/manifest.jsonl"
+    manifest_filepath: "data/test/manifest.jsonl"
     sample_rate: 16000
     batch_size: 8
     shuffle: false

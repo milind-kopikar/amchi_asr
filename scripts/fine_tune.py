@@ -32,7 +32,34 @@ import datetime, json, csv, time
 from typing import Optional, List
 
 # Simple WER helper for quick evaluations
+def _extract_text(pred):
+    if pred is None:
+        return ""
+    if isinstance(pred, str):
+        return pred
+    # Handle list/tuple
+    if isinstance(pred, (list, tuple)) and len(pred) > 0:
+        return _extract_text(pred[0])
+    # Handle Hypothesis objects (common in RNNT)
+    if hasattr(pred, 'text'):
+        return str(pred.text)
+    return str(pred)
+
+def _normalize_text(text: str) -> str:
+    if not text:
+        return ""
+    import re
+    # Remove punctuation and special characters
+    text = re.sub(r'[^\w\s]', '', text)
+    # Remove extra whitespace
+    text = " ".join(text.split())
+    return text
+
 def _compute_wer(ref: str, hyp: str) -> float:
+    ref = _normalize_text(ref)
+    hyp = _extract_text(hyp)
+    hyp = _normalize_text(hyp)
+    
     r = ref.split()
     h = hyp.split()
     m = len(r)
@@ -54,6 +81,10 @@ def _compute_wer(ref: str, hyp: str) -> float:
     return dp[m][n] / m
 
 def _compute_cer(ref: str, hyp: str) -> float:
+    ref = _normalize_text(ref)
+    hyp = _extract_text(hyp)
+    hyp = _normalize_text(hyp)
+    
     r = list(ref)
     h = list(hyp)
     m = len(r)
@@ -229,13 +260,8 @@ class SampleLoggerCallback(pl.Callback):
         for i, s in enumerate(self.samples):
             audio = s.get('audio')
             ref = s.get('reference', '')
-            pred = preds[i] if i < len(preds) else ''
-            
-            # Handle Hypothesis objects if returned by transcribe
-            if hasattr(pred, 'text'):
-                pred = pred.text
-            elif isinstance(pred, (list, tuple)) and len(pred) > 0 and hasattr(pred[0], 'text'):
-                pred = pred[0].text
+            pred_raw = preds[i] if i < len(preds) else ''
+            pred = _extract_text(pred_raw)
             
             wer = _compute_wer(ref, pred) if ref and pred is not None else None
             cer = _compute_cer(ref, pred) if ref and pred is not None else None
@@ -1191,7 +1217,13 @@ def fine_tune_model(config: DictConfig, output_dir: str):
             # Instantiate callbacks and attach to trainer
             try:
                 csv_logger = ResearchCSVLogger(csv_path)
-                sample_logger = SampleLoggerCallback(getattr(config.data.validation_ds, 'manifest_filepath', ''), experiment_dir, max_samples=40)
+                
+                # Use test_ds for sample logging if available, otherwise fallback to validation_ds
+                test_manifest = getattr(config.data, 'test_ds', {}).get('manifest_filepath', '')
+                if not test_manifest:
+                    test_manifest = getattr(config.data.validation_ds, 'manifest_filepath', '')
+                
+                sample_logger = SampleLoggerCallback(test_manifest, experiment_dir, max_samples=40)
                 trainer.callbacks.append(csv_logger)
                 trainer.callbacks.append(sample_logger)
 
@@ -1367,8 +1399,11 @@ def fine_tune_model(config: DictConfig, output_dir: str):
                 except Exception as e:
                     logger.warning(f"Failed to load best checkpoint: {e}")
 
-                # Evaluate on validation manifest (create per-sample and summary results)
-                manifest = getattr(config.data.validation_ds, 'manifest_filepath', None)
+                # Evaluate on test manifest (create per-sample and summary results)
+                manifest = getattr(config.data, 'test_ds', {}).get('manifest_filepath', None)
+                if not manifest:
+                    manifest = getattr(config.data.validation_ds, 'manifest_filepath', None)
+                
                 if manifest and os.path.exists(manifest):
                     per_sample = []
                     try:
@@ -1385,9 +1420,10 @@ def fine_tune_model(config: DictConfig, output_dir: str):
                                     if hasattr(model, 'transcribe') and audio:
                                         # model.transcribe expects a list of paths
                                         try:
-                                            pred = model.transcribe([audio])[0]
+                                            pred_raw = model.transcribe([audio])[0]
                                         except TypeError:
-                                            pred = model.transcribe(paths2audio_files=[audio])[0]
+                                            pred_raw = model.transcribe(paths2audio_files=[audio])[0]
+                                        pred = _extract_text(pred_raw)
                                     else:
                                         pred = ''
                                     wer_val = _compute_wer(ref, pred) if ref else None
