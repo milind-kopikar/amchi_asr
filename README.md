@@ -85,7 +85,9 @@ sentence_02.m4a	[konkani text here]
 - **Base Model**: `ai4bharat/indicconformer_stt_mr_hybrid_ctc_rnnt_large` (Marathi)
 - **Architecture**: Hybrid RNNT/CTC (Fine-tuned as CTC-only)
 - **Status**: **Marathi Pilot Complete** (Jan 4, 2026)
-- **Performance**: **WER 0.351 / CER 0.142** on Story 5 test set.
+- **Performance**:
+  - **Raw ASR**: WER 0.351 / CER 0.142
+  - **Post-Processed**: **WER 0.213 / CER 0.042** (Story 5 test set)
 - **Deaf Speech Status**: 
   - **1-User Pilot**: Complete (Jan 4, 2026). WER 0.97. See [nemo_experiments/marathi_deaf_1user_75samples/LEARNINGS.md](nemo_experiments/marathi_deaf_1user_75samples/LEARNINGS.md).
   - **Multi-User Pilot**: Complete (Jan 4, 2026). WER 0.948. See [nemo_experiments/marathi_deaf_multi_user_101samples/LEARNINGS.md](nemo_experiments/marathi_deaf_multi_user_101samples/LEARNINGS.md).
@@ -191,6 +193,27 @@ python scripts/test_model.py
 **Expected Text**: `पाव वाट दाण्टुनु वत्ता म्हण्तना तिका एकु सिंहु मेऴ्ळो!`  
 **Predicted Text**: `पाव वाट दाणटुनु वत्ता म्हणतना तिका एकु सिंहु मेळो`  
 **Analysis**: Core words correct, understandable Konkani output
+
+## 🛠️ Post-Processing & Error Correction
+
+To further improve the accuracy of the ASR system, we implemented a post-processing pipeline that applies phonetic and linguistic correction rules to the raw model output.
+
+### Pipeline Components
+1. **`scripts/extract_predictions.py`**: Extracts raw predictions from the NeMo test results JSON.
+2. **`scripts/post_process_konkani.py`**: Applies regex-based correction rules. It handles:
+   - **Phonetic Fixes**: Correcting common Marathi-to-Konkani phonetic misrecognitions (e.g., `देषु` → `देशु`).
+   - **Concatenation Issues**: Fixing words that were incorrectly split by the ASR (e.g., `उत् साहाने` → `उत्साहाने`).
+   - **Dictionary Alignment**: Ensuring high-frequency words match the "Amchi Konkani" dictionary.
+3. **`scripts/evaluate_post_processed.py`**: Re-calculates WER and CER metrics on the "cleaned" text.
+
+### Impact on Accuracy (Marathi Pilot v3)
+| Metric | Raw ASR Output | Post-Processed | % Improvement |
+| :--- | :--- | :--- | :--- |
+| **Average WER** | 0.3511 | **0.2127** | ~39.4% |
+| **Average CER** | 0.1420 | **0.0422** | ~70.3% |
+
+> [!NOTE]
+> Post-processing proved highly effective for the "Story" datasets where specific vocabulary repeats. This technique will be integrated into the final deployment pipeline to handle dialect-specific nuances that the base Marathi model misses.
 
 ## 🔄 Framework Migration
 
