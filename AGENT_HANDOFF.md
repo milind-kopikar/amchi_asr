@@ -1,14 +1,16 @@
 # AGENT HANDOFF — Resume instructions for next agent
 
-Date: 2026-01-04
+Date: 2026-01-04 (Late Evening Update)
 
 ---
 
 ## 1) Short summary (one line)
-Marathi Story Pilot (WER 0.351) and Deaf Speech Multi-User Pilot (WER 0.948) are COMPLETE. Ready for large-scale deaf speech data collection.
+Marathi Story Pilot (WER 0.351 -> **0.213** with Post-Processing) and Deaf Speech Multi-User Pilot (WER 0.948) are COMPLETE. MIT THINK Proposal drafted.
 
 **Recent activity (2026-01-04):**
-- **Marathi Pilot Success:** Achieved WER 0.351 and CER 0.142 on Story 5 (Test) after 20 epochs.
+- **Post-Processing Breakthrough:** Implemented dictionary-based correction (`scripts/post_process_konkani.py`) which reduced Marathi Pilot v3 WER from 0.351 to **0.213** (39% improvement).
+- **MIT THINK Proposal:** Drafted research proposal and preliminary analysis report. Generated plots (`wer_comparison.png`) for the application.
+- **Marathi Pilot Success:** Achieved base WER 0.351. Post-processed to **WER 0.213 / CER 0.042** on Story 5.
 - **Deaf Speech Track:**
   - **1-User Pilot:** Trained on 75 samples from a single deaf user (`tnshenoy@gmail.com`). Achieved WER 0.97.
   - **Multi-User Pilot:** Trained on 101 samples from all approved users on Railway. Achieved **WER 0.948**.
@@ -40,6 +42,15 @@ Marathi Story Pilot (WER 0.351) and Deaf Speech Multi-User Pilot (WER 0.948) are
 - **Configs:** 
   - `configs/marathi_pilot_20epoch.yaml` (Standard)
   - `configs/marathi_deaf_multi_user_50epoch.yaml` (Deaf)
+- **Post-Processing:**
+  - `scripts/extract_predictions.py`
+  - `scripts/post_process_konkani.py`
+  - `scripts/evaluate_post_processed.py`
+  - `post_process_metrics.json`
+- **Proposal Artifacts:**
+  - `mit_think_research_proposal.md`
+  - `preliminary_metrics_report.md`
+  - `wer_comparison.png`
 - **Results:** `nemo_experiments/`
 
 ## 5) Verified Commands
