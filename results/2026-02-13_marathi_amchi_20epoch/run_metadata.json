@@ -1,0 +1,18 @@
+{
+  "date": "2026-02-13",
+  "description": "Marathi IndicConformer fine-tuned on Amchi Konkani for 20 epochs. Best 3 checkpoints by val_wer plus final checkpoint.",
+  "base_nemo_model": "models/indicconformer_stt_mr_hybrid_ctc_rnnt_large/indicconformer_stt_mr_hybrid_rnnt_large.nemo",
+  "config": "configs/marathi_amchi_20epoch.yaml",
+  "epochs": 20,
+  "data": {
+    "train": "data/amchi/train/manifest.jsonl",
+    "dev": "data/amchi/dev/manifest.jsonl",
+    "test": "data/amchi/test/manifest.jsonl"
+  },
+  "manifest_copies_in_this_folder": {
+    "train": "manifest_train.jsonl",
+    "dev": "manifest_dev.jsonl",
+    "test": "manifest_test.jsonl"
+  },
+  "checkpoint_selection": "save_top_k: 3 by val_wer (min), plus save_last: true"
+}

@@ -1,0 +1,382 @@
+{
+  "summary": {
+    "epoch": 1,
+    "global_step": 120,
+    "model_name": "EncDecHybridRNNTCTCBPEModel",
+    "param_count": 119592962,
+    "overall_wer": 1.0,
+    "date": "2026-02-13T20:55:10.933043"
+  },
+  "samples": [
+    {
+      "index": 0,
+      "audio": "data/amchi/test/audio/570.wav",
+      "ref": "रोहन होड ज़ाल्लो!",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 1,
+      "audio": "data/amchi/test/audio/571.wav",
+      "ref": "धा वर्सांचो रोहन उत्साहाने आनि खुशालेने उड्तशिलो -",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 2,
+      "audio": "data/amchi/test/audio/572.wav",
+      "ref": "तो आप्णागले भारत देशु रज्जेन्तु वत्तशिलो!",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 3,
+      "audio": "data/amchi/test/audio/573.wav",
+      "ref": "आम्माने आन्नुने सांगिल्ताका काण्यो सुमार -",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 4,
+      "audio": "data/amchi/test/audio/381.wav",
+      "ref": "तो आप्णागले भारत देशु रज्जेन्तु वत्तशिलो!",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 5,
+      "audio": "data/amchi/test/audio/382.wav",
+      "ref": "आम्माने आन्नुने सांगिल्ताका काण्यो सुमार -",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 6,
+      "audio": "data/amchi/test/audio/383.wav",
+      "ref": "तांगेले चेर्ल्ड्पणाचे गम्मते खब्र्यो, आंग्णांतु खेऴ्तालिं भरपूर",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 7,
+      "audio": "data/amchi/test/audio/384.wav",
+      "ref": "मुंबई - थंयि थाव्नु गोवा वच्चेशिलीं तीं",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 8,
+      "audio": "data/amchi/test/audio/385.wav",
+      "ref": "कुलदेवतांगेले दर्शन घेव्नु समुद्र तटाचेरि खेऴ्चेशिलीं!",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 9,
+      "audio": "data/amchi/test/audio/386.wav",
+      "ref": "ताक्का सांगिलें आनि एक विशेष गम्मति आस्स म्हुणु",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 10,
+      "audio": "data/amchi/test/audio/387.wav",
+      "ref": "शिरालींतु युवांखतिरि एक शिबीर - वाह! राक्तशिलो रोहनु!",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 11,
+      "audio": "data/amchi/test/audio/388.wav",
+      "ref": "प्रार्थना वर्गांतु भारतीय संस्कृति वैभवाबद्दल तान्ने आय्कलेलें-",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 12,
+      "audio": "data/amchi/test/audio/390.wav",
+      "ref": "ज़ाल्यारि प्रत्यक्ष पोऴोंचे आनुभवु विंगड आश्शिलें!",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 13,
+      "audio": "data/amchi/test/audio/392.wav",
+      "ref": "परम पूज्य स्वाम्यांक पऴय्लेले तान्ने चित्रांतु",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 14,
+      "audio": "data/amchi/test/audio/393.wav",
+      "ref": "स्वाम्यांगले खब्र्यो सांग्तालिं पाच्च्यो प्रार्थना वर्गांतु!",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 15,
+      "audio": "data/amchi/test/audio/394.wav",
+      "ref": "आह! आय्लो तो गोम्टो दिवसु, तागले हेर्दे धडधड्तशिलें -",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 16,
+      "audio": "data/amchi/test/audio/395.wav",
+      "ref": "शिरालींतु श्री चित्रापुर मठ इद्रारि दिस्तशिलें",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 17,
+      "audio": "data/amchi/test/audio/396.wav",
+      "ref": "चारिदिक्काने आशिलीं लोक मार्गदर्शन आनि सहायु कोरूक",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 18,
+      "audio": "data/amchi/test/audio/397.wav",
+      "ref": "चिके सानु आस्सुनूय, गर्वाने रोहनानै शिबिरान्तु भागु घेत्लो",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 19,
+      "audio": "data/amchi/test/audio/398.wav",
+      "ref": "तेचि वेऴारि तांका थंचे स्कूलाक व्हेल्ले",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 20,
+      "audio": "data/amchi/test/audio/399.wav",
+      "ref": "थंयि तान्ने तागले प्रायेचे चेर्ल्डवांक इंग्लिश शिकय्लें!",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 21,
+      "audio": "data/amchi/test/audio/400.wav",
+      "ref": "ते वर्गांतुलो कार्तिक आनि  रोहनु उल्लय्त बस्लीं",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 22,
+      "audio": "data/amchi/test/audio/401.wav",
+      "ref": "प्रति दिवसांतु कलकले कर्ताति म्हुणु एकमेकांक सांग्तशिलीं",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 23,
+      "audio": "data/amchi/test/audio/403.wav",
+      "ref": "रोहनाने आप्णागले खेऴ्सामानु, गेजेट्स आनि स्विमिंग पूला बद्दल सांग्लें",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 24,
+      "audio": "data/amchi/test/audio/404.wav",
+      "ref": "कार्तिकाने सांगिले आय्कतना, रोहनाक अग्दि आश्चर्य ज़ाल्लें!",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 25,
+      "audio": "data/amchi/test/audio/406.wav",
+      "ref": "गाद्यान्तु मस्त परिश्रम तो कर्तालो नित्य बाप्सु सांगाति",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 26,
+      "audio": "data/amchi/test/audio/407.wav",
+      "ref": "विशेष ज़ाव्नु केद्ना भात तैयार ज़ाव्नु म्हण्ताले-\" माका व्हराति!\"",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 27,
+      "audio": "data/amchi/test/audio/408.wav",
+      "ref": "तो आनि तागलि भय्णि घाराय सहायु कर्ताति - हें आय्कुनु",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 28,
+      "audio": "data/amchi/test/audio/409.wav",
+      "ref": "कित्लो प्रभावु ज़ाल्लो रोहनाचेरि म्हुणु कऴ्ताले ताक्का पोऴोव्नु!",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 29,
+      "audio": "data/amchi/test/audio/410.wav",
+      "ref": "ह्रदयाक स्पर्श ज़ाल्ले आनि वच्च वेऴारि पोटोऴ्नु घेत्लें कार्तिकाक",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 30,
+      "audio": "data/amchi/test/audio/411.wav",
+      "ref": "स्कूलान्थाव्नु भाय्रसर्तना खुशालेने आंग हल्के दिस्लें रोहनाक!",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 31,
+      "audio": "data/amchi/test/audio/412.wav",
+      "ref": "मोडा वय्रि चम्कतशिल वारि अनुभवु ज़ाल्ले",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 32,
+      "audio": "data/amchi/test/audio/413.wav",
+      "ref": "कार्तिका बद्दल सग्ऴ्यांक सांग्या म्हुणु दिस्लें",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 33,
+      "audio": "data/amchi/test/audio/414.wav",
+      "ref": "प्रथम सांग्ले परम पूज्य स्वाम्यांकचि तान्ने सहज़",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 34,
+      "audio": "data/amchi/test/audio/415.wav",
+      "ref": "प्रसन्न ज़ाल्लीं स्वामीजी, दिस्सुनु आय्लें तांका हाज्जि गरज़!",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 35,
+      "audio": "data/amchi/test/audio/416.wav",
+      "ref": "घारा पाव्नु आप्णागलि काम कर्तालो तो उत्साहेने",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    },
+    {
+      "index": 36,
+      "audio": "data/amchi/test/audio/417.wav",
+      "ref": "होडु ज़ाल्लो आम्गेलो रोहनु  तें एक स्पर्शाने!",
+      "pred": "",
+      "deva_ok": false,
+      "pred_latency_s": 0.055974096865267366,
+      "wer": 1.0,
+      "cer": 1.0
+    }
+  ]
+}

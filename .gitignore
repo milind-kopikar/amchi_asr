@@ -30,8 +30,11 @@ enhanced_corpus_v2/
 enhanced_corpus_v3/
 final_corpus/
 data/
-results/
 models/
+
+# Results: track metrics and small artifacts; ignore heavy checkpoints
+results/**/*.ckpt
+results/**/checkpoints/
 # Experiment outputs created by NeMo/this repo
 nemo_experiments/**
 !nemo_experiments/

@@ -1,0 +1,15 @@
+{
+  "best_checkpoint": "/workspace/amchi_asr/results/smoke_tests/checkpoints/smoke_5epoch-epoch=04-val_loss=57.000.ckpt",
+  "summary": {
+    "total_samples": 1,
+    "mean_wer": 1.0
+  },
+  "per_sample": [
+    {
+      "audio": "data/amchi/train/audio/145.wav",
+      "reference": "चल रे भोपळा टुनुक टुनुक",
+      "prediction": "ा टुुनुा",
+      "wer": 1.0
+    }
+  ]
+}

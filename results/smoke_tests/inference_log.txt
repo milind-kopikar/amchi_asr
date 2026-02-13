@@ -1,0 +1,153 @@
+/workspace/amchi_asr/venv_py311/lib/python3.11/site-packages/torch/cuda/__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+/workspace/amchi_asr/venv_py311/lib/python3.11/site-packages/torch/cuda/__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+fused_indices_to_multihot has reached end of life. Please migrate to a non-experimental function.
+OneLogger: Setting error_handling_strategy to DISABLE_QUIETLY_AND_REPORT_METRIC_ERROR for rank (rank=0) with OneLogger disabled. To override: explicitly set error_handling_strategy parameter.
+No exporters were provided. This means that no telemetry data will be collected.
+INFO:smoke_infer:Loading checkpoint from results/smoke_tests/checkpoints/smoke_5epoch-epoch=04-val_loss=57.000.ckpt...
+INFO:smoke_infer:Patching loss_name from 'ctc' to 'default' for initialization...
+INFO:smoke_infer:Temporarily removing train_ds from config...
+INFO:smoke_infer:Temporarily removing validation_ds from config...
+INFO:smoke_infer:Temporarily removing test_ds from config...
+INFO:smoke_infer:Instantiating model shell...
+[NeMo I 2026-02-13 20:25:52 nemo_logging:393] Tokenizer SentencePieceTokenizer initialized with 256 tokens
+[NeMo I 2026-02-13 20:25:52 nemo_logging:393] PADDING: 0
+[NeMo I 2026-02-13 20:25:56 nemo_logging:393] Using RNNT Loss : warprnnt_numba
+    Loss warprnnt_numba_kwargs: {'fastemit_lambda': 0.0, 'clamp': -1.0}
+[NeMo I 2026-02-13 20:25:56 nemo_logging:393] Using RNNT Loss : warprnnt_numba
+    Loss warprnnt_numba_kwargs: {'fastemit_lambda': 0.0, 'clamp': -1.0}
+[NeMo I 2026-02-13 20:25:56 nemo_logging:393] Using RNNT Loss : warprnnt_numba
+    Loss warprnnt_numba_kwargs: {'fastemit_lambda': 0.0, 'clamp': -1.0}
+INFO:smoke_infer:Restoring empty validation_ds...
+INFO:smoke_infer:Restoring empty test_ds...
+INFO:smoke_infer:Injecting weights...
+INFO:smoke_infer:Injecting weights...
+INFO:smoke_infer:Switching inference strategy to CTC...
+[NeMo I 2026-02-13 20:25:56 nemo_logging:393] No `decoding_cfg` passed when changing decoding strategy, using internal config
+[NeMo I 2026-02-13 20:25:57 nemo_logging:393] Changed decoding strategy of the CTC decoder to 
+    strategy: greedy
+    preserve_alignments: null
+    compute_timestamps: null
+    word_seperator: ' '
+    segment_seperators:
+    - .
+    - '!'
+    - '?'
+    segment_gap_threshold: null
+    ctc_timestamp_type: all
+    batch_dim_index: 0
+    greedy:
+      preserve_alignments: false
+      compute_timestamps: false
+      preserve_frame_confidence: false
+      confidence_method_cfg:
+        name: entropy
+        entropy_type: tsallis
+        alpha: 0.33
+        entropy_norm: exp
+        temperature: DEPRECATED
+      ngram_lm_model: null
+      ngram_lm_alpha: 0.0
+      boosting_tree:
+        model_path: null
+        key_phrases_file: null
+        key_phrases_list: null
+        context_score: 1.0
+        depth_scaling: 2.0
+        unk_score: 0.0
+        final_eos_score: 1.0
+        score_per_phrase: 0.0
+        source_lang: en
+        use_triton: true
+        uniform_weights: false
+        use_bpe_dropout: false
+        num_of_transcriptions: 5
+        bpe_alpha: 0.3
+      boosting_tree_alpha: 0.0
+      allow_cuda_graphs: true
+    beam:
+      beam_size: 4
+      search_type: default
+      preserve_alignments: false
+      compute_timestamps: false
+      return_best_hypothesis: true
+      allow_cuda_graphs: true
+      beam_alpha: null
+      beam_beta: 1.0
+      beam_threshold: 20.0
+      kenlm_path: null
+      ngram_lm_alpha: 1.0
+      ngram_lm_model: null
+      boosting_tree:
+        model_path: null
+        key_phrases_file: null
+        key_phrases_list: null
+        context_score: 1.0
+        depth_scaling: 2.0
+        unk_score: 0.0
+        final_eos_score: 1.0
+        score_per_phrase: 0.0
+        source_lang: en
+        use_triton: true
+        uniform_weights: false
+        use_bpe_dropout: false
+        num_of_transcriptions: 5
+        bpe_alpha: 0.3
+      boosting_tree_alpha: 0.0
+      flashlight_cfg:
+        lexicon_path: null
+        boost_path: null
+        beam_size_token: 16
+        beam_threshold: 20.0
+        unk_weight: -.inf
+        sil_weight: 0.0
+      pyctcdecode_cfg:
+        beam_prune_logp: -10.0
+        token_min_logp: -5.0
+        prune_history: false
+        hotwords: null
+        hotword_weight: 10.0
+    wfst:
+      beam_size: 4
+      search_type: riva
+      return_best_hypothesis: true
+      preserve_alignments: false
+      compute_timestamps: false
+      decoding_mode: nbest
+      open_vocabulary_decoding: false
+      beam_width: 10.0
+      lm_weight: 1.0
+      device: cuda
+      arpa_lm_path: null
+      wfst_lm_path: null
+      riva_decoding_cfg: {}
+      k2_decoding_cfg:
+        search_beam: 20.0
+        output_beam: 10.0
+        min_active_states: 30
+        max_active_states: 10000
+    confidence_cfg:
+      preserve_frame_confidence: false
+      preserve_token_confidence: false
+      preserve_word_confidence: false
+      exclude_blank: true
+      aggregation: min
+      tdt_include_duration: false
+      method_cfg:
+        name: entropy
+        entropy_type: tsallis
+        alpha: 0.33
+        entropy_norm: exp
+        temperature: DEPRECATED
+    temperature: 1.0
+    
+INFO:smoke_infer:Transcribing data/amchi/train/audio/145.wav...
+[NeMo W 2026-02-13 20:25:57 nemo_logging:405] The following configuration keys are ignored by Lhotse dataloader: use_start_end_token
+INFO:root:Initializing Lhotse CutSet from a single NeMo manifest
+            (is_tarred=False): '/tmp/tmpw0aa1x0n/manifest.json'
+[NeMo W 2026-02-13 20:25:57 nemo_logging:405] You are using a non-tarred dataset and requested tokenization during data sampling (pretokenize=True). This will cause the tokenization to happen in the main (GPU) process,possibly impacting the training speed if your tokenizer is very large.If the impact is noticable, set pretokenize=False in dataloader config.(note: that will disable token-per-second filtering and 2D bucketing features)
+Transcribing: 0it [00:00, ?it/s][NeMo W 2026-02-13 20:25:58 nemo_logging:405] CTC decoding strategy 'greedy' is slower than 'greedy_batch', which implements the same exact interface. Consider changing your strategy to 'greedy_batch' for a free performance improvement.
+Transcribing: 1it [00:01,  1.50s/it]Transcribing: 1it [00:01,  1.50s/it]
+INFO:smoke_infer:Prediction: ा टुुनुा
+SMOKE_INFERENCE_RESULT: ा टुुनुा

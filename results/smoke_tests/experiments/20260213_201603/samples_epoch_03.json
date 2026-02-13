@@ -1,0 +1,22 @@
+{
+  "summary": {
+    "epoch": 3,
+    "global_step": 4,
+    "model_name": "EncDecHybridRNNTCTCBPEModel",
+    "param_count": 119592962,
+    "overall_wer": 1.0,
+    "date": "2026-02-13T20:17:49.623179"
+  },
+  "samples": [
+    {
+      "index": 0,
+      "audio": "data/amchi/train/audio/145.wav",
+      "ref": "चल रे भोपळा टुनुक टुनुक",
+      "pred": "ाुु",
+      "deva_ok": true,
+      "pred_latency_s": 0.1919105052947998,
+      "wer": 1.0,
+      "cer": 1.0
+    }
+  ]
+}

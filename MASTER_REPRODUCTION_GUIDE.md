@@ -150,6 +150,10 @@ Training for deaf speech requires different hyperparameters due to the high acou
 
 ## 5. Verification & Training Commands
 
+### Smoke Tests (Pipeline Validation)
+- **One-sample smoke test:** Same single sample for train/dev/test, 5 epochs. Pass only if **validation loss** and **CER** both improve (decrease) over epochs. Run: `./scripts/run_smoke_test_one_sample.sh`. Output: `results/smoke_tests/`. See `results/smoke_tests/README.md` and `scripts/README_SMOKE.md`.
+- **Full preflight suite:** `./scripts/run_all_preflight.sh` (includes a **GPU check** first, then library/data checks, then the one-sample smoke test as the final step). Always run this before long training to avoid running on CPU by mistake. See `LEARNINGS.md` for rationale.
+
 ### Preflight Check
 Before a long run, verify the stack with a 1-epoch test:
 \`\`\`bash
@@ -168,7 +172,11 @@ python scripts/fine_tune.py --config configs/marathi_pilot_20epoch.yaml --output
 
 *   **Hypothesis objects in logs:** If your samples.json contains raw Hypothesis strings, ensure you are using the latest scripts/fine_tune.py which includes the normalization patch.
 *   **Loss is NaN:** Check your learning rate. We use 0.0001 for stability.
-*   **GPU Visibility:** Ensure CUDA_VISIBLE_DEVICES is set (usually 0).
+*   **GPU Visibility:** Ensure CUDA_VISIBLE_DEVICES is set (usually 0). The preflight suite now runs a GPU check first (`scripts/check_gpu.py`); if no GPU is visible, it exits before running any training.
+
+---
+
+For learnings from recent test runs (what works, smoke test, GPU check), see **LEARNINGS.md**.
 
 ---
 
