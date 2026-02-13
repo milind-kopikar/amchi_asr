@@ -18,12 +18,21 @@ echo "📚 Installing Python libraries..."
 pip install --upgrade pip setuptools wheel
 pip install Cython
 
-# Allow explicit override to force upstream NeMo
+# This project uses Python 3.11 + upstream NeMo. The AI4Bharat fork requires Python 3.9 (llvmlite==0.38.1 has no wheel for 3.11).
+# Use upstream unless explicitly requesting the fork (USE_UPSTREAM_NEMO=0 and Python 3.9).
+PY_VER=$(python -c 'import sys; print(sys.version_info.major, sys.version_info.minor)' 2>/dev/null || echo "0 0")
+USE_UPSTREAM_NEMO="${USE_UPSTREAM_NEMO:-}"
+if [ -z "$USE_UPSTREAM_NEMO" ]; then
+  if [ "$PY_VER" = "3 10" ] || [ "$PY_VER" = "3 11" ] || [ "$PY_VER" = "3 12" ]; then
+    USE_UPSTREAM_NEMO=1
+    echo "ℹ️ Python $PY_VER detected — using upstream NeMo (AI4Bharat fork requires Python 3.9)"
+  fi
+fi
 if [ "${USE_UPSTREAM_NEMO:-0}" = "1" ]; then
-  echo "ℹ️ USE_UPSTREAM_NEMO=1 set — installing upstream nemo_toolkit[all]"
+  echo "ℹ️ Installing upstream nemo_toolkit[all]"
   pip install "nemo_toolkit[all]" pynini librosa
 else
-  # Prefer the AI4Bharat NeMo fork (supports multi-softmax / hybrid RNNT)
+  echo "ℹ️ Attempting AI4Bharat NeMo fork (requires Python 3.9)"
   if pip install 'nemo_toolkit[asr] @ git+https://github.com/AI4Bharat/NeMo.git@multi-softmax'; then
     echo "✅ Installed AI4Bharat NeMo fork"
     pip install pynini librosa

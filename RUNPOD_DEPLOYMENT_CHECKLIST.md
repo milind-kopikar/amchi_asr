@@ -37,11 +37,12 @@ ssh root@<runpod-host> -p <port>
 
 # Clone repository
 cd /workspace
-git clone https://github.com/milind-kopikar/amchi_asr.git konkani_asr
-cd konkani_asr
+git clone https://github.com/milind-kopikar/amchi_asr.git
+cd amchi_asr
 
-# Run automated setup
-bash setup_runpod.sh
+# Run setup (Python 3.11 + upstream NeMo). See SETUP_ENV.md.
+USE_UPSTREAM_NEMO=1 sudo bash setup_env.sh
+# If using venv: python3.11 -m venv venv_py311 && source venv_py311/bin/activate && USE_UPSTREAM_NEMO=1 bash setup_env.sh
 ```
 
 **Note (Windows / VS Code users):** add a Host entry to your local `~/.ssh/config` and use that alias in VS Code Remote-SSH. Example (Windows path format is important):
@@ -70,16 +71,14 @@ Then in VS Code: **Remote-SSH → Connect to Host...** → select `runpod-<alias
 
 #### Option A: Marathi Base Model (Default)
 ```bash
-python scripts/download_model.py \
-  --model marathi \
-  --output_dir models/indicconformer_mr
+# Set HF_TOKEN or run: huggingface-cli login
+python scripts/download_model_from_hf.py --repo ai4bharat/indicconformer_stt_mr_hybrid_ctc_rnnt_large --outdir models
 ```
 
 #### Option B: Konkani Base Model
 ```bash
-python scripts/download_model.py \
-  --model konkani \
-  --output_dir models/indicconformer_kok
+python scripts/download_model.py --model konkani
+# Or: python scripts/download_model_from_hf.py --repo ai4bharat/indicconformer_stt_kok_hybrid_ctc_rnnt_large --outdir models
 ```
 
 **Tip: Test both models to compare WER!**

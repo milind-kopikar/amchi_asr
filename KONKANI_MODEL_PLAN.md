@@ -26,9 +26,7 @@ Compare performance between two base models:
 - ✅ Validation ([nemo_validate.py](scripts/nemo_validate.py)) and testing ([nemo_test.py](scripts/nemo_test.py)) modules
 
 ### Environment Setup Documentation
-- ✅ Python 3.9 requirement documented
-- ✅ CUDA 12.4 compatibility fixes documented
-- ✅ AI4Bharat NeMo fork installation guide ([AI4BHARAT_SETUP_GUIDE.md](AI4BHARAT_SETUP_GUIDE.md))
+- ✅ **Python 3.11** and **upstream NeMo** (see [SETUP_ENV.md](SETUP_ENV.md))—do not use AI4Bharat fork for normal setup (fork requires Python 3.9).
 - ✅ RunPod deployment checklist ([RUNPOD_DEPLOYMENT_CHECKLIST.md](RUNPOD_DEPLOYMENT_CHECKLIST.md))
 
 ### Training Data
@@ -71,7 +69,7 @@ python -c "import torch; print(f'CUDA: {torch.cuda.is_available()}')"
 
 **Expected Output:**
 ```
-✓ Python 3.9 virtual environment created
+✓ Python 3.11 + upstream NeMo (or venv_py311)
 ✓ PyTorch with CUDA installed
 ✓ NeMo toolkit installed
 ✓ Dependencies installed
@@ -234,13 +232,13 @@ With 250+ recordings vs 44:
 
 ## 🐛 Known Issues & Solutions
 
-### Issue 1: Python Version
-**Problem**: `llvmlite==0.38.1` not available for Python 3.10+  
-**Solution**: Use Python 3.9 (enforced in `setup_runpod.sh`)
+### Issue 1: Python Version & NeMo
+**Problem**: AI4Bharat NeMo fork pins `llvmlite==0.38.1`, which has no wheel for Python 3.11.  
+**Solution**: Use **Python 3.11** and **upstream** NeMo (`nemo_toolkit[all]`). Set `USE_UPSTREAM_NEMO=1` before `setup_env.sh` or install in venv (see SETUP_ENV.md). Do not use the AI4Bharat fork for normal setup.
 
-### Issue 2: CUDA 12.4 Compatibility
-**Problem**: Default `numba==0.55.2` incompatible with CUDA 12.4  
-**Solution**: Upgrade to `numba==0.57.1` and `llvmlite==0.40.1`
+### Issue 2: CUDA 12.4 / numba Compatibility
+**Problem**: Default `numba` may be incompatible with some CUDA versions.  
+**Solution**: With Python 3.11 + upstream NeMo, use compatible versions: `numba>=0.57.0,<0.58` and `llvmlite>=0.40.0,<0.41`
 
 ```bash
 pip install --upgrade 'numba>=0.57.0,<0.58' 'llvmlite>=0.40.0,<0.41'

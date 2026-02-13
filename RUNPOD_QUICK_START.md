@@ -13,11 +13,14 @@
 # Clone repository
 cd /workspace
 git clone https://github.com/milind-kopikar/amchi_asr.git
-cd amchi_asr/konkani_asr
+cd amchi_asr
 
-# Run automated setup
-bash setup_runpod.sh
-source venv/bin/activate
+# Use Python 3.11 and upstream NeMo (see SETUP_ENV.md). Run setup with USE_UPSTREAM_NEMO=1.
+USE_UPSTREAM_NEMO=1 bash setup_env.sh
+# If using a venv (recommended):
+# python3.11 -m venv venv_py311 && source venv_py311/bin/activate
+# USE_UPSTREAM_NEMO=1 bash setup_env.sh
+source venv_py311/bin/activate 2>/dev/null || true
 
 # Verify GPU
 nvidia-smi
@@ -175,12 +178,15 @@ python scripts/nemo_train.py \
     --data.validation_ds.batch_size 4
 ```
 
-### ❌ "llvmlite version error"
+### ❌ "llvmlite version error" / "Could not find llvmlite==0.38.1"
+
+Use **Python 3.11** and **upstream** NeMo (not the AI4Bharat fork). If you already use 3.11 and see numba/llvmlite issues, ensure compatible versions:
 
 ```bash
-# Upgrade numba and llvmlite (CUDA 12.4 compatibility)
 pip install --upgrade 'numba>=0.57.0,<0.58' 'llvmlite>=0.40.0,<0.41'
+pip install "nemo_toolkit[all]" pynini librosa
 ```
+Then re-apply the conv_asr patch (see SETUP_ENV.md).
 
 ### ❌ "Hugging Face authentication error"
 
@@ -278,12 +284,12 @@ scp -r -P <pod-ssh-port> root@<pod-ip>:/workspace/amchi_asr/konkani_asr/results/
 ## 📝 Commands in Order (Copy-Paste Friendly)
 
 ```bash
-# Full workflow start-to-finish
+# Full workflow start-to-finish (Python 3.11 + upstream NeMo)
 cd /workspace && \
 git clone https://github.com/milind-kopikar/amchi_asr.git && \
-cd amchi_asr/konkani_asr && \
-bash setup_runpod.sh && \
-source venv/bin/activate && \
+cd amchi_asr && \
+USE_UPSTREAM_NEMO=1 bash setup_env.sh && \
+source venv_py311/bin/activate && \
 python scripts/download_model.py --model konkani && \
 python scripts/download_data_from_railway.py \
   --base_url https://konkanicollector-production.up.railway.app \

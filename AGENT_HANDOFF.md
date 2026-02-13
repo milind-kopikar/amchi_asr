@@ -29,7 +29,7 @@ Marathi Story Pilot (WER 0.351 -> **0.213** with Post-Processing) and Deaf Speec
   - Standard: `data/train`, `data/dev`, `data/test`
   - Deaf (All Users): `data_all_users/train`, `data_all_users/dev`, `data_all_users/test`
 - **Tokenizer:** Marathi tokenizer is at `tokenizers/marathi_tokenizer.model`.
-- **Environment:** RunPod environment is stable. AI4Bharat NeMo fork is installed and patched.
+- **Environment:** RunPod uses **Python 3.11** and **upstream** NeMo (`nemo_toolkit[all]`). The conv_asr patch is applied. Do not use the AI4Bharat NeMo fork (it requires Python 3.9).
 
 ## 3) Objective for you (next agent)
 1. **Deaf Speech Scaling:** We need more data. The current trend suggests 500-1000 samples are needed for usable WER.
@@ -109,7 +109,7 @@ python3 scripts/smoke_test_inference.py --checkpoint "$CHECKPOINT" --audio "$TES
 
 ## 9) Troubleshooting notes (common issues & fixes)
 - If restore fails with errors about missing `multisoftmax`, `language_keys`, or unexpected kwargs:
-  - Ensure the environment used the **AI4Bharat NeMo fork** (use `setup_env.sh` or `pip install -e /workspace/NeMo_ai4bharat` in a venv).
+  - Ensure the environment uses **Python 3.11** and **upstream** NeMo (`pip install "nemo_toolkit[all]"`). Set `USE_UPSTREAM_NEMO=1` before `setup_env.sh` if needed. Do not use the AI4Bharat NeMo fork for normal setup (it requires Python 3.9).
   - If the fork is installed and errors persist, try `EncDecHybridRNNTCTCBPEModel.restore_from(..., strict=False)` and inspect the stack trace to identify unsupported fields.
 - If tokenizer errors show `KeyError: 'dir'` or cannot find tokenizer files:
   - Confirm `configs/konkani_finetune.yaml` points to `tokenizers/konkani_tokenizer.model` and that the file exists.

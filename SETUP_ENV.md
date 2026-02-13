@@ -30,10 +30,11 @@ Important environment variables set/used by the project:
 
 Data splitting policy (story-based):
 - The `download_data_from_railway.py` script supports a `--use_story_split` flag that enforces deterministic, leakage-free splits.
+- **Canonical split (do not swap):** **Story 4 = dev, Story 5 = test.** When redoing the setup or documenting the split, always use this convention.
 - **Canonical Split (Marathi Pilot):**
   - **Train:** Stories 1, 2, 3 (472 samples)
-  - **Validation (Dev):** Story 4 - "भोलागली रेलयात्रा" (37 samples)
-  - **Test:** Story 5 - "रोहन होड ज़ाल्लो!" (37 samples)
+  - **Validation (Dev):** Story 4 - "भोलागली रेलयात्रा" (37 samples). Used during finetuning.
+  - **Test:** Story 5 - "रोहन होड ज़ाल्लो!" (37 samples). Held out for final evaluation only.
 - This split ensures that the model is tested on entirely unseen stories and speakers.
 
 ## Bootstrap / First-Time Host Notes 🐣
@@ -60,8 +61,9 @@ Data splitting policy (story-based):
 ---
 
 ## What we learned / environment details 📚
-- Python version used: **3.11** (venv: `venv_py311`).
-- Main NeMo workspace (fork used during debugging): `/workspace/NeMo_ai4bharat/` (local editable copy).
+- **Python version:** Use **Python 3.11** (venv: `venv_py311`). This is the **standard and only recommended** environment for this project.
+- **NeMo:** Use **upstream** NVIDIA NeMo (`nemo_toolkit[all]`), **not** the AI4Bharat NeMo fork. The AI4Bharat fork requires Python 3.9 (it pins `llvmlite==0.38.1`, which has no wheel for Python 3.11) and will fail on 3.11 with "Could not find a version that satisfies the requirement llvmlite==0.38.1". For RunPod or fresh setup: create `venv_py311`, install PyTorch, then `pip install "nemo_toolkit[all]" pynini librosa`. If using `setup_env.sh`, set `USE_UPSTREAM_NEMO=1` before running it so the script installs upstream NeMo instead of attempting the fork.
+- If you ever need the AI4Bharat fork (e.g. for debugging fork-specific behavior), use Python 3.9 and see `AI4BHARAT_SETUP_GUIDE.md`. For normal training and inference in this repo, **always use Python 3.11 + upstream NeMo.**
 
 ## Preflight & Smoke Testing 🚀
 Before running full experiments, it is critical to verify the environment and model configuration.
@@ -138,7 +140,7 @@ Include this check in your pre-deployment checklist to avoid regressions.
    - Applied a small compatibility change to the SentencePiece tokenizer: `ids_to_text(self, ids, lang=None)` (accept optional `lang` arg used by ctc decoding).
 
 Files changed and where to find them:
-- Installed library file modified in-place: `/workspace/NeMo_ai4bharat/nemo/collections/asr/modules/conv_asr.py`
+- The patch is applied to the **installed** NeMo `conv_asr.py` (e.g. in your venv `site-packages/nemo/collections/asr/modules/conv_asr.py`). `setup_env.sh` copies `patches/conv_asr_fixed.py` over it.
 - Vendored snapshot (committed): `patches/conv_asr_fixed.py` (commit: d18f10e)
 
 ---
@@ -154,11 +156,9 @@ Files changed and where to find them:
 
 ## Notes & caveats ⚠️
 - The `setup_env.sh` script uses `apt-get` and installs PyTorch via pip wheel index; adjust the CUDA wheel selection if you need a different CUDA version.
-- **Important**: `setup_env.sh` now prefers installing the **AI4Bharat NeMo fork** (the `multi-softmax` branch) because AI4Bharat models require fork-specific codepaths (e.g., `multisoftmax` in RNNT decoders). If for any reason you'd prefer the upstream NVIDIA NeMo package, set the environment variable `USE_UPSTREAM_NEMO=1` before running the script and it will install `nemo_toolkit[all]` instead of the fork.
-
-  **Note**: The AI4Bharat fork is tested primarily with **Python 3.9** (see `AI4BHARAT_SETUP_GUIDE.md`). On newer Python versions you may run into dependency incompatibilities (e.g., `llvmlite`/`numba`); if that happens, either run the setup in a Python 3.9 venv or set `USE_UPSTREAM_NEMO=1` to install upstream NeMo instead.
+- **Important (RunPod / fresh setup):** This project uses **Python 3.11** and **upstream** NVIDIA NeMo (`nemo_toolkit[all]`). **Do not** use the AI4Bharat NeMo fork for normal setup—it requires Python 3.9 and will fail on 3.11 (llvmlite dependency). Always set `USE_UPSTREAM_NEMO=1` before running `setup_env.sh`, or create a Python 3.11 venv and install with `pip install "nemo_toolkit[all]" pynini librosa`, then apply the conv_asr patch (see above). The script may try the AI4Bharat fork first if `USE_UPSTREAM_NEMO` is not set; on Python 3.11 that install will fail—use upstream instead.
 - Running the script as non-root may fail the `apt-get` step.
-- This process is specific to the AI4Bharat + NeMo setup used here and may not be appropriate for other workflows.
+- This process is specific to the AI4Bharat *models* (IndicConformer .nemo files) with **upstream** NeMo; the AI4Bharat *fork* of NeMo is only for Python 3.9 and is not used in this repo's standard workflow.
 
 ---
 
@@ -172,7 +172,7 @@ python3 scripts/preflight_checks.py
 ```
 
 What the preflight checks validate:
-- Python version (minimum 3.9; recommended 3.11)
+- Python version: **3.11** (recommended and tested). Do not use 3.9 for normal setup unless you explicitly use the AI4Bharat NeMo fork (see AI4BHARAT_SETUP_GUIDE.md).
 - `ffmpeg` binary availability
 - `torch` import and CUDA availability
 - `nemo` import and whether the `conv_asr` runtime patch is applied (we look for our `_LanguageMaskList` fix)

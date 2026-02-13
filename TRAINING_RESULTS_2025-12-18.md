@@ -1,7 +1,7 @@
 # Konkani ASR Training Results
 
 **Date**: December 18, 2025  
-**Environment**: RunPod RTX 4090, CUDA 12.4, Python 3.9  
+**Environment**: RunPod RTX 4090, CUDA 12.4. (Note: Current repo setup uses **Python 3.11** and **upstream** NeMo; see SETUP_ENV.md. This run used Python 3.9.)  
 **Base Model**: AI4Bharat Marathi IndicConformer (RNNT+CTC)  
 **Training Data**: 44 Konkani recordings (27 train, 5 dev, 8 test after filtering)
 
@@ -266,8 +266,8 @@ Predicted:  आज्जी खुशालेर मुखार वचुल�
 
 ### Technical Challenges Overcome
 
-1. ✅ Python 3.9 requirement for AI4Bharat NeMo fork
-2. ✅ CUDA 12.4 compatibility (numba/llvmlite upgrade)
+1. ✅ For current setup use **Python 3.11** and **upstream** NeMo (SETUP_ENV.md). The AI4Bharat fork requires Python 3.9 and is not used for normal setup.
+2. ✅ CUDA 12.4 compatibility (numba/llvmlite upgrade when needed)
 3. ✅ Manifest format (lang and sample_id fields)
 4. ✅ Config file (return_language_id, scheduler name)
 5. ✅ Dependency version conflicts (transformers, huggingface_hub)
@@ -324,7 +324,7 @@ Cost per epoch: $0.08 (for 50 epochs)
 ```
 
 ### Cost Optimization Tips
-1. ✅ Use Python 3.9 from start (saves 1-2 hours)
+1. ✅ Use **Python 3.11** and **upstream** NeMo from start (see SETUP_ENV.md; avoids fork install failures on 3.11).
 2. ✅ Pre-verify manifest format (saves 30 minutes)
 3. ✅ Test on small dataset first (saves debugging on large data)
 4. ✅ Stop pod immediately after training

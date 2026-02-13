@@ -137,7 +137,7 @@ git clone https://github.com/YOUR_USER/amchi_asr.git && cd amchi_asr && sudo ./s
 ```
 
 Notes:
-- **Python version**: Use Python 3.11 when possible (recommended). The AI4Bharat NeMo fork was historically tested on Python 3.9, so if you encounter dependency issues consider using a 3.9 virtualenv. `setup_env.sh` is the canonical source for the environment used in this repo.
+- **Python version**: Use **Python 3.11** (recommended and tested). Use **upstream** NVIDIA NeMo (`nemo_toolkit[all]`), not the AI4Bharat NeMo fork—the fork requires Python 3.9 and fails on 3.11 (llvmlite). Set `USE_UPSTREAM_NEMO=1` before `setup_env.sh` or install in a venv with `pip install "nemo_toolkit[all]" pynini librosa`. See `SETUP_ENV.md`.
 - You must run `huggingface-cli login` (or set `HF_TOKEN`) before running tasks that download models from Hugging Face.
 - The setup script now installs `Cython` before trying to install `pynini`/NeMo to reduce build failures on fresh hosts.
 - **Run the preflight checks** after setup (this script validates tokenizer consistency and common failures):
@@ -291,7 +291,7 @@ For AI4Bharat integration or framework comparisons:
 - **Date:** November 29, 2025
 - **Current State:** Most of the HuggingFace pipeline runs in WSL. I created a fresh venv named `.venv_nemo` and installed a pinned NeMo stack (`nemo-toolkit==2.5.3` + matching `hydra-core`, `omegaconf`, `antlr4-python3-runtime`, `dill`, etc.). I also added an 8 GB swapfile to WSL so large pip builds won't OOM.
 
-**Important (AI4Bharat / NeMo fork):** When using the AI4Bharat NeMo fork and AI4Bharat `.nemo` checkpoints, **use Python 3.9**. The fork is tested against specific dependency versions (notably `llvmlite`/`numba`) that may not be available on Python 3.10+; the fork also includes model options (e.g., `multisoftmax`) that are not in upstream NeMo. See `AI4BHARAT_SETUP_GUIDE.md` for the full rationale and setup steps.
+**Important (NeMo):** This project uses **Python 3.11** and **upstream** NeMo. Do not use the AI4Bharat NeMo fork for normal setup—it requires Python 3.9 and fails on 3.11. See `SETUP_ENV.md` and `MASTER_REPRODUCTION_GUIDE.md`.
 - **Blocked On:** WSL is currently failing to start on this machine with `Error code: 6 (Wsl/Service/CreateInstance/E_FAIL)`. Until WSL is running again the final step (installing `lightning` and running the NeMo smoke test `scripts/nemo_finetune_smoke.py` in `.venv_nemo`) cannot be completed here.
 
 ### **What I tried (summary)**
@@ -364,7 +364,7 @@ This section documents the process of fine-tuning the Konkani ASR model on RunPo
 
 ### Prerequisites
 - **RunPod Instance**: RTX 4090 GPU, 40GB+ persistent storage, Ubuntu 22.04
-- **Python Environment**: Python 3.9.25 with venv_py39
+- **Python Environment**: **Python 3.11** with venv_py311; use **upstream** NeMo (`nemo_toolkit[all]`), not the AI4Bharat fork. See `SETUP_ENV.md`.
 - **CUDA**: 12.4 compatible
 - **Disk Space**: Minimum 40GB (increase from default 20GB to avoid space issues)
 
@@ -391,9 +391,9 @@ See the RunPod quick start for more details: [RUNPOD_QUICK_START.md](RUNPOD_QUIC
 
 2. **Install Dependencies**:
    ```bash
-   pip install torch==2.8.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
-   pip install nemo_toolkit[asr]==1.19.0
-   pip install huggingface_hub==0.19.4 transformers==4.24.0
+   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+   pip install "nemo_toolkit[all]" pynini librosa
+   pip install huggingface_hub transformers
    pip install jiwer librosa soundfile scipy
    ```
 

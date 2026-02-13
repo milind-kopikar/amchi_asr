@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 """
 Download audio recordings and manifests from Railway/R2 storage
-For use with konkani_collector data
+For use with konkani_collector data.
+
+Story split convention (--use_story_split):
+  - Stories 1, 2, 3 -> train
+  - Story 4 -> dev (validation during finetuning). Do not use for final test.
+  - Story 5 -> test (held-out for evaluation). Always use Story 5 for testing.
 """
 
 import os
@@ -52,15 +57,16 @@ def fetch_recordings_list(base_url: str):
     logger.info(f"Found {len(approved)} approved recordings out of {len(recordings)} total")
     return approved
 
-def create_manifest(recordings: list, output_path: str, split: str = 'train'):
-    """Create NeMo-compatible manifest file with AI4Bharat required fields"""
+def create_manifest(recordings: list, output_path: str, split: str = 'train', path_prefix: str = "data"):
+    """Create NeMo-compatible manifest file with AI4Bharat required fields.
+    path_prefix: base path for audio_filepath in manifest (e.g. 'data/amchi' or 'data/deaf')."""
     logger.info(f"Creating {split} manifest...")
     
     manifest_lines = []
     for idx, rec in enumerate(recordings):
         # NeMo manifest format with AI4Bharat multilingual fields
         manifest_entry = {
-            "audio_filepath": f"data/{split}/audio/{rec['id']}.wav",
+            "audio_filepath": f"{path_prefix}/{split}/audio/{rec['id']}.wav",
             "text": rec['sentence_text'],  # Devanagari text
             "duration": rec.get('duration', 0),
             "lang": "mr",  # Use "mr" (Marathi) for Konkani (AI4Bharat convention)
@@ -151,7 +157,7 @@ def main():
 
         # Story-based split (deterministic) if requested
         if args.use_story_split:
-            logger.info("Using story-based splitting by story_id: {1,2,3}->train, 5->dev, 4->test")
+            logger.info("Using story-based splitting by story_id: {1,2,3}->train, 4->dev, 5->test")
             train_recordings = []
             dev_recordings = []
             test_recordings = []
@@ -164,9 +170,9 @@ def main():
                     sid_int = None
                 if sid_int in (1, 2, 3):
                     train_recordings.append(rec)
-                elif sid_int == 5:
-                    dev_recordings.append(rec)
                 elif sid_int == 4:
+                    dev_recordings.append(rec)
+                elif sid_int == 5:
                     test_recordings.append(rec)
                 else:
                     other.append(rec)
@@ -199,26 +205,29 @@ def main():
         
         base_dir = Path(args.output_dir)
         
+        # Path prefix for manifest audio_filepath (so paths work from repo root)
+        path_prefix = str(base_dir)
+
         # Download train data
         if train_recordings:
             train_dir = base_dir / "train"
             logger.info(f"📥 Downloading training data to {train_dir}...")
             download_recordings(args.base_url, train_recordings, str(train_dir))
-            create_manifest(train_recordings, str(train_dir / "manifest.jsonl"), "train")
+            create_manifest(train_recordings, str(train_dir / "manifest.jsonl"), "train", path_prefix)
         
         # Download dev data
         if dev_recordings:
             dev_dir = base_dir / "dev"
             logger.info(f"📥 Downloading validation data to {dev_dir}...")
             download_recordings(args.base_url, dev_recordings, str(dev_dir))
-            create_manifest(dev_recordings, str(dev_dir / "manifest.jsonl"), "dev")
+            create_manifest(dev_recordings, str(dev_dir / "manifest.jsonl"), "dev", path_prefix)
         
         # Download test data
         if test_recordings:
             test_dir = base_dir / "test"
             logger.info(f"📥 Downloading test data to {test_dir}...")
             download_recordings(args.base_url, test_recordings, str(test_dir))
-            create_manifest(test_recordings, str(test_dir / "manifest.jsonl"), "test")
+            create_manifest(test_recordings, str(test_dir / "manifest.jsonl"), "test", path_prefix)
         
         logger.info("="*80)
         logger.info("✅ Data download complete!")

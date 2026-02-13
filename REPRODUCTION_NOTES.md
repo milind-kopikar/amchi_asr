@@ -23,7 +23,7 @@ This document records the exact recipe used to successfully run a 1-epoch CTC-on
 - Bypassing strategy: perform the offline config edit (step 2) to instantiate the target architecture (small CTC decoder) and then load encoder weights with `strict=False`. This accomplishes the goals of `change_vocabulary` (a smaller decoder compatible with local tokenizer) without needing to first instantiate the large multilingual model.
 
 5) Practical checklist for reproducing the smoke test ✅
-- Environment: follow `SETUP_ENV.md` / `AI4BHARAT_SETUP_GUIDE.md` to ensure dependencies (NeMo fork, conv_asr patch optional) are present.
+- Environment: follow `SETUP_ENV.md` and `MASTER_REPRODUCTION_GUIDE.md`. Use **Python 3.11** and **upstream** NeMo (`nemo_toolkit[all]`); do not use the AI4Bharat NeMo fork for normal setup (it requires Python 3.9). Apply the conv_asr patch after installing NeMo.
 - Tokenizer: ensure local tokenizer directory `tokenizers/` contains `konkani_tokenizer.model` (or the correct tokenizer for the language); this example uses a 256-token SentencePiece model.
 - Config: use `configs/smoke_1sample_ctc.yaml` (or equivalent) which sets data and trainer for a 1-sample, 1-epoch run.
 - Execution steps (example):

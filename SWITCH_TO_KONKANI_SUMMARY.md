@@ -21,14 +21,8 @@
   - Time and cost estimates
   - Full workflow from start to finish
 
-### 2. Updated Setup Script
-- ✅ **[setup_runpod.sh](setup_runpod.sh)** - Enhanced with:
-  - Python 3.9 requirement check and auto-install
-  - Cython pre-installation for youtokentome
-  - AI4Bharat NeMo fork installation (not standard NeMo)
-  - CUDA 12.4 compatibility fixes (numba 0.57.1, llvmlite 0.40.1)
-  - Installation verification at the end
-  - Clear next steps with Konkani model commands
+### 2. Setup (Python 3.11 + Upstream NeMo)
+- ✅ Use **setup_env.sh** with **Python 3.11** and **upstream** NeMo (`USE_UPSTREAM_NEMO=1`). Do not use the AI4Bharat NeMo fork for normal setup (it requires Python 3.9). See [SETUP_ENV.md](SETUP_ENV.md).
 
 ### 3. Existing Infrastructure (Already in Place)
 - ✅ **scripts/nemo_train.py** - Supports both `--model marathi` and `--model konkani`
@@ -160,7 +154,7 @@ After training completes, create:
 - `SWITCH_TO_KONKANI_SUMMARY.md` - This file
 
 ### Updated Files
-- `setup_runpod.sh` - Added Python 3.9 checks and CUDA 12.4 fixes
+- Use `setup_env.sh` with `USE_UPSTREAM_NEMO=1` (Python 3.11 + upstream NeMo). See SETUP_ENV.md.
 
 ### Unchanged (Already Working)
 - All scripts in `scripts/` directory
@@ -187,11 +181,10 @@ After training completes, create:
 
 ## ⚠️ Critical Reminders
 
-1. **Python 3.9 only** - Do NOT use Python 3.10+
-2. **CUDA 12.4 fixes** - Upgrade numba and llvmlite after NeMo install
-3. **AI4Bharat fork** - Use their NeMo fork, not official NeMo
-4. **Cython first** - Install before youtokentome
-5. **Model download** - Accept license on Hugging Face and login first
+1. **Python 3.11** - Use Python 3.11 and **upstream** NeMo. Do NOT use the AI4Bharat NeMo fork for normal setup (it requires Python 3.9 and fails on 3.11).
+2. **USE_UPSTREAM_NEMO=1** - Set before `setup_env.sh` or install in venv with `pip install "nemo_toolkit[all]"` (see SETUP_ENV.md).
+3. **conv_asr patch** - Apply after NeMo install (setup_env.sh does this).
+4. **Model download** - Accept license on Hugging Face and login (or set HF_TOKEN) before downloading.
 
 ---
 

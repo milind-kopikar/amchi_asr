@@ -56,32 +56,19 @@ login(token="your_token_here")
 
 ## 🛠️ NeMo Version Requirement
 
-### AI4Bharat Fork vs Standard NeMo
+### This Repo: Python 3.11 + Upstream NeMo
 
-**The model cards recommend AI4Bharat's NeMo fork:**
-
-```bash
-git clone https://github.com/AI4Bharat/NeMo.git
-cd NeMo
-git checkout nemo-v2
-bash reinstall.sh
-```
-
-**However, our code uses standard NVIDIA NeMo:**
+**We use Python 3.11 and upstream (standard) NVIDIA NeMo.** Do not use the AI4Bharat NeMo fork for normal setup—it requires Python 3.9 and fails on 3.11 (e.g. `llvmlite==0.38.1` has no wheel for 3.11). See `SETUP_ENV.md` and `MASTER_REPRODUCTION_GUIDE.md`.
 
 ```bash
-pip install nemo_toolkit['all']
+# Recommended (Python 3.11 venv)
+python3.11 -m venv venv_py311
+source venv_py311/bin/activate
+pip install "nemo_toolkit[all]" pynini librosa
+# Then apply conv_asr patch (see SETUP_ENV.md)
 ```
 
-### Which Should We Use?
-
-**Testing Recommendation:**
-1. **Start with standard NVIDIA NeMo** (already in requirements.txt)
-2. **If you get compatibility errors** (e.g., decoder issues, language_id parameter problems), switch to AI4Bharat NeMo
-3. **Most likely scenario**: Standard NeMo will work fine because:
-   - Both models use standard NeMo architecture (Conformer + Hybrid CTC-RNNT)
-   - AI4Bharat fork is based on NVIDIA NeMo v1.20.0
-   - We're only fine-tuning, not training from scratch
+**If you must use the AI4Bharat fork** (e.g. Python 3.9 debugging), the model cards recommend their fork; see `AI4BHARAT_SETUP_GUIDE.md`. For RunPod and normal training, stick with **Python 3.11 + upstream NeMo**.
 
 ### Quick Test on RunPod
 
@@ -101,8 +88,7 @@ model = nemo_asr.models.ASRModel.from_pretrained(
 print(f"✅ Konkani model loaded: {type(model)}")
 ```
 
-If this works → use standard NeMo
-If this fails → switch to AI4Bharat NeMo fork
+If this works → continue with upstream NeMo. If you see decoder/load errors, ensure you use the conv_asr patch and correct tokenizer paths (see SETUP_ENV.md).
 
 ---
 
@@ -184,7 +170,7 @@ Before running on RunPod:
 - [ ] On RunPod: `huggingface-cli login` or set `HF_TOKEN` env variable
 - [ ] Test model loading with quick Python snippet
 - [ ] If standard NeMo works, proceed with training
-- [ ] If errors occur, switch to AI4Bharat NeMo fork
+- [ ] If errors occur, confirm Python 3.11 + upstream NeMo and conv_asr patch (see SETUP_ENV.md)
 
 ---
 
@@ -217,7 +203,7 @@ NeMo handles this automatically - you don't need to worry about paths!
 **Solution**: Run `huggingface-cli login` or set `HF_TOKEN`
 
 ### Error: "Decoder not compatible" or language_id issues
-**Solution**: Switch to AI4Bharat NeMo fork
+**Solution**: Use Python 3.11 and upstream NeMo; apply conv_asr patch. See SETUP_ENV.md. (AI4Bharat fork is only for Python 3.9.)
 
 ### Error: "Out of memory during download"
 **Solution**: Each model is ~500MB - ensure you have 2GB free disk space

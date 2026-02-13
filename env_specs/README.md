@@ -13,7 +13,7 @@ Core requirements (summary):
 - System packages: `ffmpeg`, `build-essential`
 - Key Python packages (examples):
   - `torch` / `torchvision` / `torchaudio` compatible with the machine CUDA (we recommend `torch>=2.4` for GPU; setup chooses wheel via `setup_env.sh`)
-  - `nemo_toolkit` — installed from AI4Bharat fork (preferred) or upstream if `USE_UPSTREAM_NEMO=1`
+  - `nemo_toolkit` — use **upstream** (`nemo_toolkit[all]`) with Python 3.11. The AI4Bharat fork requires Python 3.9 and is not used for normal setup.
   - `sentencepiece` (critical: tokenizer)
   - `librosa`, `pynini`, `pandas`, `jiwer`, etc. (see root `requirements.txt`)
 

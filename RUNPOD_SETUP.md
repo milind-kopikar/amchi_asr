@@ -23,26 +23,26 @@ This guide will help you set up and run the Konkani ASR fine-tuning on RunPod GP
 
 ```bash
 # Via HTTPS (recommended for RunPod)
-cd ~
+cd /workspace
 git clone https://github.com/milind-kopikar/amchi_asr.git
-cd amchi_asr/konkani_asr
+cd amchi_asr
 
 # Or via SSH (if you have SSH key configured)
 git clone git@github.com:milind-kopikar/amchi_asr.git
-cd amchi_asr/konkani_asr
+cd amchi_asr
 ```
 
-## Step 3: Run Setup Script
+## Step 3: Run Setup Script (Python 3.11 + Upstream NeMo)
+
+This project uses **Python 3.11** and **upstream** NVIDIA NeMo, not the AI4Bharat fork (which requires Python 3.9). See SETUP_ENV.md.
 
 ```bash
-# Make setup script executable
-chmod +x setup_runpod.sh
-
-# Run setup (creates venv, installs dependencies)
-./setup_runpod.sh
-
-# Activate virtual environment
-source venv/bin/activate
+chmod +x setup_env.sh
+USE_UPSTREAM_NEMO=1 sudo bash setup_env.sh
+# Or with a venv (recommended):
+python3.11 -m venv venv_py311
+source venv_py311/bin/activate
+USE_UPSTREAM_NEMO=1 bash setup_env.sh
 ```
 
 ## Step 4: Verify GPU Access
@@ -64,10 +64,9 @@ CUDA device: NVIDIA GeForce RTX 4090 (or your GPU model)
 ## Step 5: Download AI4Bharat Marathi Model
 
 ```bash
-# Download the base model from Hugging Face
-python scripts/download_model.py \
-    --model_name ai4bharat/indicconformer_stt_mr_hybrid_rnnt_large \
-    --output_path models/indicconformer_mr
+# Log in to Hugging Face first: huggingface-cli login (or set HF_TOKEN)
+python scripts/download_model_from_hf.py --repo ai4bharat/indicconformer_stt_mr_hybrid_ctc_rnnt_large --outdir models
+# Model and tokenizer will be under models/indicconformer_stt_mr_hybrid_ctc_rnnt_large/ and models/tokenizer/
 ```
 
 ## Step 6: Download Konkani Audio Data

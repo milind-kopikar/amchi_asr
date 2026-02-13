@@ -17,7 +17,7 @@ This guide serves as the **single source of truth** for setting up, verifying, a
 
 ### Software Environment
 - **OS:** Linux (Ubuntu 20.04/22.04 recommended).
-- **Python:** 3.10 or 3.11 (Tested on 3.11).
+- **Python:** **3.11** (recommended and tested). Use upstream NVIDIA NeMo—do not use the AI4Bharat NeMo fork (it requires Python 3.9 and fails on 3.11).
 - **CUDA:** 11.8 or 12.x (Compatible with PyTorch version).
 
 ---
@@ -32,10 +32,16 @@ cd amchi_asr
 \`\`\`
 
 ### Step 2: Run Environment Setup
-This script installs system dependencies (ffmpeg, build-essential), reinstalls PyTorch for CUDA 11.8, installs the AI4Bharat NeMo fork, and applies critical runtime patches.
+Use **Python 3.11** and **upstream** NeMo (not the AI4Bharat fork). The script installs system dependencies (ffmpeg, build-essential), PyTorch for CUDA 11.8, and NeMo. On Python 3.10+ it will install upstream `nemo_toolkit[all]`; you can force this with `USE_UPSTREAM_NEMO=1`.
 
 \`\`\`bash
-bash setup_env.sh
+# Optional: use a venv (recommended)
+python3.11 -m venv venv_py311
+source venv_py311/bin/activate
+# Then run setup (will use upstream NeMo on 3.11)
+USE_UPSTREAM_NEMO=1 bash setup_env.sh
+# Or without venv (script auto-detects Python 3.11 and uses upstream NeMo):
+sudo bash setup_env.sh
 \`\`\`
 
 ### Step 3: Setup Marathi/Konkani Model & Tokenizer
@@ -43,10 +49,10 @@ This script downloads the AI4Bharat model and extracts the **correct** language-
 
 **For Marathi:**
 \`\`\`bash
-# Ensure you have logged in to Hugging Face
+# Ensure you have logged in to Hugging Face (or set HF_TOKEN)
 huggingface-cli login --token YOUR_TOKEN
-python scripts/download_model_from_hf.py --repo_id ai4bharat/indicconformer_stt_mr_hybrid_ctc_rnnt_large --local_dir models/indicconformer_stt_mr_hybrid_ctc_rnnt_large
-# The fine_tune.py script will automatically extract the tokenizer on first run
+python scripts/download_model_from_hf.py --repo ai4bharat/indicconformer_stt_mr_hybrid_ctc_rnnt_large --outdir models
+# This puts the .nemo under models/indicconformer_stt_mr_hybrid_ctc_rnnt_large/ and extracts tokenizer to models/tokenizer/
 \`\`\`
 
 **For Konkani:**
@@ -91,9 +97,9 @@ We conducted a 20-epoch pilot using the Marathi `indicconformer` model on the St
 
 ### Protocol
 - **Training Set:** Story 1, 2, 3.
-- **Dev Set:** Story 4 (used for validation during training).
-- **Test Set:** Story 5 (used for final evaluation).
-- **Note:** This protocol ensures consistency with previous Konkani experiments.
+- **Dev Set:** Story 4 (used for validation during training). **Always use Story 4 for dev.**
+- **Test Set:** Story 5 (used for final evaluation). **Always use Story 5 for test.** Do not swap Story 4 and Story 5.
+- **Note:** This protocol ensures consistency with previous Konkani experiments. When re-downloading data or setting up from scratch, use `--use_story_split` so that Story 4 → dev and Story 5 → test (see `scripts/download_data_from_railway.py` and `data/README.md`).
 
 ### Performance
 - **Final Test WER:** 0.351

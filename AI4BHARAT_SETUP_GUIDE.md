@@ -1,16 +1,22 @@
 # AI4Bharat NeMo Fork Setup Guide
 
-**Critical guide for setting up AI4Bharat's NeMo fork on RunPod or any Linux GPU environment**
+**Guide for the AI4Bharat NeMo fork (Python 3.9 only). Not used for normal amchi_asr setup.**
 
 *Last updated: December 18, 2025*
 *Tested on: RunPod RTX 4090, CUDA 12.4*
 
 ---
 
-## 🚨 CRITICAL REQUIREMENTS
+## ⚠️ For This Repository (amchi_asr): Use Python 3.11 + Upstream NeMo
 
-### Python Version
-- **MUST USE Python 3.9** (3.8 also works)
+**This repo's standard setup is Python 3.11 with upstream NVIDIA NeMo** (`pip install "nemo_toolkit[all]"`), not the AI4Bharat fork. The fork requires Python 3.9 and will fail on 3.11 (e.g. `llvmlite==0.38.1` has no wheel for 3.11). Follow `SETUP_ENV.md` and `MASTER_REPRODUCTION_GUIDE.md` for RunPod and testing. **Use this guide only if you explicitly choose Python 3.9 and the AI4Bharat NeMo fork** (e.g. for debugging fork-specific behavior).
+
+---
+
+## 🚨 CRITICAL REQUIREMENTS (Fork Only)
+
+### Python Version (Fork Only)
+- **MUST USE Python 3.9** (3.8 also works) when using the AI4Bharat NeMo fork.
 - **CANNOT USE Python 3.10, 3.11, 3.12+** for the AI4Bharat NeMo fork
 
 **Why Python 3.9?**
