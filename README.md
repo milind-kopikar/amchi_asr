@@ -2,6 +2,8 @@
 
 ## 🚨 QUICK START / REPRODUCTION 🚨
 
+**Agents and new contributors:** For a single entry point to all documentation (where to continue, from-scratch pipeline, doc index), read **[AGENT_START_HERE.md](AGENT_START_HERE.md)** first.
+
 **If you are setting this up on a new environment (e.g., RunPod), please read the [MASTER REPRODUCTION GUIDE](MASTER_REPRODUCTION_GUIDE.md) first.**
 
 It contains the definitive instructions for:

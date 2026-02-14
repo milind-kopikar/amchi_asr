@@ -1,0 +1,24 @@
+# Reduce build context: exclude data, checkpoints, venvs, git
+.git
+.gitignore
+*.pyc
+__pycache__
+.venv
+venv
+venv_py311
+env
+data/
+results/
+models/
+*.ckpt
+!checkpoint.ckpt
+*.nemo
+*.pt
+*.pth
+nemo_experiments/
+wandb/
+.cache
+*.log
+.DS_Store
+*.md
+!runpod/README.md

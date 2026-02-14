@@ -1,0 +1,48 @@
+# Amchi ASR RunPod Serverless worker
+# Build from repo root: docker build -f runpod/Dockerfile.serverless -t amchi-asr-runpod .
+# The checkpoint is NOT in the image by default. Either:
+#   A) Copy it into the image: cp results/.../checkpoints/xxx.ckpt checkpoint.ckpt then add: COPY checkpoint.ckpt /app/checkpoint.ckpt
+#   B) Attach a RunPod Network Volume with the checkpoint and set env CHECKPOINT_PATH to that path (e.g. /runpod-volume/checkpoint.ckpt)
+
+FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.11 python3.11-venv python3-pip python3.11-dev \
+    ffmpeg build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Use python3.11
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 \
+    && update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
+
+WORKDIR /app
+
+# PyTorch CUDA 11.8 (matches your training env)
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
+    && pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+
+# NeMo and deps (upstream; Python 3.11)
+RUN pip install --no-cache-dir Cython \
+    && pip install --no-cache-dir "nemo_toolkit[all]" pynini librosa omegaconf
+
+# RunPod SDK
+RUN pip install --no-cache-dir runpod
+
+# Repo code (handler, scripts, patches)
+COPY . /app
+
+# Apply conv_asr patch (required for NeMo hybrid model)
+RUN python3 -c "\
+import nemo.collections.asr.modules.conv_asr as m; \
+import shutil; \
+shutil.copy('/app/patches/conv_asr_fixed.py', m.__file__); \
+print('Patched', m.__file__) \
+"
+
+# Optional: embed checkpoint in image (copy to repo root first: cp results/.../marathi_amchi_20epoch-epoch=18-val_wer=0.550.ckpt checkpoint.ckpt)
+# COPY checkpoint.ckpt /app/checkpoint.ckpt
+
+ENV CHECKPOINT_PATH=/app/checkpoint.ckpt
+
+CMD ["python3", "runpod/handler.py"]
