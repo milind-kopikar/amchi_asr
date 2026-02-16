@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suggest Corrections - Amchigale Konkani Dictionary</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .suggestion-form {
+            padding: 40px;
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+            padding: 25px;
+            border: 2px solid #f0f0f0;
+            border-radius: 15px;
+            background: #fafafa;
+        }
+        
+        .form-section h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            align-items: flex-start;
+        }
+        
+        .form-group {
+            flex: 1;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .devanagari-input {
+            font-family: 'Noto Sans Devanagari', sans-serif;
+            font-size: 18px;
+        }
+        
+        .suggestion-type {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .suggestion-type label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .suggestion-type input[type="radio"] {
+            width: auto;
+        }
+        
+        .suggestion-type label:hover {
+            border-color: #667eea;
+        }
+        
+        .suggestion-type input[type="radio"]:checked + span {
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .current-entry {
+            background: #e8f2ff;
+            border: 2px solid #b8daff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .current-entry h4 {
+            color: #0066cc;
+            margin-bottom: 15px;
+        }
+        
+        .current-word {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-family: 'Noto Sans Devanagari', sans-serif;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 30px auto 0;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .contributor-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .notification {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .notification.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .notification.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .suggestion-type {
+                flex-direction: column;
+            }
+        }
+        
+        /* Notification styles */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            max-width: 400px;
+            word-wrap: break-word;
+        }
+        
+        .notification.success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border-left: 4px solid #155724;
+        }
+        
+        .notification.error {
+            background: linear-gradient(135deg, #dc3545, #e74c3c);
+            color: white;
+            border-left: 4px solid #721c24;
+        }
+        
+        .notification.info {
+            background: linear-gradient(135deg, #17a2b8, #007bff);
+            color: white;
+            border-left: 4px solid #0c5460;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <a href="index.html" class="back-link">🏠 Back to Dictionary</a>
+    
+    <div class="container">
+        <div class="header">
+            <h1>📝 Suggest Corrections</h1>
+            <p>Help improve the Konkani Dictionary</p>
+        </div>
+        
+        <div class="suggestion-form">
+            <div id="notification" class="notification"></div>
+            
+            <!-- Search for existing entry -->
+            <div class="form-section">
+                <h3>🔍 Find Entry to Correct</h3>
+                <div class="form-group">
+                    <label for="searchEntry">Search for existing word (optional for new additions):</label>
+                    <input type="text" id="searchEntry" placeholder="Type Konkani or English word...">
+                </div>
+                <div id="searchResults"></div>
+            </div>
+            
+            <!-- Current entry display -->
+            <div id="currentEntrySection" class="form-section" style="display: none;">
+                <h3>📖 Current Entry</h3>
+                <div id="currentEntry" class="current-entry"></div>
+            </div>
+            
+            <!-- Suggestion type selection -->
+            <div class="form-section">
+                <h3>🎯 What type of suggestion is this?</h3>
+                <div class="suggestion-type">
+                    <label>
+                        <input type="radio" name="suggestionType" value="correction" checked>
+                        <span>✏️ Correct existing entry</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="suggestionType" value="addition">
+                        <span>➕ Add new word</span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Suggested changes -->
+            <div class="form-section">
+                <h3 id="editSectionTitle">✏️ Edit Entry Details</h3>
+                <p id="editSectionDescription" style="color: #6c757d; margin-bottom: 20px;">Current values are pre-filled below. Edit any field you want to improve or leave blank to remove. Fields showing "Please add if you know" are currently empty.</p>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="suggestedDevanagari">📝 Konkani Word (Devanagari Script):</label>
+                        <input type="text" id="suggestedDevanagari" class="devanagari-input" placeholder="कोंकणी शब्द (current value pre-filled if available)">
+                        <small style="color: #6c757d;">The word written in Devanagari script</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="suggestedEnglishAlphabet">🔤 Konkani Word (English Alphabet):</label>
+                        <input type="text" id="suggestedEnglishAlphabet" placeholder="konkani shabd (current pronunciation pre-filled if available)">
+                        <small style="color: #6c757d;">How the Konkani word sounds in English letters</small>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="suggestedMeaning">🌍 English Meaning:</label>
+                        <input type="text" id="suggestedMeaning" placeholder="English translation (current meaning pre-filled if available)">
+                        <small style="color: #6c757d;">What this word means in English</small>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="suggestedContext">📖 Usage Example (in Devanagari):</label>
+                    <textarea id="suggestedContext" rows="3" placeholder="उदाहरण वाक्य (current example pre-filled if available)..."></textarea>
+                    <small style="color: #6c757d;">A sentence showing how this word is used (optional but helpful)</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="contributorNotes">💬 Additional Notes (optional):</label>
+                    <textarea id="contributorNotes" rows="3" placeholder="Any additional information, sources, or context about your suggestion..."></textarea>
+                    <small style="color: #6c757d;">Help reviewers understand your suggestion better</small>
+                </div>
+            </div>
+            
+            <!-- Contributor info -->
+            <div class="form-section contributor-info">
+                <h3>👤 Your Information</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="contributorName">Name:</label>
+                        <input type="text" id="contributorName" placeholder="Your name">
+                    </div>
+                    <div class="form-group">
+                        <label for="contributorEmail">Email:</label>
+                        <input type="email" id="contributorEmail" placeholder="your.email@example.com">
+                    </div>
+                </div>
+            </div>
+            
+            <button class="submit-btn" onclick="submitSuggestion()">Submit Suggestion</button>
+        </div>
+    </div>
+
+    <script>
+        // API base URL configuration (supports multiple environments)
+        const getApiBaseUrl = () => {
+            // Priority: Environment variable > Auto-detection
+            if (window.API_BASE_URL) {
+                return window.API_BASE_URL;
+            }
+
+            // Auto-detection based on hostname
+            return window.location.hostname === 'localhost'
+                ? 'http://localhost:3002/api'
+                : 'https://konkani-dictionary-production.up.railway.app/api';
+        };
+
+        const API_BASE = getApiBaseUrl();
+        let selectedEntry = null;
+        
+        // Check for auto-load entry from URL parameters or localStorage
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const entryId = urlParams.get('entryId') || localStorage.getItem('selectedEntryId');
+            const entryNumber = localStorage.getItem('selectedEntryNumber');
+            const storedEntryData = localStorage.getItem('selectedEntryData');
+            const mode = urlParams.get('mode'); // Check if we're in addition-only mode
+            
+            console.log('DOMContentLoaded - entryId:', entryId);
+            console.log('DOMContentLoaded - entryNumber:', entryNumber);
+            console.log('DOMContentLoaded - storedEntryData:', storedEntryData ? 'Available' : 'None');
+            console.log('DOMContentLoaded - mode:', mode);
+            
+            // Handle addition-only mode
+            if (mode === 'addition') {
+                // Hide all unnecessary sections for addition mode
+                const formSections = document.querySelectorAll('.form-section');
+                formSections[0].style.display = 'none'; // Search section
+                formSections[2].style.display = 'none'; // Suggestion type section (corrected index)
+                // Hide current entry section
+                document.getElementById('currentEntrySection').style.display = 'none';
+                // Change the title
+                document.getElementById('editSectionTitle').textContent = '➕ Add New Word Details';
+                document.getElementById('editSectionDescription').textContent = 'Please provide details for the new word you want to add to the dictionary.';
+                // Set the form to addition mode
+                selectedEntry = null;
+                // Skip the rest of the logic for addition mode
+            } else if (entryId) {
+                if (storedEntryData) {
+                    // Use stored data first for faster loading
+                    try {
+                        const entry = JSON.parse(storedEntryData);
+                        console.log('Using stored entry data:', entry);
+                        loadEntryData(entry);
+                    } catch (error) {
+                        console.error('Error parsing stored entry data:', error);
+                        // Fallback to API fetch
+                        console.log('Falling back to API fetch');
+                        selectEntry(entryId);
+                    }
+                } else {
+                    // Fallback to API fetch
+                    console.log('No stored data, fetching from API');
+                    selectEntry(entryId);
+                }
+                
+                // Clear localStorage after use
+                localStorage.removeItem('selectedEntryId');
+                localStorage.removeItem('selectedEntryNumber');
+                localStorage.removeItem('selectedEntryData');
+                
+                // Note: loadEntryData function now handles hiding search section
+                
+                // Show a message about which entry is being edited
+                if (entryNumber) {
+                    console.log(`Will edit Entry #${entryNumber}`);
+                }
+            } else {
+                console.log('No entryId found - showing search form');
+            }
+            
+            // Add listeners for suggestion type changes (only if not in addition-only mode)
+            if (mode !== 'addition') {
+                document.querySelectorAll('input[name="suggestionType"]').forEach(radio => {
+                    radio.addEventListener('change', function() {
+                        const isAddition = this.value === 'addition';
+                        const editSection = document.getElementById('editSectionTitle');
+                        const editDescription = document.getElementById('editSectionDescription');
+                        const searchSection = document.querySelector('.form-section');
+                        const currentEntrySection = document.getElementById('currentEntrySection');
+                        
+                        if (isAddition) {
+                            // For additions: hide search, show form fields
+                            searchSection.style.display = 'none';
+                            currentEntrySection.style.display = 'none';
+                            editSection.textContent = '➕ Add New Entry Details';
+                            editDescription.textContent = 'Please provide details for the new word you want to add to the dictionary.';
+                        } else {
+                            // For corrections: show search, hide deletion reason
+                            searchSection.style.display = 'block';
+                            currentEntrySection.style.display = 'block';
+                            editSection.textContent = '✏️ Edit Entry Details';
+                            editDescription.textContent = 'Current values are pre-filled below. Edit any field you want to improve or leave blank to remove. Fields showing "Please add if you know" are currently empty.';
+                        }
+                    });
+                });
+            }
+        });
+        
+        // Function to load entry data (used by both stored data and API fetch)
+        function loadEntryData(entry) {
+            console.log('loadEntryData called with:', entry);
+            
+            if (!entry) {
+                console.error('loadEntryData: No entry data provided');
+                showNotification('Error: No entry data available', 'error');
+                return;
+            }
+            
+            if (!entry.id) {
+                console.error('loadEntryData: Entry missing ID field');
+                showNotification('Error: Invalid entry data', 'error');
+                return;
+            }
+            
+            selectedEntry = entry;
+            console.log('Set selectedEntry to:', selectedEntry);
+            
+            // Hide the search section since we already have an entry
+            document.querySelector('.form-section').style.display = 'none';
+            
+            // Pre-fill the form with current values for editing - NO redundant display
+            console.log('Pre-filling form fields...');
+            document.getElementById('suggestedDevanagari').value = entry.word_konkani_devanagari || '';
+            
+            // Fix for English alphabet field - only use actual English alphabet, not Devanagari
+            let englishAlphabet = '';
+            if (entry.word_konkani_english_alphabet && 
+                entry.word_konkani_english_alphabet !== '[' + entry.word_konkani_devanagari + ']' &&
+                !entry.word_konkani_english_alphabet.startsWith('[') &&
+                !entry.word_konkani_english_alphabet.endsWith(']')) {
+                englishAlphabet = entry.word_konkani_english_alphabet;
+            }
+            console.log('English alphabet field set to:', englishAlphabet);
+            document.getElementById('suggestedEnglishAlphabet').value = englishAlphabet;
+            
+            document.getElementById('suggestedMeaning').value = entry.english_meaning || '';
+            document.getElementById('suggestedContext').value = entry.context_usage_sentence || '';
+            
+            console.log('Form fields pre-filled successfully');
+            
+            // Show helpful message about editing
+            showNotification(`Editing Entry #${entry.entry_number}. All current values are pre-filled. Modify any field you want to improve or add missing information.`, 'info');
+        }
+        
+        // Search for existing entries
+        document.getElementById('searchEntry').addEventListener('input', async function() {
+            const query = this.value.trim();
+            const resultsDiv = document.getElementById('searchResults');
+            
+            if (query.length < 2) {
+                resultsDiv.innerHTML = '';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/dictionary/search?q=${encodeURIComponent(query)}&type=all&limit=5`);
+                const data = await response.json();
+                
+                if (data.results && data.results.length > 0) {
+                    resultsDiv.innerHTML = `
+                        <h4>Existing entries (click to select for correction):</h4>
+                        ${data.results.map(entry => `
+                            <div class="search-result" onclick="selectEntry('${entry.id}')" style="
+                                padding: 10px; 
+                                border: 1px solid #ddd; 
+                                border-radius: 5px; 
+                                margin: 5px 0; 
+                                cursor: pointer;
+                                transition: background 0.3s ease;
+                            " onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='white'">
+                                <strong>${entry.word_konkani_devanagari || 'N/A'}</strong> 
+                                (${entry.word_konkani_english_alphabet || 'N/A'}) 
+                                → ${entry.english_meaning || 'N/A'}
+                            </div>
+                        `).join('')}
+                    `;
+                } else {
+                    resultsDiv.innerHTML = '<p>No existing entries found. You can add this as a new entry.</p>';
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+                resultsDiv.innerHTML = '<p>Error searching entries.</p>';
+            }
+        });
+        
+        // Select an entry for correction
+        window.selectEntry = async function(entryId) {
+            try {
+                console.log('selectEntry called with ID:', entryId);
+                console.log('API_BASE:', API_BASE);
+                console.log('Full URL will be:', `${API_BASE}/dictionary/${entryId}`);
+                
+                const response = await fetch(`${API_BASE}/dictionary/${entryId}`);
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('API Error Response:', errorText);
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+                
+                const entry = await response.json();
+                console.log('Successfully fetched entry:', entry);
+                
+                // Use the shared function to load entry data
+                loadEntryData(entry);
+                
+            } catch (error) {
+                console.error('Error fetching entry:', error);
+                console.error('Error details:', error.stack);
+                showNotification(`Error loading entry details: ${error.message}`, 'error');
+            }
+        };
+        
+        // Submit suggestion
+        window.submitSuggestion = async function() {
+            console.log('submitSuggestion called');
+            
+            // Check if we're in addition-only mode
+            const urlParams = new URLSearchParams(window.location.search);
+            const mode = urlParams.get('mode');
+            
+            // Get selected suggestion type from radio buttons
+            const suggestionTypeRadio = document.querySelector('input[name="suggestionType"]:checked');
+            let suggestionType = suggestionTypeRadio ? suggestionTypeRadio.value : (selectedEntry ? 'correction' : 'addition');
+            
+            // Override suggestionType for addition mode
+            if (mode === 'addition') {
+                suggestionType = 'addition';
+            }
+            
+            const contributorName = document.getElementById('contributorName').value.trim();
+            const contributorEmail = document.getElementById('contributorEmail').value.trim();
+            
+            console.log('Form values:', { suggestionType, contributorName, contributorEmail });
+            
+            // Validation
+            if (!contributorName || !contributorEmail) {
+                console.log('Validation failed: missing name or email');
+                showNotification('Please provide your name and email', 'error');
+                return;
+            }
+            
+            if (suggestionType === 'correction') {
+                // For corrections, we need an existing entry
+                if (!selectedEntry) {
+                    showNotification('Please search and select an existing entry to correct', 'error');
+                    return;
+                }
+            } else if (suggestionType === 'addition') {
+                // For additions, no existing entry needed, but we need basic word info
+                if (!document.getElementById('suggestedDevanagari').value.trim() && 
+                    !document.getElementById('suggestedMeaning').value.trim()) {
+                    showNotification('For new word additions, please provide at least a Konkani word or English meaning', 'error');
+                    return;
+                }
+            }
+            
+            const suggestionData = {
+                suggestionType,
+                originalEntryId: selectedEntry ? selectedEntry.id : null,
+                suggestedDevanagari: document.getElementById('suggestedDevanagari').value.trim(),
+                suggestedEnglishAlphabet: document.getElementById('suggestedEnglishAlphabet').value.trim(),
+                suggestedMeaning: document.getElementById('suggestedMeaning').value.trim(),
+                suggestedContext: document.getElementById('suggestedContext').value.trim(),
+                contributorNotes: document.getElementById('contributorNotes').value.trim(),
+                contributorName,
+                contributorEmail
+            };
+            
+            console.log('Suggestion data:', suggestionData);
+            console.log('API_BASE:', API_BASE);
+            
+            try {
+                console.log('Sending request to:', `${API_BASE}/suggestions`);
+                const response = await fetch(`${API_BASE}/suggestions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(suggestionData)
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                
+                if (response.ok) {
+                    const responseData = await response.json();
+                    console.log('Success response:', responseData);
+                    
+                    // Create detailed success message with submitted entry info
+                    let submittedWord = '';
+                    if (suggestionData.suggestedDevanagari) {
+                        submittedWord = suggestionData.suggestedDevanagari;
+                    } else if (suggestionData.suggestedMeaning) {
+                        submittedWord = suggestionData.suggestedMeaning;
+                    } else {
+                        submittedWord = 'Entry';
+                    }
+                    
+                    const actionType = suggestionType === 'addition' ? 'addition' : 'correction';
+                    showNotification(
+                        `✅ SUCCESS! Your ${actionType} suggestion for "${submittedWord}" has been submitted successfully (ID: ${responseData.suggestionId.slice(0, 8)}...). Our expert committee will review it and notify you via email. Thank you for contributing to the Konkani Dictionary!`, 
+                        'success'
+                    );
+                    
+                    // Show success page with details and back button
+                    document.querySelector('.suggestion-form').innerHTML = `
+                        <div style="text-align: center; padding: 40px;">
+                            <div style="background: linear-gradient(135deg, #28a745, #20c997); color: white; padding: 30px; border-radius: 15px; margin-bottom: 30px;">
+                                <h2 style="margin: 0 0 15px 0;">🎉 Suggestion Submitted Successfully!</h2>
+                                <p style="margin: 0; font-size: 1.1em;">Thank you for contributing to the Amchigale Konkani Dictionary</p>
+                            </div>
+                            
+                            <div style="background: #f8f9fa; padding: 25px; border-radius: 10px; margin-bottom: 30px; text-align: left;">
+                                <h3 style="color: #495057; margin-bottom: 15px;">📝 Your Submission Details:</h3>
+                                <div style="display: grid; gap: 10px;">
+                                    ${suggestionData.suggestedDevanagari ? `<div><strong>Konkani (Devanagari):</strong> ${suggestionData.suggestedDevanagari}</div>` : ''}
+                                    ${suggestionData.suggestedEnglishAlphabet ? `<div><strong>Konkani (English):</strong> ${suggestionData.suggestedEnglishAlphabet}</div>` : ''}
+                                    ${suggestionData.suggestedMeaning ? `<div><strong>English Meaning:</strong> ${suggestionData.suggestedMeaning}</div>` : ''}
+                                    ${suggestionData.suggestedContext ? `<div><strong>Usage Example:</strong> ${suggestionData.suggestedContext}</div>` : ''}
+                                    <div><strong>Submission ID:</strong> ${responseData.suggestionId}</div>
+                                    <div><strong>Status:</strong> Pending Expert Review</div>
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; justify-content: center;">
+                                <a href="/" style="background: linear-gradient(135deg, #007bff, #0056b3); color: white; padding: 15px 30px; border-radius: 25px; text-decoration: none; font-weight: 600; font-size: 1.1em; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,123,255,0.3);">
+                                    🏠 Back to Dictionary
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    const errorText = await response.text();
+                    console.error('API Error:', response.status, errorText);
+                    throw new Error(`Failed to submit suggestion: ${errorText}`);
+                }
+            } catch (error) {
+                console.error('Submit error:', error);
+                showNotification(`Error submitting suggestion: ${error.message}`, 'error');
+            }
+        };
+        
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.style.display = 'block';
+            
+            // Fade in animation
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateX(100%)';
+            
+            setTimeout(() => {
+                notification.style.transition = 'all 0.3s ease';
+                notification.style.opacity = '1';
+                notification.style.transform = 'translateX(0)';
+            }, 10);
+            
+            // Auto-hide after 8 seconds for success messages, 6 seconds for errors
+            const hideDelay = type === 'success' ? 8000 : 6000;
+            setTimeout(() => {
+                notification.style.transition = 'all 0.3s ease';
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 300);
+            }, hideDelay);
+        }
+    </script>
+</body>
+</html>

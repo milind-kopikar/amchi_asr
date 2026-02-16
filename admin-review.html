@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expert Review Panel - Amchigale Konkani Dictionary</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .back-home-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .back-home-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-1px);
+        }
+        
+        .header h1 {
+            font-size: 1.8em;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            display: block;
+        }
+        
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .filter-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .filter-group select,
+        .filter-group input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .suggestions-list {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .suggestion-item {
+            border-bottom: 1px solid #f0f0f0;
+            padding: 25px;
+            transition: background 0.3s ease;
+        }
+        
+        .suggestion-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+        
+        .suggestion-header {
+            display: flex;
+            justify-content: between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            gap: 20px;
+        }
+        
+        .suggestion-info {
+            flex: 1;
+        }
+        
+        .suggestion-type {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        
+        .suggestion-type.correction {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .suggestion-type.addition {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .suggestion-type.addition {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .suggestion-meta {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .suggestion-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-approve {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-approve:hover {
+            background: #218838;
+        }
+        
+        .btn-reject {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-reject:hover {
+            background: #c82333;
+        }
+        
+        .btn-view {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-view:hover {
+            background: #5a6fd8;
+        }
+        
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 15px 0;
+        }
+        
+        .comparison-section {
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .original-section {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .suggested-section {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .comparison-section h4 {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .field-comparison {
+            margin-bottom: 10px;
+        }
+        
+        .field-label {
+            font-weight: 600;
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 3px;
+        }
+        
+        .field-value {
+            font-size: 16px;
+            line-height: 1.4;
+        }
+        
+        .devanagari-text {
+            font-family: 'Noto Sans Devanagari', sans-serif;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .review-form textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            resize: vertical;
+            min-height: 100px;
+            margin-bottom: 15px;
+        }
+        
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .login-form {
+            text-align: center;
+        }
+        
+        .login-form h2 {
+            margin-bottom: 30px;
+            color: #333;
+        }
+        
+        .login-form input {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        @media (max-width: 768px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .suggestion-header {
+                flex-direction: column;
+            }
+            
+            .suggestion-actions {
+                align-self: flex-start;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-container">
+        <div class="login-form">
+            <h2>🔒 Expert Review Panel</h2>
+            <p style="margin-bottom: 20px; color: #666;">Please log in to review dictionary suggestions</p>
+            <input type="email" id="loginEmail" placeholder="Email" required>
+            <input type="password" id="loginPassword" placeholder="Password" required>
+            <button class="login-btn" onclick="login()">Log In</button>
+            <div id="loginError" style="color: #dc3545; margin-top: 10px; display: none;"></div>
+        </div>
+    </div>
+    
+    <!-- Main Panel -->
+    <div id="mainPanel" style="display: none;">
+        <div class="header">
+            <div class="header-content">
+                <a href="index.html" class="back-home-btn">🏠 Back to Dictionary</a>
+                <h1>📋 Expert Review Panel</h1>
+                <div class="user-info">
+                    <span id="userWelcome">Welcome, Expert</span>
+                    <button class="logout-btn" onclick="logout()">Log Out</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="container">
+            <!-- Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-number" id="pendingCount">-</span>
+                    <div class="stat-label">Pending Reviews</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="approvedCount">-</span>
+                    <div class="stat-label">Approved Today</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="rejectedCount">-</span>
+                    <div class="stat-label">Rejected Today</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="totalContributors">-</span>
+                    <div class="stat-label">Active Contributors</div>
+                </div>
+            </div>
+            
+            <!-- Filters -->
+            <div class="filters">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>Status:</label>
+                        <select id="statusFilter" onchange="loadSuggestions()">
+                            <option value="pending">Pending</option>
+                            <option value="in_review">In Review</option>
+                            <option value="approved">Approved</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Type:</label>
+                        <select id="typeFilter" onchange="loadSuggestions()">
+                            <option value="">All Types</option>
+                            <option value="correction">Corrections</option>
+                            <option value="addition">Additions</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Sort by:</label>
+                        <select id="sortFilter" onchange="loadSuggestions()">
+                            <option value="created_at">Newest First</option>
+                            <option value="created_at_asc">Oldest First</option>
+                            <option value="contributor">Contributor</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Suggestions List -->
+            <div id="suggestionsList" class="suggestions-list">
+                <div style="padding: 40px; text-align: center; color: #666;">
+                    Loading suggestions...
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Review Modal -->
+    <div id="reviewModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Review Suggestion</h3>
+                <button class="close-modal" onclick="closeReviewModal()">&times;</button>
+            </div>
+            <div id="reviewContent"></div>
+            <div class="review-form">
+                <label for="reviewNotes">Review Notes:</label>
+                <textarea id="reviewNotes" placeholder="Add your comments about this suggestion..."></textarea>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button class="btn btn-reject" onclick="reviewSuggestion('rejected')">Reject</button>
+                    <button class="btn btn-approve" onclick="reviewSuggestion('approved')">Approve</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API base URL configuration (supports multiple environments)
+        const getApiBaseUrl = () => {
+            // Priority: Environment variable > Auto-detection
+            if (window.API_BASE_URL) {
+                return window.API_BASE_URL;
+            }
+
+            // Auto-detection based on hostname
+            return window.location.hostname === 'localhost'
+                ? 'http://localhost:3002/api'
+                : 'https://konkani-dictionary-production.up.railway.app/api';
+        };
+
+        const API_BASE = getApiBaseUrl();
+        let currentUser = null;
+        let currentSuggestion = null;
+        
+        // Check if user is already logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('expertToken');
+            if (token) {
+                validateToken(token);
+            }
+        });
+        
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorDiv = document.getElementById('loginError');
+            
+            if (!email || !password) {
+                showLoginError('Please enter both email and password');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('expertToken', data.token);
+                    currentUser = data.user;
+                    showMainPanel();
+                } else {
+                    const errorData = await response.json();
+                    showLoginError(errorData.message || 'Invalid credentials');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showLoginError('Connection error. Please try again.');
+            }
+        }
+        
+        async function validateToken(token) {
+            try {
+                const response = await fetch(`${API_BASE}/admin/validate`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    currentUser = data.user;
+                    showMainPanel();
+                } else {
+                    localStorage.removeItem('expertToken');
+                    showLoginScreen();
+                }
+            } catch (error) {
+                console.error('Token validation error:', error);
+                localStorage.removeItem('expertToken');
+                showLoginScreen();
+            }
+        }
+        
+        function showLoginError(message) {
+            const errorDiv = document.getElementById('loginError');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+        
+        function showMainPanel() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainPanel').style.display = 'block';
+            document.getElementById('userWelcome').textContent = `Welcome, ${currentUser.name}`;
+            loadDashboardStats();
+            loadSuggestions();
+        }
+        
+        function showLoginScreen() {
+            document.getElementById('loginScreen').style.display = 'block';
+            document.getElementById('mainPanel').style.display = 'none';
+        }
+        
+        function logout() {
+            localStorage.removeItem('expertToken');
+            currentUser = null;
+            showLoginScreen();
+        }
+        
+        async function loadDashboardStats() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('expertToken')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const stats = await response.json();
+                    document.getElementById('pendingCount').textContent = stats.pending || 0;
+                    document.getElementById('approvedCount').textContent = stats.approvedToday || 0;
+                    document.getElementById('rejectedCount').textContent = stats.rejectedToday || 0;
+                    document.getElementById('totalContributors').textContent = stats.activeContributors || 0;
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+        
+        async function loadSuggestions() {
+            const status = document.getElementById('statusFilter').value;
+            const type = document.getElementById('typeFilter').value;
+            const sort = document.getElementById('sortFilter').value;
+            
+            try {
+                const params = new URLSearchParams({
+                    status,
+                    ...(type && { type }),
+                    sort
+                });
+                
+                const response = await fetch(`${API_BASE}/admin/suggestions?${params}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('expertToken')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const suggestions = await response.json();
+                    renderSuggestions(suggestions);
+                } else {
+                    throw new Error('Failed to load suggestions');
+                }
+            } catch (error) {
+                console.error('Error loading suggestions:', error);
+                document.getElementById('suggestionsList').innerHTML = `
+                    <div style="padding: 40px; text-align: center; color: #dc3545;">
+                        Error loading suggestions. Please try again.
+                    </div>
+                `;
+            }
+        }
+        
+        function renderSuggestions(suggestions) {
+            const listDiv = document.getElementById('suggestionsList');
+            
+            if (suggestions.length === 0) {
+                listDiv.innerHTML = `
+                    <div style="padding: 40px; text-align: center; color: #666;">
+                        No suggestions found with the current filters.
+                    </div>
+                `;
+                return;
+            }
+            
+            listDiv.innerHTML = suggestions.map(suggestion => `
+                <div class="suggestion-item">
+                    <div class="suggestion-header">
+                        <div class="suggestion-info">
+                            <span class="suggestion-type ${suggestion.suggestion_type}">${suggestion.suggestion_type.toUpperCase()}</span>
+                            <div class="suggestion-meta">
+                                By ${suggestion.contributor_name} (${suggestion.contributor_email}) • 
+                                ${new Date(suggestion.created_at).toLocaleDateString()}
+                            </div>
+                        </div>
+                        <div class="suggestion-actions">
+                            <button class="btn btn-view" onclick="viewSuggestion('${suggestion.id}')">
+                                Review
+                            </button>
+                        </div>
+                    </div>
+                    
+                    ${suggestion.suggestion_type === 'correction' ? renderComparison(suggestion) : renderAddition(suggestion)}
+                    
+                    <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-left: 4px solid #007bff; border-radius: 8px;">
+                        <h5 style="margin: 0 0 10px 0; color: #495057;">💬 Contributor Notes:</h5>
+                        <div style="color: #6c757d; font-style: italic;">
+                            ${suggestion.contributor_notes || 'No additional notes provided by the contributor.'}
+                        </div>
+                    </div>
+                    
+                    <!-- Debug information (remove in production) -->
+                    <details style="margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 8px; font-size: 0.9em;">
+                        <summary style="cursor: pointer; font-weight: bold; color: #856404;">🔍 Debug: Raw Suggestion Data</summary>
+                        <pre style="margin-top: 10px; background: white; padding: 10px; border-radius: 4px; overflow: auto; max-height: 200px;">${JSON.stringify({
+                            id: suggestion.id,
+                            suggestion_type: suggestion.suggestion_type,
+                            original_word_konkani_devanagari: suggestion.original_word_konkani_devanagari,
+                            original_word_konkani_english_alphabet: suggestion.original_word_konkani_english_alphabet,
+                            original_english_meaning: suggestion.original_english_meaning,
+                            original_context_usage_sentence: suggestion.original_context_usage_sentence,
+                            suggested_word_konkani_devanagari: suggestion.suggested_word_konkani_devanagari,
+                            contributor_notes: suggestion.contributor_notes,
+                            original_entry_id: suggestion.original_entry_id
+                        }, null, 2)}</pre>
+                    </details>
+                </div>
+            `).join('');
+        }
+        
+        function renderComparison(suggestion) {
+            return `
+                <div class="comparison-grid">
+                    <div class="comparison-section original-section">
+                        <h4>📜 Original</h4>
+                        <div class="field-comparison">
+                            <div class="field-label">Devanagari:</div>
+                            <div class="field-value devanagari-text">${suggestion.original_word_konkani_devanagari || 'N/A'}</div>
+                        </div>
+                        <div class="field-comparison">
+                            <div class="field-label">English Alphabet:</div>
+                            <div class="field-value">${suggestion.original_word_konkani_english_alphabet || 'N/A'}</div>
+                        </div>
+                        <div class="field-comparison">
+                            <div class="field-label">Meaning:</div>
+                            <div class="field-value">${suggestion.original_english_meaning || 'N/A'}</div>
+                        </div>
+                        <div class="field-comparison">
+                            <div class="field-label">Usage Example:</div>
+                            <div class="field-value devanagari-text">${suggestion.original_context_usage_sentence || '<em style="color: #6c757d;">Not provided</em>'}</div>
+                        </div>
+                    </div>
+                    <div class="comparison-section suggested-section">
+                        <h4>✏️ Suggested</h4>
+                        <div class="field-comparison">
+                            <div class="field-label">Devanagari:</div>
+                            <div class="field-value devanagari-text">${suggestion.suggested_word_konkani_devanagari || 'N/A'}</div>
+                        </div>
+                        <div class="field-comparison">
+                            <div class="field-label">English Alphabet:</div>
+                            <div class="field-value">${suggestion.suggested_word_konkani_english_alphabet || 'N/A'}</div>
+                        </div>
+                        <div class="field-comparison">
+                            <div class="field-label">Meaning:</div>
+                            <div class="field-value">${suggestion.suggested_english_meaning || 'N/A'}</div>
+                        </div>
+                        <div class="field-comparison">
+                            <div class="field-label">Usage Example:</div>
+                            <div class="field-value devanagari-text">${suggestion.suggested_context_usage_sentence || '<em style="color: #6c757d;">Not provided</em>'}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderAddition(suggestion) {
+            return `
+                <div style="padding: 15px; background: #d4edda; border-radius: 10px; margin: 15px 0;">
+                    <h4>➕ New Entry Suggestion</h4>
+                    <div class="field-comparison">
+                        <div class="field-label">Devanagari:</div>
+                        <div class="field-value devanagari-text">${suggestion.suggested_word_konkani_devanagari || 'N/A'}</div>
+                    </div>
+                    <div class="field-comparison">
+                        <div class="field-label">English Alphabet:</div>
+                        <div class="field-value">${suggestion.suggested_word_konkani_english_alphabet || 'N/A'}</div>
+                    </div>
+                    <div class="field-comparison">
+                        <div class="field-label">Meaning:</div>
+                        <div class="field-value">${suggestion.suggested_english_meaning || 'N/A'}</div>
+                    </div>
+                    <div class="field-comparison">
+                        <div class="field-label">Usage Example:</div>
+                        <div class="field-value devanagari-text">${suggestion.suggested_context_usage_sentence || '<em style="color: #6c757d;">Not provided</em>'}</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        async function viewSuggestion(suggestionId) {
+            try {
+                const response = await fetch(`${API_BASE}/admin/suggestions/${suggestionId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('expertToken')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    currentSuggestion = await response.json();
+                    showReviewModal();
+                } else {
+                    throw new Error('Failed to load suggestion details');
+                }
+            } catch (error) {
+                console.error('Error loading suggestion:', error);
+                alert('Error loading suggestion details');
+            }
+        }
+        
+        function showReviewModal() {
+            const modal = document.getElementById('reviewModal');
+            const content = document.getElementById('reviewContent');
+
+            // In the modal allow the expert to edit suggested values before approving
+            content.innerHTML = currentSuggestion.suggestion_type === 'correction' 
+                ? renderComparisonEditable(currentSuggestion) 
+                : renderAdditionEditable(currentSuggestion);
+
+            modal.style.display = 'block';
+        }
+
+        // Editable renderers for the modal
+        function renderComparisonEditable(suggestion) {
+            return `
+                <div class="comparison-grid">
+                    <div class="comparison-section original-section">
+                        <h4>📜 Original</h4>
+                        <div class="field-comparison">
+                            <div class="field-label">Devanagari:</div>
+                            <div class="field-value devanagari-text">${suggestion.original_word_konkani_devanagari || 'N/A'}</div>
+                        </div>
+                        <div class="field-comparison">
+                            <div class="field-label">English Alphabet:</div>
+                            <div class="field-value">${suggestion.original_word_konkani_english_alphabet || 'N/A'}</div>
+                        </div>
+                        <div class="field-comparison">
+                            <div class="field-label">Meaning:</div>
+                            <div class="field-value">${suggestion.original_english_meaning || 'N/A'}</div>
+                        </div>
+                        <div class="field-comparison">
+                            <div class="field-label">Usage Example:</div>
+                            <div class="field-value devanagari-text">${suggestion.original_context_usage_sentence || '<em style="color: #6c757d;">Not provided</em>'}</div>
+                        </div>
+                    </div>
+                    <div class="comparison-section suggested-section">
+                        <h4>✏️ Suggested (editable)</h4>
+                        <div class="field-comparison">
+                            <div class="field-label">Devanagari:</div>
+                            <div class="field-value"><input id="apply_devanagari" style="width:100%; padding:8px;" value="${escapeHtml(suggestion.suggested_word_konkani_devanagari || '')}" /></div>
+                        </div>
+                        <div class="field-comparison">
+                            <div class="field-label">English Alphabet:</div>
+                            <div class="field-value"><input id="apply_roman" style="width:100%; padding:8px;" value="${escapeHtml(suggestion.suggested_word_konkani_english_alphabet || '')}" /></div>
+                        </div>
+                        <div class="field-comparison">
+                            <div class="field-label">Meaning:</div>
+                            <div class="field-value"><textarea id="apply_meaning" style="width:100%; padding:8px;">${escapeHtml(suggestion.suggested_english_meaning || '')}</textarea></div>
+                        </div>
+                        <div class="field-comparison">
+                            <div class="field-label">Usage Example:</div>
+                            <div class="field-value devanagari-text"><textarea id="apply_context" style="width:100%; padding:8px;">${escapeHtml(suggestion.suggested_context_usage_sentence || '')}</textarea></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAdditionEditable(suggestion) {
+            return `
+                <div style="padding: 15px; background: #d4edda; border-radius: 10px; margin: 15px 0;">
+                    <h4>➕ New Entry Suggestion (editable)</h4>
+                    <div class="field-comparison">
+                        <div class="field-label">Devanagari:</div>
+                        <div class="field-value devanagari-text"><input id="apply_devanagari" style="width:100%; padding:8px;" value="${escapeHtml(suggestion.suggested_word_konkani_devanagari || '')}" /></div>
+                    </div>
+                    <div class="field-comparison">
+                        <div class="field-label">English Alphabet:</div>
+                        <div class="field-value"><input id="apply_roman" style="width:100%; padding:8px;" value="${escapeHtml(suggestion.suggested_word_konkani_english_alphabet || '')}" /></div>
+                    </div>
+                    <div class="field-comparison">
+                        <div class="field-label">Meaning:</div>
+                        <div class="field-value"><textarea id="apply_meaning" style="width:100%; padding:8px;">${escapeHtml(suggestion.suggested_english_meaning || '')}</textarea></div>
+                    </div>
+                    <div class="field-comparison">
+                        <div class="field-label">Usage Example:</div>
+                        <div class="field-value devanagari-text"><textarea id="apply_context" style="width:100%; padding:8px;">${escapeHtml(suggestion.suggested_context_usage_sentence || '')}</textarea></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // small helper to escape HTML when injecting into inputs
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+        
+        function closeReviewModal() {
+            document.getElementById('reviewModal').style.display = 'none';
+            currentSuggestion = null;
+            document.getElementById('reviewNotes').value = '';
+        }
+        
+        async function reviewSuggestion(decision) {
+            const notes = document.getElementById('reviewNotes').value.trim();
+            // collect edits from modal inputs
+            const apply = {
+                suggested_word_konkani_devanagari: document.getElementById('apply_devanagari') ? document.getElementById('apply_devanagari').value.trim() : undefined,
+                suggested_word_konkani_english_alphabet: document.getElementById('apply_roman') ? document.getElementById('apply_roman').value.trim() : undefined,
+                suggested_english_meaning: document.getElementById('apply_meaning') ? document.getElementById('apply_meaning').value.trim() : undefined,
+                suggested_context_usage_sentence: document.getElementById('apply_context') ? document.getElementById('apply_context').value.trim() : undefined
+            };
+            
+            // DEBUG: Log what we're sending to the backend
+            console.log('🔍 FRONTEND DEBUG - Sending to backend:');
+            console.log('  Decision:', decision);
+            console.log('  Notes:', notes);
+            console.log('  Apply object (expert edits):', apply);
+            console.log('  Original suggestion values:', {
+                devanagari: currentSuggestion.suggested_word_konkani_devanagari,
+                roman: currentSuggestion.suggested_word_konkani_english_alphabet,
+                meaning: currentSuggestion.suggested_english_meaning,
+                context: currentSuggestion.suggested_context_usage_sentence
+            });
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/suggestions/${currentSuggestion.id}/review`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('expertToken')}`
+                    },
+                    body: JSON.stringify({
+                        decision,
+                        notes,
+                        apply
+                    })
+                });
+                
+                if (response.ok) {
+                    closeReviewModal();
+                    loadSuggestions();
+                    loadDashboardStats();
+                    alert(`Suggestion ${decision} successfully!`);
+                } else {
+                    throw new Error(`Failed to ${decision} suggestion`);
+                }
+            } catch (error) {
+                console.error('Review error:', error);
+                alert(`Error ${decision}ing suggestion. Please try again.`);
+            }
+        }
+        
+        // Handle Enter key for login
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && document.getElementById('loginScreen').style.display !== 'none') {
+                login();
+            }
+        });
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('reviewModal');
+            if (event.target === modal) {
+                closeReviewModal();
+            }
+        }
+    </script>
+</body>
+</html>

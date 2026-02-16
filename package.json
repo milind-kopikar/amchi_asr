@@ -1,0 +1,51 @@
+{
+  "name": "amchigale-konkani-dictionary",
+  "version": "1.0.0",
+  "description": "Complete Konkani language dictionary with 4,000+ entries, designed for WhatsApp bot integration",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "import": "node scripts/enhanced-import.js konkani_dictionary_csv.csv",
+    "import:retry": "node scripts/retry-import.js",
+    "import:legacy": "node import-spreadsheet.js",
+    "export": "node database/export.js",
+    "stats": "node scripts/final-stats.js",
+    "schema:fix": "node scripts/fix-schema.js",
+    "deploy:prepare": "npm run export",
+    "migrate:railway": "node database/migrate-to-railway.js",
+    "update:api-url": "node scripts/update-api-url.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "konkani",
+    "dictionary",
+    "language",
+    "devanagari",
+    "whatsapp",
+    "bot",
+    "gcp",
+    "translation"
+  ],
+  "author": "Moksh Kopikar",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/moksh-kopikar/konkani-dictionary"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "csv-parser": "^3.2.0",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.16.3"
+  }
+  ,"devDependencies": {
+    "openai": "^6.3.0"
+  }
+}

@@ -22,7 +22,7 @@ Use this when you start again after stopping your RunPod. Everything you need to
 ### 1. Start a RunPod pod (or use any machine with Docker)
 
 - You need a place with Docker and the repo (e.g. a new RunPod pod, same project).
-- Clone or pull the repo: `git clone https://github.com/milind-kopikar/amchi_asr.git` (or pull if already there).
+- Clone or pull the repo: `git clone https://github.com/moksh-kopikar/amchi_asr.git` (or pull if already there).
 
 ### 2. Build the Docker image (no checkpoint inside)
 

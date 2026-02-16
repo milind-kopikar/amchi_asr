@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Live Transcript</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    #output { font-size: 24px; line-height: 1.6; }
+    .line { margin: 6px 0; }
+    .word { margin-right: 6px; }
+    #status { color: #666; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <h1>Amchi Transcription</h1>
+
+  <div>
+    <div id="config" style="display:none" data-file="{{DEFAULT_FILE}}" data-delay="{{DEFAULT_DELAY}}"></div>
+    <div style="margin-top:8px"><button id="start">Start</button> <button id="stop">Stop</button></div>
+  </div>
+
+  <div id="output" aria-live="polite"></div>
+  <div id="status"></div>
+
+  <script src="/static/main.js"></script>
+</body>
+</html>

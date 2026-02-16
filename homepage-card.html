@@ -1,0 +1,214 @@
+<!-- Konkani Dictionary App Card for moksh-kopikar.github.io -->
+<div class="app-card konkani-dictionary">
+    <div class="app-header">
+        <div class="app-icon">🕉️</div>
+        <div class="app-title">
+            <h3>Amchigale Konkani Dictionary</h3>
+            <p class="app-subtitle">4,000+ Digital Dictionary Entries</p>
+        </div>
+    </div>
+    
+    <div class="app-description">
+        <p>Complete digital preservation of the Konkani language featuring Devanagari script, English translations, and modern search capabilities.</p>
+        
+        <div class="app-features">
+            <span class="feature-tag">🔍 Smart Search</span>
+            <span class="feature-tag">📱 Mobile Ready</span>
+            <span class="feature-tag">🌐 Unicode Support</span>
+            <span class="feature-tag">🤖 API Ready</span>
+        </div>
+    </div>
+    
+    <div class="app-stats">
+        <div class="stat">
+            <span class="stat-number">4,381</span>
+            <span class="stat-label">Entries</span>
+        </div>
+        <div class="stat">
+            <span class="stat-number">83%</span>
+            <span class="stat-label">Devanagari</span>
+        </div>
+        <div class="stat">
+            <span class="stat-number">6</span>
+            <span class="stat-label">Search Types</span>
+        </div>
+    </div>
+    
+    <div class="app-actions">
+        <a href="/konkani-dictionary/" class="btn btn-primary">
+            Open Dictionary
+        </a>
+        <a href="https://github.com/moksh-kopikar/konkani-dictionary" class="btn btn-secondary" target="_blank">
+            View Source
+        </a>
+    </div>
+    
+    <div class="app-tech-stack">
+        <span class="tech">Node.js</span>
+        <span class="tech">PostgreSQL</span>
+        <span class="tech">Railway</span>
+        <span class="tech">Unicode</span>
+    </div>
+</div>
+
+<style>
+.app-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    padding: 25px;
+    color: white;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.app-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+}
+
+.app-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.app-icon {
+    font-size: 3em;
+    margin-right: 15px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.app-title h3 {
+    margin: 0;
+    font-size: 1.5em;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.app-subtitle {
+    margin: 5px 0 0 0;
+    opacity: 0.9;
+    font-size: 0.9em;
+}
+
+.app-description {
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.app-features {
+    margin-top: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.feature-tag {
+    background: rgba(255,255,255,0.2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    backdrop-filter: blur(10px);
+}
+
+.app-stats {
+    display: flex;
+    justify-content: space-around;
+    margin: 20px 0;
+    padding: 15px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat-number {
+    display: block;
+    font-size: 1.5em;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.stat-label {
+    font-size: 0.8em;
+    opacity: 0.9;
+}
+
+.app-actions {
+    display: flex;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.btn {
+    padding: 12px 24px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.3s ease;
+    flex: 1;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+
+.btn-secondary {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: 2px solid rgba(255,255,255,0.3);
+    backdrop-filter: blur(10px);
+}
+
+.btn-secondary:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+.app-tech-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.tech {
+    background: rgba(255,255,255,0.15);
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 0.75em;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+@media (max-width: 768px) {
+    .app-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .app-icon {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    
+    .app-actions {
+        flex-direction: column;
+    }
+    
+    .app-stats {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+</style>

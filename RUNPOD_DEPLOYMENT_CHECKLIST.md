@@ -37,7 +37,7 @@ ssh root@<runpod-host> -p <port>
 
 # Clone repository
 cd /workspace
-git clone https://github.com/milind-kopikar/amchi_asr.git
+git clone https://github.com/moksh-kopikar/amchi_asr.git
 cd amchi_asr
 
 # Run setup (Python 3.11 + upstream NeMo). See SETUP_ENV.md.

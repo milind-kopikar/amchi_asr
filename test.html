@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test API Connection</title>
+    <style>
+        .back-home-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .back-home-btn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-home-btn">🏠 Back to Dictionary</a>
+    <h1>API Connection Test</h1>
+    <button onclick="testAPI()">Test API</button>
+    <div id="result"></div>
+    
+    <script>
+        async function testAPI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                console.log('Testing API connection...');
+                // Use localhost for local development, Railway for production
+                const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:3002/api' : 'https://konkani-dictionary-production.up.railway.app/api';
+                const response = await fetch(`${API_BASE}/stats`);
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Data received:', data);
+                
+                resultDiv.innerHTML = `
+                    <h3>SUCCESS!</h3>
+                    <p>Total entries: ${data.total_entries}</p>
+                    <p>With Devanagari: ${data.with_devanagari}</p>
+                    <p>With English: ${data.with_english_alphabet}</p>
+                `;
+            } catch (error) {
+                console.error('API test failed:', error);
+                resultDiv.innerHTML = `
+                    <h3>FAILED!</h3>
+                    <p>Error: ${error.message}</p>
+                `;
+            }
+        }
+        
+        // Auto-test on page load
+        window.onload = () => {
+            testAPI();
+        };
+    </script>
+</body>
+</html>

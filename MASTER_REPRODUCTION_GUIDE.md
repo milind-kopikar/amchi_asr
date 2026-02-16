@@ -27,7 +27,7 @@ This guide serves as the **single source of truth** for setting up, verifying, a
 ### Step 1: Clone Repository
 \`\`\`bash
 cd /workspace
-git clone https://github.com/milind-kopikar/amchi_asr.git
+git clone https://github.com/moksh-kopikar/amchi_asr.git
 cd amchi_asr
 \`\`\`
 

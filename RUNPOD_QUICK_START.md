@@ -12,7 +12,7 @@
 ```bash
 # Clone repository
 cd /workspace
-git clone https://github.com/milind-kopikar/amchi_asr.git
+git clone https://github.com/moksh-kopikar/amchi_asr.git
 cd amchi_asr
 
 # Use Python 3.11 and upstream NeMo (see SETUP_ENV.md). Run setup with USE_UPSTREAM_NEMO=1.
@@ -286,7 +286,7 @@ scp -r -P <pod-ssh-port> root@<pod-ip>:/workspace/amchi_asr/konkani_asr/results/
 ```bash
 # Full workflow start-to-finish (Python 3.11 + upstream NeMo)
 cd /workspace && \
-git clone https://github.com/milind-kopikar/amchi_asr.git && \
+git clone https://github.com/moksh-kopikar/amchi_asr.git && \
 cd amchi_asr && \
 USE_UPSTREAM_NEMO=1 bash setup_env.sh && \
 source venv_py311/bin/activate && \

@@ -170,7 +170,7 @@ python tests/test_preflight.py
 # (Follow RUNPOD_DEPLOYMENT_CHECKLIST.md)
 
 # Step 3: Clone repo and setup
-git clone https://github.com/milind-kopikar/amchi_asr.git
+git clone https://github.com/moksh-kopikar/amchi_asr.git
 cd amchi_asr
 pip install -r requirements.txt
 
@@ -421,7 +421,7 @@ python tests/test_preflight.py
 ### On RunPod (Later):
 ```bash
 # Setup
-git clone https://github.com/milind-kopikar/amchi_asr.git
+git clone https://github.com/moksh-kopikar/amchi_asr.git
 cd amchi_asr
 pip install -r requirements.txt
 

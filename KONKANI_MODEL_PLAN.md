@@ -55,7 +55,7 @@ ssh root@<pod-ip> -p <port>
 
 # Clone repo
 cd /workspace
-git clone https://github.com/milind-kopikar/amchi_asr.git
+git clone https://github.com/moksh-kopikar/amchi_asr.git
 cd amchi_asr/konkani_asr
 
 # Setup environment (automated script)

@@ -24,11 +24,11 @@ This guide will help you set up and run the Konkani ASR fine-tuning on RunPod GP
 ```bash
 # Via HTTPS (recommended for RunPod)
 cd /workspace
-git clone https://github.com/milind-kopikar/amchi_asr.git
+git clone https://github.com/moksh-kopikar/amchi_asr.git
 cd amchi_asr
 
 # Or via SSH (if you have SSH key configured)
-git clone git@github.com:milind-kopikar/amchi_asr.git
+git clone git@github.com:moksh-kopikar/amchi_asr.git
 cd amchi_asr
 ```
 
