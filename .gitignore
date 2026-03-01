@@ -158,4 +158,5 @@ mlartifacts/
 # Keep these (small files)
 !.gitkeep
 !README.md
-!requirements.txtmodels/*.nemo
+!requirements.txt
+models/*.nemo
