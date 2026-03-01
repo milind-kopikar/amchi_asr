@@ -17,21 +17,37 @@
 
 ---
 
-### Second track (tomorrow): Marathi → Amchi Konkani (not started yet)
+### Second track (next session): Amchi Konkani fine-tuning
 
-This uses the same methodology but a different objective: adapting the Marathi IndicConformer to understand Amchi Konkani. Start this only after the deaf speech inference endpoint is working. See KONKANI_MODEL_PLAN.md for context.
+Same methodology as deaf speech but different data and objective. The deaf speech endpoint is now done (Phase 1 web app + Phase 2 RunPod serverless). Amchi Konkani is the next training run.
+
+**Start here:** Read **[AMCHI_KONKANI_TRAINING_GUIDE.md](AMCHI_KONKANI_TRAINING_GUIDE.md)** — it is the complete, self-contained guide for the next agent. It covers RunPod setup, data download, training, evaluation, and the post-processing decision.
+
+Key facts:
+- Config is ready: `configs/amchi_konkani_50epoch.yaml`
+- Baseline to beat: test WER 35.1% (20-epoch pilot, Jan 2026)
+- Data from: `konkanicollector-production.up.railway.app` (different from deaf speech!)
+- Post-processing approach: **discuss with user before building** (see guide §8)
 
 ---
 
 ## 2. Documentation index (where to look for what)
 
-### 2.1 Current focus: deaf speech inference endpoint
+### 2.1 Next focus: Amchi Konkani fine-tuning
 
 | Doc | Use when |
 |-----|----------|
-| **[AGENT_HANDOFF.md](AGENT_HANDOFF.md)** | **Start here for tomorrow.** Session summary, checkpoint paths, Gemini API key, exact next steps for building inference endpoint. |
-| **[RUNPOD_INFERENCE_ENDPOINT.md](RUNPOD_INFERENCE_ENDPOINT.md)** | Architecture: serverless vs persistent pod, request/response, web app flow. |
-| **[RUNPOD_SERVERLESS_DEPLOY.md](RUNPOD_SERVERLESS_DEPLOY.md)** | Full deploy guide: Docker image build, push, create RunPod serverless endpoint, test. |
+| **[AMCHI_KONKANI_TRAINING_GUIDE.md](AMCHI_KONKANI_TRAINING_GUIDE.md)** | **Start here for next session.** Complete agent guide: RunPod setup, data download, training, evaluation, post-processing decision. |
+| `configs/amchi_konkani_50epoch.yaml` | Ready-to-use training config (50 epochs, Marathi base, correct data paths). |
+| **[DATA_SNAPSHOT_AMCHI_KONKANI.md](DATA_SNAPSHOT_AMCHI_KONKANI.md)** | Data split from Jan 2026 pilot (Story 4=dev, Story 5=test — do not swap). |
+
+### 2.2 Deaf speech (done) — inference endpoint
+
+| Doc | Use when |
+|-----|----------|
+| **[AGENT_HANDOFF.md](AGENT_HANDOFF.md)** | Full session history and current state of deaf speech track. |
+| **[RUNPOD_SERVERLESS_DEAF.md](RUNPOD_SERVERLESS_DEAF.md)** | Build/deploy/test the RunPod serverless endpoint (Docker image not yet built). |
+| **[DEMO_WEBAPP_GUIDE.md](DEMO_WEBAPP_GUIDE.md)** | Phase 1 web app: build Next.js demo on local machine → Railway. |
 | **[REPRODUCTION_NOTES.md](REPRODUCTION_NOTES.md)** | CTC-only loading strategy, tokenizer fix, inference smoke test recipe. **Critical reading for inference code.** |
 
 ### 2.2 Post-processing module

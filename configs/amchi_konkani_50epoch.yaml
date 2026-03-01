@@ -1,0 +1,109 @@
+# Fine-tuning config: Amchi Konkani ASR (Normal speech, not deaf speech)
+# Base model: AI4Bharat Marathi IndicConformer (same base that reached WER 35.1% in pilot)
+# Data: Amchi Konkani stories from konkanicollector-production.up.railway.app
+#   Train: Stories 1, 2, 3  (~472 samples)
+#   Dev:   Story 4          (~38 samples)
+#   Test:  Story 5          (~38 samples)
+# Goal: Improve on the 35.1% test WER from the 20-epoch pilot run
+# Python 3.11 + upstream NeMo (nemo_toolkit[asr])
+# Based on: deaf_speech_story4_50epoch.yaml + DATA_SNAPSHOT_AMCHI_KONKANI.md
+
+model:
+  language: "mr"   # keep "mr" — AI4Bharat convention for Marathi/Konkani Devanagari
+  nemo_model: "models/indicconformer_stt_mr_hybrid_ctc_rnnt_large/indicconformer_stt_mr_hybrid_rnnt_large.nemo"
+  tokenizer:
+    dir: "tokenizers"
+    model_path: "tokenizers/marathi_tokenizer.model"
+    type: "bpe"
+  preprocessor:
+    _target_: nemo.collections.asr.modules.AudioToMelSpectrogramPreprocessor
+    sample_rate: 16000
+    normalize: "per_feature"
+    window_size: 0.025
+    window_stride: 0.01
+    window: "hann"
+    features: 80
+    n_fft: 512
+    frame_splicing: 1
+    dither: 0.00001
+    pad_to: 16
+    stft_conv: false
+  encoder:
+    _target_: nemo.collections.asr.modules.ConformerEncoder
+    feat_in: 80
+    feat_out: -1
+    n_layers: 18
+    d_model: 512
+  loss:
+    loss_name: "ctc"
+  decoder_type: "ctc"
+
+trainer:
+  devices: 1
+  accelerator: "gpu"
+  max_epochs: 50
+  max_steps: -1
+  num_nodes: 1
+  accumulate_grad_batches: 1
+  enable_checkpointing: true
+  logger: true
+  log_every_n_steps: 5      # ~94 steps/epoch at batch_size=4, 472 samples
+  check_val_every_n_epoch: 1
+  strategy: null
+
+optim:
+  name: adamw
+  lr: 0.0001
+  weight_decay: 0.001
+
+data:
+  train_ds:
+    manifest_filepath: "data/train/manifest.jsonl"
+    sample_rate: 16000
+    batch_size: 4
+    shuffle: true
+    num_workers: 4
+    pin_memory: true
+    max_duration: 30.0      # some story segments exceed default 16.7s limit
+    min_duration: 0.1
+    trim_silence: true
+    load_audio: true
+    use_start_end_token: false
+    return_language_id: false
+  validation_ds:
+    manifest_filepath: "data/dev/manifest.jsonl"
+    sample_rate: 16000
+    batch_size: 4
+    shuffle: false
+    num_workers: 4
+    pin_memory: true
+    max_duration: 30.0
+    min_duration: 0.1
+    trim_silence: true
+    load_audio: true
+    use_start_end_token: false
+    return_language_id: false
+  test_ds:
+    manifest_filepath: "data/test/manifest.jsonl"
+    sample_rate: 16000
+    batch_size: 4
+    shuffle: false
+    num_workers: 4
+    pin_memory: true
+    max_duration: 30.0
+    min_duration: 0.1
+    trim_silence: true
+    load_audio: true
+    use_start_end_token: false
+    return_language_id: false
+
+exp_manager:
+  exp_dir: "/workspace/nemo_experiments"
+  name: "amchi_konkani_50epoch"
+  create_tensorboard_logger: true
+  create_checkpoint_callback: true
+  always_save_nemo: true
+  checkpoint_callback_params:
+    monitor: "val_wer"
+    mode: "min"
+    save_top_k: 3
