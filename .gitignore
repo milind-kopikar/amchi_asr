@@ -29,8 +29,20 @@ enhanced_corpus/
 enhanced_corpus_v2/
 enhanced_corpus_v3/
 final_corpus/
-data/
-!data/**/manifest.jsonl
+# Ignore large audio files in data/ but allow manifests (*.jsonl)
+data/**/*.wav
+data/**/*.mp3
+data/**/*.flac
+data/**/*.ogg
+data/**/*.m4a
+data/**/*.aac
+data/**/*.json
+# Exclude bulk data dirs (Amchi Konkani original data) but allow deaf_speech manifests
+data/train/
+data/dev/
+data/test/
+data/all_users/
+data_all_users/
 models/
 
 # Results: track metrics and small artifacts; ignore heavy checkpoints
