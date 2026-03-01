@@ -186,12 +186,25 @@ python3 scripts/deaf_speech_inference.py \
   --gemini_key AIzaSyB7XE1_KPiG41Q24hoO7S0lx1HSV0_V8i4
 ```
 
-### 5.3 (Optional) Wrap in RunPod serverless endpoint
-If a serverless API endpoint is needed, see RUNPOD_SERVERLESS_DEPLOY.md. Build a handler that:
-1. Accepts base64-encoded WAV or a URL
-2. Runs inference
-3. Runs post-processing
-4. Returns JSON: `{raw, corrected, latency_ms}`
+### 5.3 RunPod Serverless Endpoint — Phase 2 (IN PROGRESS as of 2026-03-01)
+
+**Status:** Code built, checkpoint on R2. Docker build/push still needed (do on local machine).
+
+What's done:
+- `runpod/handler_deaf.py` — deaf speech handler (config-patch loading + Gemini PP)
+- `runpod/Dockerfile.deaf` — Docker image spec (NeMo ASR + google-genai + runpod SDK)
+- `scripts/test_deaf_endpoint.py` — test script (single file, URL, or all 124 samples)
+- Checkpoint on R2 (no expiry):
+  `https://pub-9686b04ab1a94aad9688b9fb104d51ca.r2.dev/nemo_experiments/deaf_speech_story4_50epoch/checkpoints/konkani_asr-epoch=21-val_wer=0.720.ckpt`
+
+Remaining steps (on local machine — Docker not on pod):
+```bash
+git pull
+docker build -f runpod/Dockerfile.deaf -t deaf-speech-asr-runpod .
+docker tag deaf-speech-asr-runpod YOUR_DOCKERHUB_USERNAME/deaf-speech-asr-runpod:latest
+docker push YOUR_DOCKERHUB_USERNAME/deaf-speech-asr-runpod:latest
+# Then create endpoint in RunPod Console — see RUNPOD_SERVERLESS_DEAF.md
+```
 
 ### 5.4 Amchi Konkani training (second track — when ready)
 Same methodology, different data:
