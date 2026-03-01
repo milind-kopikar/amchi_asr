@@ -12,15 +12,17 @@ Algorithm:
   5. Validate + return corrected sentence
 
 Usage:
+  # Set GEMINI_API_KEY in .env (preferred) or pass --api_key:
+  export GEMINI_API_KEY=<your_key>   # or add to .env file
   python3 scripts/postprocess_asr.py \
       --input  nemo_experiments/deaf_speech_story4_50epoch/experiments/20260301_003725/final_test_results.json \
       --output nemo_experiments/deaf_speech_story4_50epoch/experiments/20260301_003725/postprocessed_results.json \
-      --report nemo_experiments/deaf_speech_story4_50epoch/experiments/20260301_003725/postprocess_report.txt \
-      --api_key AIzaSyB7XE1_KPiG41Q24hoO7S0lx1HSV0_V8i4
+      --report nemo_experiments/deaf_speech_story4_50epoch/experiments/20260301_003725/postprocess_report.txt
 """
 
 import argparse
 import json
+import os
 import re
 import time
 import unicodedata
@@ -322,10 +324,19 @@ def main():
     parser.add_argument("--input", required=True, help="Path to final_test_results.json")
     parser.add_argument("--output", required=True, help="Path for postprocessed output JSON")
     parser.add_argument("--report", required=True, help="Path for human-readable text report")
-    parser.add_argument("--api_key", required=True, help="Gemini API key")
+    parser.add_argument(
+        "--api_key",
+        default=os.environ.get("GEMINI_API_KEY", ""),
+        help="Gemini API key (default: $GEMINI_API_KEY env var)",
+    )
     parser.add_argument("--limit", type=int, default=0, help="Process only N samples (0 = all)")
     parser.add_argument("--delay", type=float, default=0.5, help="Seconds between API calls")
     args = parser.parse_args()
+
+    if not args.api_key:
+        parser.error(
+            "Gemini API key required. Set GEMINI_API_KEY in your .env file or pass --api_key."
+        )
 
     # Load input
     with open(args.input) as f:

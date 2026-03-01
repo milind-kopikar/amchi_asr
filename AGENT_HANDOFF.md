@@ -34,12 +34,21 @@ inference+postprocess test with a valid Gemini API key.
 
 ## 2. Credentials and API Keys
 
-| Service | Where to get token |
-|---------|-------------------|
-| Hugging Face | Ask the user (milind-kopikar). Token has `hf_` prefix. Set via `huggingface-cli login` or `HF_TOKEN` env var. |
-| Gemini API | Ask the user. Key has `AIzaSy` prefix. Pass via `--api_key` to `scripts/postprocess_asr.py`. |
-| GitHub PAT | Ask the user. For git remote: `git remote set-url origin https://<TOKEN>@github.com/milind-kopikar/amchi_asr.git` |
-| Railway deaf speech | `https://deafspeechcollector-production.up.railway.app/` (public, no auth needed) |
+**Convention: all keys go in `.env` (git-ignored). See `.env.example` for the template.**
+
+```bash
+cp .env.example .env   # then fill in your real keys
+source .env            # load into shell
+```
+
+| Service | Env var | Notes |
+|---------|---------|-------|
+| Gemini API | `GEMINI_API_KEY` | Ask user. `AIzaSy...` prefix. Read automatically by `postprocess_asr.py` and `deaf_speech_inference.py`. |
+| Hugging Face | `HF_TOKEN` | Ask user. `hf_...` prefix. `huggingface-cli login --token "$HF_TOKEN"` |
+| GitHub PAT | `GITHUB_PAT` | Ask user. `ghp_...` prefix. `git remote set-url origin https://${GITHUB_PAT}@github.com/milind-kopikar/amchi_asr.git` |
+| Railway deaf speech | — | `https://deafspeechcollector-production.up.railway.app/` (public, no auth) |
+
+**IMPORTANT:** Never paste a real key into a script, docstring, or markdown file. GitHub secret scanning will block the push and require a messy amend+force-push to fix (this happened in session 2026-03-01).
 
 ---
 

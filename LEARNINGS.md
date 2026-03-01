@@ -106,4 +106,45 @@ data/
 - **Model weights:** `*.nemo`, `*.ckpt`, `*.pt`, `*.pth` — too large. Use HuggingFace Hub or RunPod persistent storage.
 - **Python environments:** `venv/`, `.venv/`, pip cache.
 - **Experiment checkpoints:** `nemo_experiments/**/*.ckpt` — excluded by `.gitignore`.
+- **API keys / secrets:** NEVER hardcode in scripts. Use `.env` file (see §7 below).
 - **DO commit:** `nemo_experiments/**/*.json`, `*.csv`, `*.txt` — lightweight result artifacts are valuable and tracked.
+
+---
+
+## 7. API Key Management (.env convention)
+
+**Rule: all API keys live in `.env`. Never hardcode them in scripts or docstrings.**
+
+This was learned the hard way: a Gemini key hardcoded in `postprocess_asr.py`'s docstring made it through a commit; GitHub's secret scanning blocked the push and required an amend+force-push to fix it.
+
+### Setup on a fresh RunPod instance:
+```bash
+cp .env.example .env
+# Fill in your real keys in .env:
+#   GEMINI_API_KEY=AIzaSy...
+#   HF_TOKEN=hf_...
+#   GITHUB_PAT=ghp_...
+source .env
+```
+
+### Why this works:
+- `.env` is in `.gitignore` (line 130) — it will never be committed.
+- `.env.example` IS committed — it shows what variables are needed, without values.
+
+### Scripts that read env vars:
+| Script | Env var | CLI override |
+|--------|---------|--------------|
+| `scripts/postprocess_asr.py` | `GEMINI_API_KEY` | `--api_key` |
+| `scripts/deaf_speech_inference.py` | `GEMINI_API_KEY` | `--gemini_key` |
+
+### For git push via PAT (each session):
+```bash
+source .env
+git remote set-url origin https://${GITHUB_PAT}@github.com/milind-kopikar/amchi_asr.git
+git push
+```
+
+### For Hugging Face downloads:
+```bash
+source .env && huggingface-cli login --token "$HF_TOKEN"
+```
