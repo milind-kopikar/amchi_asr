@@ -1,0 +1,1625 @@
+{
+  "summary": {
+    "total_samples": 37,
+    "mean_wer_before": 0.55,
+    "mean_wer_after": 0.5281,
+    "mean_wer_delta": 0.0219,
+    "mean_cer_before": 0.1894,
+    "mean_cer_after": 0.23,
+    "mean_cer_delta": -0.0407,
+    "improved_samples": 3,
+    "worsened_samples": 0,
+    "unchanged_samples": 34,
+    "mode_counts": {
+      "FILL": 29,
+      "RECONSTRUCT": 0,
+      "PASSTHROUGH": 8,
+      "SKIP": 0
+    }
+  },
+  "per_sample": [
+    {
+      "audio": "data/amchi/test/audio/570.wav",
+      "reference": "रोहन होड ज़ाल्लो!",
+      "prediction": "रोन होड ज़ाल्लो",
+      "corrected": "रोहन होड ज़ाल्लो",
+      "wer_before": 0.3333,
+      "wer_after": 0.0,
+      "wer_delta": 0.3333,
+      "cer_before": 0.0625,
+      "cer_after": 0.0,
+      "cer_delta": 0.0625,
+      "mode": "FILL",
+      "word_labels": [
+        [
+          "रोन",
+          "UNCERTAIN"
+        ],
+        [
+          "होड",
+          "TRUSTED"
+        ],
+        [
+          "ज़ाल्लो",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/571.wav",
+      "reference": "धा वर्सांचो रोहन उत्साहाने आनि खुशालेने उड्तशिलो -",
+      "prediction": "धावा वर्सांचो रोन उत््ाने आनिुशालेने उड्तशिलो",
+      "corrected": "धा वर्सांचो रोहन मुंबईथांवु गोयाक वत्तशिलो",
+      "wer_before": 0.7143,
+      "wer_after": 0.5714,
+      "wer_delta": 0.1429,
+      "cer_before": 0.1667,
+      "cer_after": 0.4375,
+      "cer_delta": -0.2708,
+      "mode": "FILL",
+      "word_labels": [
+        [
+          "धावा",
+          "UNCERTAIN"
+        ],
+        [
+          "वर्सांचो",
+          "TRUSTED"
+        ],
+        [
+          "रोन",
+          "UNCERTAIN"
+        ],
+        [
+          "उत््ाने",
+          "GARBLED"
+        ],
+        [
+          "आनिुशालेने",
+          "GARBLED"
+        ],
+        [
+          "उड्तशिलो",
+          "UNCERTAIN"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/572.wav",
+      "reference": "तो आप्णागले भारत देशु रज्जेन्तु वत्तशिलो!",
+      "prediction": "तो आप्णागले भ देषु रे्तु वत्तशिलो",
+      "corrected": "तो आप्णागले भ देषु रे्तु वत्तशिलो",
+      "wer_before": 0.5,
+      "wer_after": 0.5,
+      "wer_delta": 0.0,
+      "cer_before": 0.2,
+      "cer_after": 0.2,
+      "cer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "तो",
+          "UNCERTAIN"
+        ],
+        [
+          "आप्णागले",
+          "UNCERTAIN"
+        ],
+        [
+          "भ",
+          "GARBLED"
+        ],
+        [
+          "देषु",
+          "UNCERTAIN"
+        ],
+        [
+          "रे्तु",
+          "GARBLED"
+        ],
+        [
+          "वत्तशिलो",
+          "UNCERTAIN"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/573.wav",
+      "reference": "आम्माने आन्नुने सांगिल्ताका काण्यो सुमार -",
+      "prediction": "आम्माने आन्नुने सांगिले ताक्का काणय यो समार ⁇ ",
+      "corrected": "आम्माने आन्नुने सांगिले ताक्का काणय यो समार",
+      "wer_before": 0.6,
+      "wer_after": 0.6,
+      "wer_delta": 0.0,
+      "cer_before": 0.175,
+      "cer_after": 0.175,
+      "cer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "आम्माने",
+          "TRUSTED"
+        ],
+        [
+          "आन्नुने",
+          "TRUSTED"
+        ],
+        [
+          "सांगिले",
+          "UNCERTAIN"
+        ],
+        [
+          "ताक्का",
+          "TRUSTED"
+        ],
+        [
+          "काणय",
+          "UNCERTAIN"
+        ],
+        [
+          "यो",
+          "UNCERTAIN"
+        ],
+        [
+          "समार",
+          "UNCERTAIN"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/381.wav",
+      "reference": "तो आप्णागले भारत देशु रज्जेन्तु वत्तशिलो!",
+      "prediction": "तो आप्णागले भ देषु रेतु वत्तशिलो",
+      "corrected": "तो आप्णागले भ देषु रेतु वत्तशिलो",
+      "wer_before": 0.5,
+      "wer_after": 0.5,
+      "wer_delta": 0.0,
+      "cer_before": 0.225,
+      "cer_after": 0.225,
+      "cer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "तो",
+          "UNCERTAIN"
+        ],
+        [
+          "आप्णागले",
+          "UNCERTAIN"
+        ],
+        [
+          "भ",
+          "GARBLED"
+        ],
+        [
+          "देषु",
+          "UNCERTAIN"
+        ],
+        [
+          "रेतु",
+          "UNCERTAIN"
+        ],
+        [
+          "वत्तशिलो",
+          "UNCERTAIN"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/382.wav",
+      "reference": "आम्माने आन्नुने सांगिल्ताका काण्यो सुमार -",
+      "prediction": "तागले आममाने आनुनने सांगले ताका काणय्यो समाार",
+      "corrected": "तागले आममाने आनुनने सांगले ताका काणय्यो समाार",
+      "wer_before": 0.8,
+      "wer_after": 0.8,
+      "wer_delta": 0.0,
+      "cer_before": 0.375,
+      "cer_after": 0.375,
+      "cer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "तागले",
+          "UNCERTAIN"
+        ],
+        [
+          "आममाने",
+          "UNCERTAIN"
+        ],
+        [
+          "आनुनने",
+          "UNCERTAIN"
+        ],
+        [
+          "सांगले",
+          "UNCERTAIN"
+        ],
+        [
+          "ताका",
+          "TRUSTED"
+        ],
+        [
+          "काणय्यो",
+          "UNCERTAIN"
+        ],
+        [
+          "समाार",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/383.wav",
+      "reference": "तांगेले चेर्ल्ड्पणाचे गम्मते खब्र्यो, आंग्णांतु खेऴ्तालिं भरपूर",
+      "prediction": "तांगेले चलपणणाचे गम म खब्रो ⁇  आांग्णातु खऴ्तलि भरपूर",
+      "corrected": "तांगेले चलपणणाचे गम म खब्रो आांग्णातु खऴ्तलि भरपूर",
+      "wer_before": 0.5714,
+      "wer_after": 0.5714,
+      "wer_delta": 0.0,
+      "cer_before": 0.2742,
+      "cer_after": 0.2742,
+      "cer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "तांगेले",
+          "UNCERTAIN"
+        ],
+        [
+          "चलपणणाचे",
+          "UNCERTAIN"
+        ],
+        [
+          "गम",
+          "UNCERTAIN"
+        ],
+        [
+          "म",
+          "GARBLED"
+        ],
+        [
+          "खब्रो",
+          "UNCERTAIN"
+        ],
+        [
+          "आांग्णातु",
+          "UNCERTAIN"
+        ],
+        [
+          "खऴ्तलि",
+          "UNCERTAIN"
+        ],
+        [
+          "भरपूर",
+          "UNCERTAIN"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/384.wav",
+      "reference": "मुंबई - थंयि थाव्नु गोवा वच्चेशिलीं तीं",
+      "prediction": "मुय थयं थाव्नु गो वच्शिल ती",
+      "corrected": "मुय थयं थाव्नु गो वच्शिल ती",
+      "wer_before": 0.5,
+      "wer_after": 0.5,
+      "wer_delta": 0.0,
+      "cer_before": 0.3243,
+      "cer_after": 0.3243,
+      "cer_delta": 0.0,
+      "mode": "PASSTHROUGH_REVERTED",
+      "word_labels": [
+        [
+          "मुय",
+          "UNCERTAIN"
+        ],
+        [
+          "थयं",
+          "UNCERTAIN"
+        ],
+        [
+          "थाव्नु",
+          "UNCERTAIN"
+        ],
+        [
+          "गो",
+          "UNCERTAIN"
+        ],
+        [
+          "वच्शिल",
+          "UNCERTAIN"
+        ],
+        [
+          "ती",
+          "TRUSTED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/385.wav",
+      "reference": "कुलदेवतांगेले दर्शन घेव्नु समुद्र तटाचेरि खेऴ्चेशिलीं!",
+      "prediction": "कु देेवतांगले दर्श घेव्नु सम्र तटाचेरि खेऴळचेशि",
+      "corrected": "कुलदेवतांचें दर्श घेव्नु समुद्र तटाचेरि खेऴ्ळशिलो.",
+      "wer_before": 0.8333,
+      "wer_after": 0.5,
+      "wer_delta": 0.3333,
+      "cer_before": 0.1887,
+      "cer_after": 0.1509,
+      "cer_delta": 0.0377,
+      "mode": "FILL",
+      "word_labels": [
+        [
+          "कु",
+          "UNCERTAIN"
+        ],
+        [
+          "देेवतांगले",
+          "GARBLED"
+        ],
+        [
+          "दर्श",
+          "UNCERTAIN"
+        ],
+        [
+          "घेव्नु",
+          "UNCERTAIN"
+        ],
+        [
+          "सम्र",
+          "UNCERTAIN"
+        ],
+        [
+          "तटाचेरि",
+          "UNCERTAIN"
+        ],
+        [
+          "खेऴळचेशि",
+          "UNCERTAIN"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/386.wav",
+      "reference": "ताक्का सांगिलें आनि एक विशेष गम्मति आस्स म्हुणु",
+      "prediction": "ताक्का सांगिलें आनि एक विशेष गमि आस्स म्हुणु",
+      "corrected": "ताक्का सांगिलें आनि एक विशेष गमि आस्स म्हुणु",
+      "wer_before": 0.125,
+      "wer_after": 0.125,
+      "wer_delta": 0.0,
+      "cer_before": 0.0638,
+      "cer_after": 0.0638,
+      "cer_delta": 0.0,
+      "mode": "PASSTHROUGH_REVERTED",
+      "word_labels": [
+        [
+          "ताक्का",
+          "TRUSTED"
+        ],
+        [
+          "सांगिलें",
+          "TRUSTED"
+        ],
+        [
+          "आनि",
+          "UNCERTAIN"
+        ],
+        [
+          "एक",
+          "TRUSTED"
+        ],
+        [
+          "विशेष",
+          "UNCERTAIN"
+        ],
+        [
+          "गमि",
+          "UNCERTAIN"
+        ],
+        [
+          "आस्स",
+          "TRUSTED"
+        ],
+        [
+          "म्हुणु",
+          "UNCERTAIN"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/387.wav",
+      "reference": "शिरालींतु युवांखतिरि एक शिबीर - वाह! राक्तशिलो रोहनु!",
+      "prediction": "शिरालेंनतु यूक खतिरि एक शििर वा ⁇  राक्तशिलो रोनु",
+      "corrected": "शिरालींतु युवक खातीर एक शिबिर करतशिलो रोहन.",
+      "wer_before": 0.8571,
+      "wer_after": 0.8571,
+      "wer_delta": 0.0,
+      "cer_before": 0.2041,
+      "cer_after": 0.2857,
+      "cer_delta": -0.0816,
+      "mode": "FILL",
+      "word_labels": [
+        [
+          "शिरालेंनतु",
+          "UNCERTAIN"
+        ],
+        [
+          "यूक",
+          "UNCERTAIN"
+        ],
+        [
+          "खतिरि",
+          "UNCERTAIN"
+        ],
+        [
+          "एक",
+          "TRUSTED"
+        ],
+        [
+          "शििर",
+          "GARBLED"
+        ],
+        [
+          "वा",
+          "UNCERTAIN"
+        ],
+        [
+          "राक्तशिलो",
+          "UNCERTAIN"
+        ],
+        [
+          "रोनु",
+          "UNCERTAIN"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/388.wav",
+      "reference": "प्रार्थना वर्गांतु भारतीय संस्कृति वैभवाबद्दल तान्ने आय्कलेलें-",
+      "prediction": "प्र वर्गांतु भि सृि वयभवा बद्दल तान्ने आय्कलेलें",
+      "corrected": "प्र वर्गांतु भि सृि वयभवा बद्दल तान्ने आय्कलेलें",
+      "wer_before": 0.7143,
+      "wer_after": 0.7143,
+      "wer_delta": 0.0,
+      "cer_before": 0.2903,
+      "cer_after": 0.2903,
+      "cer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "प्र",
+          "UNCERTAIN"
+        ],
+        [
+          "वर्गांतु",
+          "UNCERTAIN"
+        ],
+        [
+          "भि",
+          "UNCERTAIN"
+        ],
+        [
+          "सृि",
+          "GARBLED"
+        ],
+        [
+          "वयभवा",
+          "UNCERTAIN"
+        ],
+        [
+          "बद्दल",
+          "UNCERTAIN"
+        ],
+        [
+          "तान्ने",
+          "UNCERTAIN"
+        ],
+        [
+          "आय्कलेलें",
+          "UNCERTAIN"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/390.wav",
+      "reference": "ज़ाल्यारि प्रत्यक्ष पोऴोंचे आनुभवु विंगड आश्शिलें!",
+      "prediction": "ज़ाल्यारि प्रक्ष पोळोंचे अनुभवु वििगडशिलें",
+      "corrected": "रोहनाचो प्रत्यक्ष पोळोंचे अनुभवु विशेष आशिल्लो.",
+      "wer_before": 0.8333,
+      "wer_after": 0.8333,
+      "wer_delta": 0.0,
+      "cer_before": 0.2041,
+      "cer_after": 0.3673,
+      "cer_delta": -0.1633,
+      "mode": "FILL",
+      "word_labels": [
+        [
+          "ज़ाल्यारि",
+          "GARBLED"
+        ],
+        [
+          "प्रक्ष",
+          "UNCERTAIN"
+        ],
+        [
+          "पोळोंचे",
+          "UNCERTAIN"
+        ],
+        [
+          "अनुभवु",
+          "UNCERTAIN"
+        ],
+        [
+          "वििगडशिलें",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/392.wav",
+      "reference": "परम पूज्य स्वाम्यांक पऴय्लेले तान्ने चित्रांतु",
+      "prediction": "परब पू स्वामिक पळय्लें तान्ने चित्रतु",
+      "corrected": "परब पू स्वामिक पळय्लें तान्ने चित्रतु",
+      "wer_before": 0.6667,
+      "wer_after": 0.6667,
+      "wer_delta": 0.0,
+      "cer_before": 0.2826,
+      "cer_after": 0.2826,
+      "cer_delta": 0.0,
+      "mode": "PASSTHROUGH_REVERTED",
+      "word_labels": [
+        [
+          "परब",
+          "TRUSTED"
+        ],
+        [
+          "पू",
+          "UNCERTAIN"
+        ],
+        [
+          "स्वामिक",
+          "TRUSTED"
+        ],
+        [
+          "पळय्लें",
+          "UNCERTAIN"
+        ],
+        [
+          "तान्ने",
+          "UNCERTAIN"
+        ],
+        [
+          "चित्रतु",
+          "UNCERTAIN"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/393.wav",
+      "reference": "स्वाम्यांगले खब्र्यो सांग्तालिं पाच्च्यो प्रार्थना वर्गांतु!",
+      "prediction": "स्मी्यागले खब्रो सांगतालि पाच्यो प्रनार्कांतु",
+      "corrected": "स्मी्यागले खब्रो सांगतालि पाच्यो प्रनार्कांतु",
+      "wer_before": 0.8333,
+      "wer_after": 0.8333,
+      "wer_delta": 0.0,
+      "cer_before": 0.2881,
+      "cer_after": 0.2881,
+      "cer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "स्मी्यागले",
+          "GARBLED"
+        ],
+        [
+          "खब्रो",
+          "UNCERTAIN"
+        ],
+        [
+          "सांगतालि",
+          "UNCERTAIN"
+        ],
+        [
+          "पाच्यो",
+          "UNCERTAIN"
+        ],
+        [
+          "प्रनार्कांतु",
+          "UNCERTAIN"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/394.wav",
+      "reference": "आह! आय्लो तो गोम्टो दिवसु, तागले हेर्दे धडधड्तशिलें -",
+      "prediction": "आह आयलोत गोम्टो दिवसु ⁇  तागले हेर्दे धडधड्तशिलें ⁇ ",
+      "corrected": "आह आयलोत गोम्टो दिवसु तागले हेर्दे धडधड्तशिलें",
+      "wer_before": 0.25,
+      "wer_after": 0.25,
+      "wer_delta": 0.0,
+      "cer_before": 0.0612,
+      "cer_after": 0.0612,
+      "cer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "आह",
+          "UNCERTAIN"
+        ],
+        [
+          "आयलोत",
+          "UNCERTAIN"
+        ],
+        [
+          "गोम्टो",
+          "UNCERTAIN"
+        ],
+        [
+          "दिवसु",
+          "TRUSTED"
+        ],
+        [
+          "तागले",
+          "UNCERTAIN"
+        ],
+        [
+          "हेर्दे",
+          "UNCERTAIN"
+        ],
+        [
+          "धडधड्तशिलें",
+          "UNCERTAIN"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/395.wav",
+      "reference": "शिरालींतु श्री चित्रापुर मठ इद्रारि दिस्तशिलें",
+      "prediction": "शिरालितु श्र चित्रापर म इद्रारि दिस्तशिलें",
+      "corrected": "शिरालींतु श्री चित्रापुर मठ दृष्टिपथारि दिस्तशिलें",
+      "wer_before": 0.1667,
+      "wer_after": 0.1667,
+      "wer_delta": 0.0,
+      "cer_before": 0.1087,
+      "cer_after": 0.1522,
+      "cer_delta": -0.0435,
+      "mode": "FILL",
+      "word_labels": [
+        [
+          "शिरालितु",
+          "UNCERTAIN"
+        ],
+        [
+          "श्र",
+          "UNCERTAIN"
+        ],
+        [
+          "चित्रापर",
+          "UNCERTAIN"
+        ],
+        [
+          "म",
+          "GARBLED"
+        ],
+        [
+          "इद्रारि",
+          "UNCERTAIN"
+        ],
+        [
+          "दिस्तशिलें",
+          "UNCERTAIN"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/396.wav",
+      "reference": "चारिदिक्काने आशिलीं लोक मार्गदर्शन आनि सहायु कोरूक",
+      "prediction": "चारि दिक्काने आशि निलोक मारगर्न आनि साय कोरुक",
+      "corrected": "चारि दिशानी पळयतालो आनि मदत करुक.",
+      "wer_before": 0.8571,
+      "wer_after": 0.8571,
+      "wer_delta": 0.0,
+      "cer_before": 0.22,
+      "cer_after": 0.62,
+      "cer_delta": -0.4,
+      "mode": "PASSTHROUGH",
+      "word_labels": [
+        [
+          "चारि",
+          "TRUSTED"
+        ],
+        [
+          "दिक्काने",
+          "UNCERTAIN"
+        ],
+        [
+          "आशि",
+          "UNCERTAIN"
+        ],
+        [
+          "निलोक",
+          "UNCERTAIN"
+        ],
+        [
+          "मारगर्न",
+          "UNCERTAIN"
+        ],
+        [
+          "आनि",
+          "UNCERTAIN"
+        ],
+        [
+          "साय",
+          "UNCERTAIN"
+        ],
+        [
+          "कोरुक",
+          "UNCERTAIN"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/397.wav",
+      "reference": "चिके सानु आस्सुनूय, गर्वाने रोहनानै शिबिरान्तु भागु घेत्लो",
+      "prediction": "चिक्के सानु आस्सुनुय गर्ने रोनानेयि शििरांतु भागु घेत्लो",
+      "corrected": "चिक्के सानु आस्सुनुय गर्ने रोनानेयि शििरांतु भागु घेत्लो",
+      "wer_before": 0.5,
+      "wer_after": 0.5,
+      "wer_delta": 0.0,
+      "cer_before": 0.2105,
+      "cer_after": 0.2105,
+      "cer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "चिक्के",
+          "TRUSTED"
+        ],
+        [
+          "सानु",
+          "TRUSTED"
+        ],
+        [
+          "आस्सुनुय",
+          "UNCERTAIN"
+        ],
+        [
+          "गर्ने",
+          "UNCERTAIN"
+        ],
+        [
+          "रोनानेयि",
+          "UNCERTAIN"
+        ],
+        [
+          "शििरांतु",
+          "GARBLED"
+        ],
+        [
+          "भागु",
+          "UNCERTAIN"
+        ],
+        [
+          "घेत्लो",
+          "UNCERTAIN"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/398.wav",
+      "reference": "तेचि वेऴारि तांका थंचे स्कूलाक व्हेल्ले",
+      "prediction": "तेचिळारि तांका थंंचचे स्ुलाक व्हलें",
+      "corrected": "तेन्ना तांका थंयचें सुख भोगलें.",
+      "wer_before": 0.8333,
+      "wer_after": 0.8333,
+      "wer_delta": 0.0,
+      "cer_before": 0.3077,
+      "cer_after": 0.5897,
+      "cer_delta": -0.2821,
+      "mode": "FILL",
+      "word_labels": [
+        [
+          "तेचिळारि",
+          "UNCERTAIN"
+        ],
+        [
+          "तांका",
+          "TRUSTED"
+        ],
+        [
+          "थंंचचे",
+          "UNCERTAIN"
+        ],
+        [
+          "स्ुलाक",
+          "GARBLED"
+        ],
+        [
+          "व्हलें",
+          "UNCERTAIN"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/399.wav",
+      "reference": "थंयि तान्ने तागले प्रायेचे चेर्ल्डवांक इंग्लिश शिकय्लें!",
+      "prediction": "थंयन तान्ने तागले प्रचचे चऴळांक इंगग्लिशे शिकय्लें",
+      "corrected": "थंयन तान्ने तागले प्रचचे चऴळांक इंगग्लिशे शिकय्लें",
+      "wer_before": 0.5714,
+      "wer_after": 0.5714,
+      "wer_delta": 0.0,
+      "cer_before": 0.2364,
+      "cer_after": 0.2364,
+      "cer_delta": 0.0,
+      "mode": "PASSTHROUGH_REVERTED",
+      "word_labels": [
+        [
+          "थंयन",
+          "UNCERTAIN"
+        ],
+        [
+          "तान्ने",
+          "UNCERTAIN"
+        ],
+        [
+          "तागले",
+          "UNCERTAIN"
+        ],
+        [
+          "प्रचचे",
+          "UNCERTAIN"
+        ],
+        [
+          "चऴळांक",
+          "UNCERTAIN"
+        ],
+        [
+          "इंगग्लिशे",
+          "UNCERTAIN"
+        ],
+        [
+          "शिकय्लें",
+          "UNCERTAIN"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/400.wav",
+      "reference": "ते वर्गांतुलो कार्तिक आनि  रोहनु उल्लय्त बस्लीं",
+      "prediction": "ते वर्गांतुलोकारतिक आनि रोनु उल्लय्त बस्लि",
+      "corrected": "ते वर्गांतुलोकारतिक आनि रोनु उल्लय्त बस्लि",
+      "wer_before": 0.4286,
+      "wer_after": 0.4286,
+      "wer_delta": 0.0,
+      "cer_before": 0.1087,
+      "cer_after": 0.1087,
+      "cer_delta": 0.0,
+      "mode": "PASSTHROUGH_REVERTED",
+      "word_labels": [
+        [
+          "ते",
+          "UNCERTAIN"
+        ],
+        [
+          "वर्गांतुलोकारतिक",
+          "UNCERTAIN"
+        ],
+        [
+          "आनि",
+          "UNCERTAIN"
+        ],
+        [
+          "रोनु",
+          "UNCERTAIN"
+        ],
+        [
+          "उल्लय्त",
+          "UNCERTAIN"
+        ],
+        [
+          "बस्लि",
+          "UNCERTAIN"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/401.wav",
+      "reference": "प्रति दिवसांतु कलकले कर्ताति म्हुणु एकमेकांक सांग्तशिलीं",
+      "prediction": "प्रि दिवांम्तु कल्कले कर्तताि म्हुणु एकमेकांक सांगतशि",
+      "corrected": "प्रि दिवांम्तु कल्कले कर्तताि म्हुणु एकमेकांक सांगतशि",
+      "wer_before": 0.4286,
+      "wer_after": 0.4286,
+      "wer_delta": 0.0,
+      "cer_before": 0.1964,
+      "cer_after": 0.1964,
+      "cer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "प्रि",
+          "UNCERTAIN"
+        ],
+        [
+          "दिवांम्तु",
+          "UNCERTAIN"
+        ],
+        [
+          "कल्कले",
+          "UNCERTAIN"
+        ],
+        [
+          "कर्तताि",
+          "GARBLED"
+        ],
+        [
+          "म्हुणु",
+          "UNCERTAIN"
+        ],
+        [
+          "एकमेकांक",
+          "UNCERTAIN"
+        ],
+        [
+          "सांगतशि",
+          "UNCERTAIN"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/403.wav",
+      "reference": "रोहनाने आप्णागले खेऴ्सामानु, गेजेट्स आनि स्विमिंग पूला बद्दल सांग्लें",
+      "prediction": "रोनाने आप्णागले ⁇  खेळा सामानु गेजेस आनि स्वमीिंग पुला बद्ल सांग्लें",
+      "corrected": "रोनाने आप्णागले खेळा सामानु गेजेस आनि स्वमीिंग पुला बद्ल सांग्लें",
+      "wer_before": 0.5556,
+      "wer_after": 0.5556,
+      "wer_delta": 0.0,
+      "cer_before": 0.1471,
+      "cer_after": 0.1471,
+      "cer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "रोनाने",
+          "UNCERTAIN"
+        ],
+        [
+          "आप्णागले",
+          "UNCERTAIN"
+        ],
+        [
+          "खेळा",
+          "TRUSTED"
+        ],
+        [
+          "सामानु",
+          "UNCERTAIN"
+        ],
+        [
+          "गेजेस",
+          "UNCERTAIN"
+        ],
+        [
+          "आनि",
+          "UNCERTAIN"
+        ],
+        [
+          "स्वमीिंग",
+          "GARBLED"
+        ],
+        [
+          "पुला",
+          "UNCERTAIN"
+        ],
+        [
+          "बद्ल",
+          "UNCERTAIN"
+        ],
+        [
+          "सांग्लें",
+          "UNCERTAIN"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/404.wav",
+      "reference": "कार्तिकाने सांगिले आय्कतना, रोहनाक अग्दि आश्चर्य ज़ाल्लें!",
+      "prediction": "कारतने सांगिले आय्कतना रोक अग्दि आश्र्य ज़ालें",
+      "corrected": "कार्तिकाने सांगिल्लें ऐकतना अगदी आश्चर्य ज़ाल्लें.",
+      "wer_before": 0.5714,
+      "wer_after": 0.5714,
+      "wer_delta": 0.0,
+      "cer_before": 0.1786,
+      "cer_after": 0.25,
+      "cer_delta": -0.0714,
+      "mode": "FILL",
+      "word_labels": [
+        [
+          "कारतने",
+          "UNCERTAIN"
+        ],
+        [
+          "सांगिले",
+          "UNCERTAIN"
+        ],
+        [
+          "आय्कतना",
+          "UNCERTAIN"
+        ],
+        [
+          "रोक",
+          "UNCERTAIN"
+        ],
+        [
+          "अग्दि",
+          "UNCERTAIN"
+        ],
+        [
+          "आश्र्य",
+          "UNCERTAIN"
+        ],
+        [
+          "ज़ालें",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/406.wav",
+      "reference": "गाद्यान्तु मस्त परिश्रम तो कर्तालो नित्य बाप्सु सांगाति",
+      "prediction": "गनतुमस्त परिश्रम तो कर्तालो नि्य बाप्सु सांगाति ⁇ ",
+      "corrected": "गनतुमस्त परिश्रम तो कर्तालो नि्य बाप्सु सांगाति",
+      "wer_before": 0.375,
+      "wer_after": 0.375,
+      "wer_delta": 0.0,
+      "cer_before": 0.1455,
+      "cer_after": 0.1455,
+      "cer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "गनतुमस्त",
+          "UNCERTAIN"
+        ],
+        [
+          "परिश्रम",
+          "UNCERTAIN"
+        ],
+        [
+          "तो",
+          "UNCERTAIN"
+        ],
+        [
+          "कर्तालो",
+          "UNCERTAIN"
+        ],
+        [
+          "नि्य",
+          "GARBLED"
+        ],
+        [
+          "बाप्सु",
+          "UNCERTAIN"
+        ],
+        [
+          "सांगाति",
+          "UNCERTAIN"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/407.wav",
+      "reference": "विशेष ज़ाव्नु केद्ना भात तैयार ज़ाव्नु म्हण्ताले-\" माका व्हराति!\"",
+      "prediction": "विशेष ज़ाव्नु के्ना भात तय्यार ज़ाव्नु म्हण्तताले ⁇  माक्का वरि ⁇ ",
+      "corrected": "विशेष ज़ाव्नु के्ना भात तय्यार ज़ाव्नु म्हण्तताले माक्का वरि",
+      "wer_before": 0.5556,
+      "wer_after": 0.5556,
+      "wer_delta": 0.0,
+      "cer_before": 0.1639,
+      "cer_after": 0.1639,
+      "cer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "विशेष",
+          "UNCERTAIN"
+        ],
+        [
+          "ज़ाव्नु",
+          "GARBLED"
+        ],
+        [
+          "के्ना",
+          "GARBLED"
+        ],
+        [
+          "भात",
+          "TRUSTED"
+        ],
+        [
+          "तय्यार",
+          "TRUSTED"
+        ],
+        [
+          "ज़ाव्नु",
+          "GARBLED"
+        ],
+        [
+          "म्हण्तताले",
+          "UNCERTAIN"
+        ],
+        [
+          "माक्का",
+          "TRUSTED"
+        ],
+        [
+          "वरि",
+          "UNCERTAIN"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/408.wav",
+      "reference": "तो आनि तागलि भय्णि घाराय सहायु कर्ताति - हें आय्कुनु",
+      "prediction": "तो आनि तागलि भयिणि घारय साययु कर्ति हें आय्कुनु",
+      "corrected": "तो आनि तागलि भयिणि घारय साययु कर्ति हें आय्कुनु",
+      "wer_before": 0.2222,
+      "wer_after": 0.2222,
+      "wer_delta": 0.0,
+      "cer_before": 0.12,
+      "cer_after": 0.12,
+      "cer_delta": 0.0,
+      "mode": "PASSTHROUGH_REVERTED",
+      "word_labels": [
+        [
+          "तो",
+          "UNCERTAIN"
+        ],
+        [
+          "आनि",
+          "UNCERTAIN"
+        ],
+        [
+          "तागलि",
+          "UNCERTAIN"
+        ],
+        [
+          "भयिणि",
+          "UNCERTAIN"
+        ],
+        [
+          "घारय",
+          "UNCERTAIN"
+        ],
+        [
+          "साययु",
+          "UNCERTAIN"
+        ],
+        [
+          "कर्ति",
+          "UNCERTAIN"
+        ],
+        [
+          "हें",
+          "TRUSTED"
+        ],
+        [
+          "आय्कुनु",
+          "TRUSTED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/409.wav",
+      "reference": "कित्लो प्रभावु ज़ाल्लो रोहनाचेरि म्हुणु कऴ्ताले ताक्का पोऴोव्नु!",
+      "prediction": "िलो प्रभाव ज़ाल्लो रोनाचेरि म्हुणु कळ्ताले ⁇  ताक्का पोळो्नु",
+      "corrected": "िलो प्रभाव ज़ाल्लो रोनाचेरि म्हुणु कळ्ताले ताक्का पोळो्नु",
+      "wer_before": 0.5,
+      "wer_after": 0.5,
+      "wer_delta": 0.0,
+      "cer_before": 0.127,
+      "cer_after": 0.127,
+      "cer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "िलो",
+          "UNCERTAIN"
+        ],
+        [
+          "प्रभाव",
+          "UNCERTAIN"
+        ],
+        [
+          "ज़ाल्लो",
+          "GARBLED"
+        ],
+        [
+          "रोनाचेरि",
+          "UNCERTAIN"
+        ],
+        [
+          "म्हुणु",
+          "UNCERTAIN"
+        ],
+        [
+          "कळ्ताले",
+          "UNCERTAIN"
+        ],
+        [
+          "ताक्का",
+          "TRUSTED"
+        ],
+        [
+          "पोळो्नु",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/410.wav",
+      "reference": "ह्रदयाक स्पर्श ज़ाल्ले आनि वच्च वेऴारि पोटोऴ्नु घेत्लें कार्तिकाक",
+      "prediction": "हदक स्पर् ज़ाल्लें आनि वच्चळारि पटोनु घेत्लेंकारतिकक",
+      "corrected": "अचकीत स्पर्श केलो आनि पकडून घेतलो कार्तिकक.",
+      "wer_before": 0.7778,
+      "wer_after": 0.7778,
+      "wer_delta": 0.0,
+      "cer_before": 0.2462,
+      "cer_after": 0.5385,
+      "cer_delta": -0.2923,
+      "mode": "FILL",
+      "word_labels": [
+        [
+          "हदक",
+          "UNCERTAIN"
+        ],
+        [
+          "स्पर्",
+          "UNCERTAIN"
+        ],
+        [
+          "ज़ाल्लें",
+          "GARBLED"
+        ],
+        [
+          "आनि",
+          "UNCERTAIN"
+        ],
+        [
+          "वच्चळारि",
+          "UNCERTAIN"
+        ],
+        [
+          "पटोनु",
+          "UNCERTAIN"
+        ],
+        [
+          "घेत्लेंकारतिकक",
+          "UNCERTAIN"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/411.wav",
+      "reference": "स्कूलान्थाव्नु भाय्रसर्तना खुशालेने आंग हल्के दिस्लें रोहनाक!",
+      "prediction": "स्ुनथाव्नु भाय्रस्तना खुशालेने आांग हाकि दिस्लें रोनाक",
+      "corrected": "स्ुनथाव्नु भाय्रस्तना खुशालेने आांग हाकि दिस्लें रोनाक",
+      "wer_before": 0.5714,
+      "wer_after": 0.5714,
+      "wer_delta": 0.0,
+      "cer_before": 0.1833,
+      "cer_after": 0.1833,
+      "cer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "स्ुनथाव्नु",
+          "GARBLED"
+        ],
+        [
+          "भाय्रस्तना",
+          "UNCERTAIN"
+        ],
+        [
+          "खुशालेने",
+          "UNCERTAIN"
+        ],
+        [
+          "आांग",
+          "UNCERTAIN"
+        ],
+        [
+          "हाकि",
+          "UNCERTAIN"
+        ],
+        [
+          "दिस्लें",
+          "UNCERTAIN"
+        ],
+        [
+          "रोनाक",
+          "UNCERTAIN"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/412.wav",
+      "reference": "मोडा वय्रि चम्कतशिल वारि अनुभवु ज़ाल्ले",
+      "prediction": "मोोडायरि चम्कतशिलेारि अनुभव ज़ालें",
+      "corrected": "मोोडायरि चम्कतशिलेारि अनुभव ज़ालें",
+      "wer_before": 0.8333,
+      "wer_after": 0.8333,
+      "wer_delta": 0.0,
+      "cer_before": 0.2564,
+      "cer_after": 0.2564,
+      "cer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "मोोडायरि",
+          "GARBLED"
+        ],
+        [
+          "चम्कतशिलेारि",
+          "GARBLED"
+        ],
+        [
+          "अनुभव",
+          "UNCERTAIN"
+        ],
+        [
+          "ज़ालें",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/413.wav",
+      "reference": "कार्तिका बद्दल सग्ऴ्यांक सांग्या म्हुणु दिस्लें",
+      "prediction": "कारतिक बद्दल सग्ळ्यांक सांग्या म्हुणु दिस्लें",
+      "corrected": "कारतिक बद्दल सग्ळ्यांक सांग्या म्हुणु दिस्लें",
+      "wer_before": 0.1667,
+      "wer_after": 0.1667,
+      "wer_delta": 0.0,
+      "cer_before": 0.0638,
+      "cer_after": 0.0638,
+      "cer_delta": 0.0,
+      "mode": "PASSTHROUGH_REVERTED",
+      "word_labels": [
+        [
+          "कारतिक",
+          "UNCERTAIN"
+        ],
+        [
+          "बद्दल",
+          "UNCERTAIN"
+        ],
+        [
+          "सग्ळ्यांक",
+          "UNCERTAIN"
+        ],
+        [
+          "सांग्या",
+          "UNCERTAIN"
+        ],
+        [
+          "म्हुणु",
+          "UNCERTAIN"
+        ],
+        [
+          "दिस्लें",
+          "UNCERTAIN"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/414.wav",
+      "reference": "प्रथम सांग्ले परम पूज्य स्वाम्यांकचि तान्ने सहज़",
+      "prediction": "प्रथ सांग्ले परमूज स्वाम्याकचि ⁇  तान्ने स",
+      "corrected": "प्रथ सांग्ले परमूज स्वाम्याकचि तान्ने स",
+      "wer_before": 0.5714,
+      "wer_after": 0.5714,
+      "wer_delta": 0.0,
+      "cer_before": 0.1875,
+      "cer_after": 0.1875,
+      "cer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "प्रथ",
+          "UNCERTAIN"
+        ],
+        [
+          "सांग्ले",
+          "UNCERTAIN"
+        ],
+        [
+          "परमूज",
+          "UNCERTAIN"
+        ],
+        [
+          "स्वाम्याकचि",
+          "UNCERTAIN"
+        ],
+        [
+          "तान्ने",
+          "UNCERTAIN"
+        ],
+        [
+          "स",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/415.wav",
+      "reference": "प्रसन्न ज़ाल्लीं स्वामीजी, दिस्सुनु आय्लें तांका हाज्जि गरज़!",
+      "prediction": "प्रसन्न ज़ाल्ि स्वामीजी दिस्सुन आय्ले तांका हाज्जिगऱ",
+      "corrected": "प्रसन्न ज़ाल्ि स्वामीजी दिस्सुन आय्ले तांका हाज्जिगऱ",
+      "wer_before": 0.375,
+      "wer_after": 0.375,
+      "wer_delta": 0.0,
+      "cer_before": 0.1186,
+      "cer_after": 0.1186,
+      "cer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "प्रसन्न",
+          "UNCERTAIN"
+        ],
+        [
+          "ज़ाल्ि",
+          "GARBLED"
+        ],
+        [
+          "स्वामीजी",
+          "UNCERTAIN"
+        ],
+        [
+          "दिस्सुन",
+          "UNCERTAIN"
+        ],
+        [
+          "आय्ले",
+          "UNCERTAIN"
+        ],
+        [
+          "तांका",
+          "TRUSTED"
+        ],
+        [
+          "हाज्जिगऱ",
+          "UNCERTAIN"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/416.wav",
+      "reference": "घारा पाव्नु आप्णागलि काम कर्तालो तो उत्साहेने",
+      "prediction": "घार पाव्नु आप्णागलि काम क करर्तालो तो उत््ाने",
+      "corrected": "घार पाव्नु आप्णागलि काम क करर्तालो तो उत््ाने",
+      "wer_before": 0.4286,
+      "wer_after": 0.4286,
+      "wer_delta": 0.0,
+      "cer_before": 0.1556,
+      "cer_after": 0.1556,
+      "cer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "घार",
+          "UNCERTAIN"
+        ],
+        [
+          "पाव्नु",
+          "UNCERTAIN"
+        ],
+        [
+          "आप्णागलि",
+          "UNCERTAIN"
+        ],
+        [
+          "काम",
+          "TRUSTED"
+        ],
+        [
+          "क",
+          "GARBLED"
+        ],
+        [
+          "करर्तालो",
+          "UNCERTAIN"
+        ],
+        [
+          "तो",
+          "UNCERTAIN"
+        ],
+        [
+          "उत््ाने",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/amchi/test/audio/417.wav",
+      "reference": "होडु ज़ाल्लो आम्गेलो रोहनु  तें एक स्पर्शाने!",
+      "prediction": "हो होडु ज़ाल्लो आम्गेलो रोनु ते एक स्पर्षाने",
+      "corrected": "हो होडु ज़ाल्लो आम्गेलो रोनु ते एक स्पर्षाने",
+      "wer_before": 0.4286,
+      "wer_after": 0.4286,
+      "wer_delta": 0.0,
+      "cer_before": 0.1395,
+      "cer_after": 0.1395,
+      "cer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "हो",
+          "UNCERTAIN"
+        ],
+        [
+          "होडु",
+          "TRUSTED"
+        ],
+        [
+          "ज़ाल्लो",
+          "GARBLED"
+        ],
+        [
+          "आम्गेलो",
+          "UNCERTAIN"
+        ],
+        [
+          "रोनु",
+          "UNCERTAIN"
+        ],
+        [
+          "ते",
+          "UNCERTAIN"
+        ],
+        [
+          "एक",
+          "TRUSTED"
+        ],
+        [
+          "स्पर्षाने",
+          "UNCERTAIN"
+        ]
+      ]
+    }
+  ]
+}

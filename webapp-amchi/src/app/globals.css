@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f9fafb;
+  --foreground: #111827;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* Devanagari font utility */
+.devanagari {
+  font-family: var(--font-devanagari), "Noto Sans Devanagari", Arial, sans-serif;
+}
+
+/* Progress bar animation: fills from 0 → 100% over 2 s */
+@keyframes progress {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
+.animate-progress {
+  animation: progress 2s linear forwards;
+}
