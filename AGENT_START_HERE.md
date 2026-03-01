@@ -1,111 +1,134 @@
 # Agent start here — Amchi ASR project map
 
-**Read this file first.** It is the single entry point to the repo: where everything is documented, how to continue from the last session, and how to run the full pipeline from scratch (install → finetune → checkpoints → inference endpoint).
+**Read this file first.** It is the single entry point to the repo: where everything is documented, how to continue from the last session, and how to run the full pipeline.
 
 ---
 
-## 1. Where we left off (last session)
+## 1. Where we left off (last session — 2026-03-01)
 
-- **Checkpoint** is in Cloudflare R2 (public URL, no expiry). Best run: 20 epochs, epoch 18 best, ~55% test WER.
-- **RunPod Serverless endpoint** is *not* created yet. Remaining steps: build Docker image (no checkpoint in image), push to Docker Hub, create endpoint in RunPod with `CHECKPOINT_URL`, then test.
-- **Single handoff file for “continue tomorrow”:** **[HANDOFF_SERVERLESS_RESUME.md](HANDOFF_SERVERLESS_RESUME.md)** — open it and follow “What you still need to do.”
+### Active track: Deaf Speech ASR (Story 4 — दैनंदिन कामे १)
 
-**To continue:** Point the agent (or yourself) at **HANDOFF_SERVERLESS_RESUME.md** and execute the steps there.
+- **Fine-tuning COMPLETE:** 50 epochs on 124 deaf speech recordings from story_id=22. Best checkpoint at **epoch 21, val_WER=72.0%**.
+- **Post-processing module BUILT:** `scripts/postprocess_asr.py` — uses Gemini 2.5 Flash API (key in AGENT_HANDOFF.md) to correct garbled ASR output using FILL/RECONSTRUCT modes.
+- **What remains:** Build an inference endpoint (RunPod persistent pod or serverless), test it with sample audio, measure transcription latency, and present side-by-side results (raw ASR → post-processed).
+- **Post-processing results:** WER 75.3% → 74.2% (metric), but human readability improved significantly (garbled `⁇` tokens replaced with natural Marathi sentences).
+
+**To continue:** Read **[AGENT_HANDOFF.md](AGENT_HANDOFF.md)** — it has all paths, credentials, and exact next steps.
+
+---
+
+### Second track (tomorrow): Marathi → Amchi Konkani (not started yet)
+
+This uses the same methodology but a different objective: adapting the Marathi IndicConformer to understand Amchi Konkani. Start this only after the deaf speech inference endpoint is working. See KONKANI_MODEL_PLAN.md for context.
 
 ---
 
 ## 2. Documentation index (where to look for what)
 
-All important docs are listed below. Use this section to find the right file for the task.
-
-### 2.1 Resume / endpoint / deployment (current focus)
+### 2.1 Current focus: deaf speech inference endpoint
 
 | Doc | Use when |
 |-----|----------|
-| **[HANDOFF_SERVERLESS_RESUME.md](HANDOFF_SERVERLESS_RESUME.md)** | Resuming next day: build image, push, create RunPod serverless endpoint, test. Contains CHECKPOINT_URL and exact commands. |
-| **[RUNPOD_SERVERLESS_DEPLOY.md](RUNPOD_SERVERLESS_DEPLOY.md)** | Full deploy guide: options A/B/C for checkpoint, build, push, create endpoint, test script. |
-| **[RUNPOD_INFERENCE_ENDPOINT.md](RUNPOD_INFERENCE_ENDPOINT.md)** | Architecture: serverless vs persistent pod, request/response, web app flow, moving to Hugging Face later. |
-| **[RUNPOD_R2_AND_IMAGE_HOSTING.md](RUNPOD_R2_AND_IMAGE_HOSTING.md)** | Why the Docker image goes in a registry (not R2); why checkpoints go in R2; flow summary. |
-| **[R2_SETUP_CHECKPOINTS.md](R2_SETUP_CHECKPOINTS.md)** | Set up R2 bucket, API token, upload script, public URL. |
-| **[runpod/README.md](runpod/README.md)** | Short pointer to handler vs FastAPI and main RunPod docs. |
+| **[AGENT_HANDOFF.md](AGENT_HANDOFF.md)** | **Start here for tomorrow.** Session summary, checkpoint paths, Gemini API key, exact next steps for building inference endpoint. |
+| **[RUNPOD_INFERENCE_ENDPOINT.md](RUNPOD_INFERENCE_ENDPOINT.md)** | Architecture: serverless vs persistent pod, request/response, web app flow. |
+| **[RUNPOD_SERVERLESS_DEPLOY.md](RUNPOD_SERVERLESS_DEPLOY.md)** | Full deploy guide: Docker image build, push, create RunPod serverless endpoint, test. |
+| **[REPRODUCTION_NOTES.md](REPRODUCTION_NOTES.md)** | CTC-only loading strategy, tokenizer fix, inference smoke test recipe. **Critical reading for inference code.** |
 
-### 2.2 Environment, training, reproduction (from scratch)
+### 2.2 Post-processing module
 
-| Doc | Use when |
-|-----|----------|
-| **[MASTER_REPRODUCTION_GUIDE.md](MASTER_REPRODUCTION_GUIDE.md)** | **Single source of truth** for setup, verification, and training on a fresh environment (e.g. RunPod). Read this for “install everything and run training.” |
-| **[SETUP_ENV.md](SETUP_ENV.md)** | Detailed environment setup: Python 3.11, NeMo, PyTorch, patches, preflight. |
-| **[REPRODUCTION_NOTES.md](REPRODUCTION_NOTES.md)** | Technical details: CTC-only strategy, tokenizer, config edits, inference smoke test. |
-| **[LEARNINGS.md](LEARNINGS.md)** | What works (Py3.11 + NeMo, smoke test, GPU check), what we don’t push to git. |
-| **[README.md](README.md)** | Project overview, quick start, framework options. |
+| File | Description |
+|------|-------------|
+| `scripts/postprocess_asr.py` | Gemini-powered post-processor. FILL mode (anchor words present) + RECONSTRUCT mode (all garbled). Conservative safety valve prevents WER regression. |
+| `nemo_experiments/deaf_speech_story4_50epoch/experiments/20260301_003725/postprocessed_results.json` | Full 124-sample post-processing results (WER before/after + corrected text). |
+| `nemo_experiments/deaf_speech_story4_50epoch/experiments/20260301_003725/postprocess_report.txt` | Human-readable sentence-by-sentence comparison report. |
 
-### 2.3 Data, model, RunPod (operational)
+### 2.3 Environment, training, reproduction (from scratch)
 
 | Doc | Use when |
 |-----|----------|
-| **[RUNPOD_QUICK_START.md](RUNPOD_QUICK_START.md)** | Quick RunPod setup and commands. |
-| **[RUNPOD_SETUP.md](RUNPOD_SETUP.md)** | RunPod setup and usage. |
-| **[DATA_SNAPSHOT_AMCHI_KONKANI.md](DATA_SNAPSHOT_AMCHI_KONKANI.md)** | Data split convention (Story 4 = dev, Story 5 = test). |
-| **[scripts/README_SMOKE.md](scripts/README_SMOKE.md)** | Smoke tests overview. |
-| **[results/smoke_tests/README.md](results/smoke_tests/README.md)** | One-sample smoke test: how to run and validate. |
+| **[MASTER_REPRODUCTION_GUIDE.md](MASTER_REPRODUCTION_GUIDE.md)** | **Single source of truth** for setup and training on a fresh RunPod instance. |
+| **[SETUP_ENV.md](SETUP_ENV.md)** | Detailed environment setup: Python 3.11, NeMo v2.7.0, PyTorch, patches. |
+| **[REPRODUCTION_NOTES.md](REPRODUCTION_NOTES.md)** | CTC-only strategy, tokenizer discovery, inference smoke test. |
+| **[LEARNINGS.md](LEARNINGS.md)** | Accumulated hard-won lessons across all sessions. |
 
-### 2.4 Other (reference only when needed)
+### 2.4 Data
 
-- **AGENT_HANDOFF.md** — Older handoff; prefer HANDOFF_SERVERLESS_RESUME.md for endpoint work.
-- **AI4BHARAT_SETUP_GUIDE.md**, **AI4BHARAT_MODEL_ACCESS.md** — Model access and AI4Bharat-specific setup.
-- **KONKANI_MODEL_PLAN.md**, **TRAINING_RESULTS_2025-12-18.md** — Planning and past results.
-- **DATA_*.md**, **MANIFEST_GUIDE.md**, **AUDIO_*.md** — Data and audio details when you need them.
+| Doc/Path | Description |
+|----------|-------------|
+| `data/deaf_speech/audio/` | 124 WAV files (story_id=22 deaf recordings, 16kHz mono) |
+| `data/deaf_speech/train/manifest.jsonl` | Training manifest (all 124 samples) |
+| `data/deaf_speech/dev/manifest.jsonl` | Dev manifest (same 124 samples) |
+| `data/deaf_speech/test/manifest.jsonl` | Test manifest (same 124 samples) |
+| `configs/deaf_speech_story4_50epoch.yaml` | Training config used for this run |
+| `scripts/download_data_from_railway.py` | Downloads data from Railway API |
+| **[DATA_SNAPSHOT_AMCHI_KONKANI.md](DATA_SNAPSHOT_AMCHI_KONKANI.md)** | Amchi Konkani data split convention |
+
+### 2.5 Model and checkpoints
+
+| Path | Description |
+|------|-------------|
+| `models/indicconformer_stt_mr_hybrid_ctc_rnnt_large/indicconformer_stt_mr_hybrid_rnnt_large.nemo` | AI4Bharat base Marathi model (499MB) |
+| `tokenizers/marathi_tokenizer.model` | Correct Marathi SentencePiece tokenizer (extracted from .nemo) |
+| `nemo_experiments/deaf_speech_story4_50epoch/checkpoints/konkani_asr-epoch=21-val_wer=0.720.ckpt` | **Best checkpoint** (5.3GB total for top-3 + last) |
+
+### 2.6 Other (reference only when needed)
+
+- **HANDOFF_SERVERLESS_RESUME.md** — Earlier serverless endpoint guide (Amchi Konkani). Refer only if building serverless (not persistent pod).
+- **RUNPOD_QUICK_START.md**, **RUNPOD_SETUP.md** — RunPod general usage.
+- **KONKANI_MODEL_PLAN.md**, **TRAINING_RESULTS_2025-12-18.md** — Amchi Konkani planning and past results.
 
 ---
 
-## 3. Three ways to use this repo
+## 3. How to continue from here
 
-### A. Continue from where we left off (serverless endpoint)
+### A. Build the deaf speech inference endpoint (tomorrow's main task)
 
-1. Read **[HANDOFF_SERVERLESS_RESUME.md](HANDOFF_SERVERLESS_RESUME.md)**.
-2. Start a RunPod pod (or any machine with Docker and the repo).
-3. Build image, push to Docker Hub, create serverless endpoint with `CHECKPOINT_URL`, test with `scripts/test_runpod_endpoint.py`.
+1. Read **[AGENT_HANDOFF.md](AGENT_HANDOFF.md)** for the exact recipe.
+2. Build an inference script (`scripts/deaf_speech_inference.py`) based on the pattern in `REPRODUCTION_NOTES.md` § 9 (Inference Smoke Test Strategy).
+3. Test on a sample WAV from `data/deaf_speech/audio/` and measure latency.
+4. Run post-processing (`scripts/postprocess_asr.py`) on the output and show side-by-side.
+5. (Optional) Wrap in a RunPod serverless handler.
 
-### B. Start from scratch: full pipeline (install → train → checkpoint → endpoint)
+### B. Start from scratch (fresh RunPod)
 
-1. **Environment:** Follow **[MASTER_REPRODUCTION_GUIDE.md](MASTER_REPRODUCTION_GUIDE.md)** § 1–2 and **[SETUP_ENV.md](SETUP_ENV.md)**. Use Python 3.11, upstream NeMo, RunPod (or similar GPU).
-2. **Data:** Get data (e.g. `data/amchi/` with train/dev/test manifests). See MASTER_REPRODUCTION_GUIDE and **scripts/download_data_from_railway.py** if pulling from Railway.
-3. **Verify:** Run preflight and smoke: `./scripts/run_all_preflight.sh` (includes GPU check). See **[LEARNINGS.md](LEARNINGS.md)** and **[results/smoke_tests/README.md](results/smoke_tests/README.md)**.
-4. **Train:** e.g. `python scripts/fine_tune.py --config configs/marathi_amchi_20epoch.yaml` (or the config you use). Checkpoints go under `results/<run_name>/checkpoints/`.
-5. **Checkpoint to R2:** **[R2_SETUP_CHECKPOINTS.md](R2_SETUP_CHECKPOINTS.md)** + `scripts/upload_checkpoint_to_r2.py --public-url`. Get public URL.
-6. **Endpoint:** **[RUNPOD_SERVERLESS_DEPLOY.md](RUNPOD_SERVERLESS_DEPLOY.md)** — build image (no checkpoint), push to registry, create RunPod serverless endpoint with `CHECKPOINT_URL` = R2 public URL, test.
+1. **Environment:** `bash setup_env.sh` or follow MASTER_REPRODUCTION_GUIDE.md. Python 3.11, upstream NeMo (`nemo_toolkit[asr]`).
+2. **Model:** Download via `scripts/download_model_from_hf.py` with HF token (see AGENT_HANDOFF.md).
+3. **Data:** Already committed in `data/deaf_speech/*/manifest.jsonl`. Audio is NOT in git (too large — re-download from Railway: `python3 scripts/download_data_from_railway.py`).
+4. **Train:** `export APPLY_CONV_PATCH=1 && python3 scripts/fine_tune.py --config configs/deaf_speech_story4_50epoch.yaml`
+5. **Post-process:** `python3 scripts/postprocess_asr.py --input <final_test_results.json> --output <out.json> --report <out.txt> --api_key <GEMINI_KEY>`
 
-### C. Retrain / new checkpoint / change endpoint
+### C. Start Amchi Konkani training (second track, when ready)
 
-- **New training run:** Same as B steps 2–4; use a new config or output dir. New checkpoints under `results/<new_run>/checkpoints/`.
-- **New checkpoint to R2:** Run `scripts/upload_checkpoint_to_r2.py --file path/to/new.ckpt --public-url`. R2 key will mirror path (e.g. `results/.../checkpoints/...`). Get public URL from Cloudflare.
-- **Point endpoint at new checkpoint:** In RunPod → endpoint → Edit → set **CHECKPOINT_URL** to the new public URL. No need to rebuild the Docker image.
-- **Inference code / model changes:** Edit `scripts/amchi_inference.py`, `runpod/handler.py`, or training scripts as needed; then rebuild and push the serverless image if the handler or dependencies changed.
+Follow the same methodology as Section B but:
+- Change model to `models/konkani_model.nemo` and tokenizer to `tokenizers/konkani_tokenizer.model`
+- Use `data/train`, `data/dev`, `data/test` (Amchi Konkani data)
+- Post-processing for Konkani will be different (discuss with user first)
 
 ---
 
-## 4. Key paths in the repo
+## 4. Key paths summary
 
 | Purpose | Path |
-|--------|------|
-| Serverless handler (loads from CHECKPOINT_URL or CHECKPOINT_PATH) | `runpod/handler.py` |
-| Shared inference (load .ckpt, transcribe) | `scripts/amchi_inference.py` |
-| Dockerfile for serverless (no checkpoint in image) | `runpod/Dockerfile.serverless` |
-| Upload checkpoint to R2 | `scripts/upload_checkpoint_to_r2.py` |
-| Test RunPod endpoint (single file or manifest) | `scripts/test_runpod_endpoint.py` |
-| Demo test-set WER with best checkpoint | `scripts/demo_test_set_wer.py` |
-| Full preflight + smoke (includes GPU check) | `scripts/run_all_preflight.sh` |
+|---------|------|
+| **Best deaf speech checkpoint** | `nemo_experiments/deaf_speech_story4_50epoch/checkpoints/konkani_asr-epoch=21-val_wer=0.720.ckpt` |
+| Training config (deaf speech story 4) | `configs/deaf_speech_story4_50epoch.yaml` |
 | Fine-tuning entrypoint | `scripts/fine_tune.py` |
-| 20-epoch training config | `configs/marathi_amchi_20epoch.yaml` |
-| Best checkpoint (this run) in R2 (public URL) | See HANDOFF_SERVERLESS_RESUME.md or R2_SETUP_CHECKPOINTS.md |
+| Post-processing script | `scripts/postprocess_asr.py` |
+| Post-processing results (JSON) | `nemo_experiments/deaf_speech_story4_50epoch/experiments/20260301_003725/postprocessed_results.json` |
+| Post-processing report (text) | `nemo_experiments/deaf_speech_story4_50epoch/experiments/20260301_003725/postprocess_report.txt` |
+| Base Marathi model | `models/indicconformer_stt_mr_hybrid_ctc_rnnt_large/indicconformer_stt_mr_hybrid_rnnt_large.nemo` |
+| Marathi tokenizer | `tokenizers/marathi_tokenizer.model` |
+| Data manifests (deaf speech) | `data/deaf_speech/{train,dev,test}/manifest.jsonl` |
+| Data audio (deaf speech, NOT in git) | `data/deaf_speech/audio/*.wav` |
+| NeMo conv_asr patch | `patches/conv_asr_fixed.py` |
 
 ---
 
 ## 5. One-line summary for the agent
 
-- **To continue tomorrow:** Open **HANDOFF_SERVERLESS_RESUME.md** and do the steps (build image, push, create endpoint, test).
-- **To understand the whole project:** Read **MASTER_REPRODUCTION_GUIDE.md** and **RUNPOD_INFERENCE_ENDPOINT.md**; use this file (AGENT_START_HERE.md) to find any other doc.
-- **To run from scratch:** Follow section 3.B above; docs are linked there.
-- **To add a new checkpoint or point endpoint elsewhere:** Section 3.C and **R2_SETUP_CHECKPOINTS.md** + RunPod endpoint env var.
+- **To continue tomorrow:** Read **AGENT_HANDOFF.md** → build `scripts/deaf_speech_inference.py` → test with sample audio → measure latency → show post-processing side-by-side.
+- **To understand the whole project:** Read **MASTER_REPRODUCTION_GUIDE.md** and **REPRODUCTION_NOTES.md** (especially the Inference Smoke Test Strategy section).
+- **To retrain:** Follow section 3.B above. The `.gitignore` is set up to commit configs, scripts, manifests, and JSON results but NOT audio, checkpoints, or model weights.
+- **To run post-processing standalone:** `python3 scripts/postprocess_asr.py --help`
 
-All important information is in the docs listed in § 2; this file is the map to them.
+All important information is in the docs listed above; this file is the map to them.

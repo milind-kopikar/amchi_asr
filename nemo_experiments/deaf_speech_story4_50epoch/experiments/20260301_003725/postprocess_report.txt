@@ -1,0 +1,652 @@
+================================================================================
+MARATHI DEAF SPEECH ASR — POST-PROCESSING REPORT
+================================================================================
+Model: gemini-2.5-flash
+Samples processed: 124
+
+SUMMARY
+----------------------------------------
+  Mean WER BEFORE post-processing : 0.7526  (75.3%)
+  Mean WER AFTER  post-processing : 0.7425  (74.2%)
+  Mean improvement (Δ WER)        : +0.0101  (+1.0pp)
+
+  Perfect (WER=0) before : 2 / 124
+  Perfect (WER=0) after  : 2 / 124
+
+  Improved samples  : 4
+  Unchanged samples : 120
+  Worsened samples  : 0
+
+  Mode breakdown:
+    FILL        : 76
+    RECONSTRUCT : 46
+    PASSTHROUGH : 0
+    SKIP        : 2
+
+================================================================================
+SENTENCE-BY-SENTENCE COMPARISON
+================================================================================
+
+[✓ IMPROVED]  Mode: FILL   WER: 0.67 → 0.33  (Δ +0.33)
+  REF      : दूध किती आहे?।
+  ASR      : ू किती ⁇ 
+  CORRECTED: हे किती आहे?
+
+[✓ IMPROVED]  Mode: RECONSTRUCT   WER: 1.00 → 0.67  (Δ +0.33)
+  REF      : ऑटो चाली किती?।
+  ASR      : हेऑटकिती ⁇ 
+  CORRECTED: हे ऑटो किती?
+
+[✓ IMPROVED]  Mode: RECONSTRUCT   WER: 1.00 → 0.67  (Δ +0.33)
+  REF      : चेकआउट किती वाजता?।
+  ASR      : फिती ⁇ 
+  CORRECTED: किती?
+
+[✓ IMPROVED]  Mode: RECONSTRUCT   WER: 1.00 → 0.75  (Δ +0.25)
+  REF      : पन्नास रुपये देऊ शकतो.।
+  ASR      : पपये दो शो ⁇ 
+  CORRECTED: दोनशे रुपये?
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : दैनंदिन कामे १।
+  ASR      : पि ⁇ 
+  CORRECTED: पाणी पिऊ का?
+
+[~ UNCHANGED]  Mode: FILL   WER: 0.75 → 0.75  (Δ +0.00)
+  REF      : एक लिटर दूध द्या.।
+  ASR      : हे दू द्या ⁇ 
+  CORRECTED: हे दूध द्या ना
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : चाळीस रुपयांत काय मिळेल?।
+  ASR      : प दनय ⁇ 
+  CORRECTED: पाणी द्या ना?
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.67 → 0.67  (Δ +0.00)
+  REF      : पेपर कधी येईल?।
+  ASR      : पितीी येईल ⁇ 
+  CORRECTED: पितीी येईल
+
+[~ UNCHANGED]  Mode: FILL   WER: 0.67 → 0.67  (Δ +0.00)
+  REF      : बस कधी येईल?।
+  ASR      : प कितीी येईल ⁇ 
+  CORRECTED: बस लवकर येईल का
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : गाडी कोणत्या प्लॅटफॉर्मवर येईल?।
+  ASR      : हेटी ⁇ 
+  CORRECTED: हे ठेऊ का?
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : मुलुंडला कुठे उतरायचं?।
+  ASR      : ला कं ⁇ 
+  CORRECTED: मला किती?
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.50 → 0.50  (Δ +0.00)
+  REF      : चालीमूल्य किती?।
+  ASR      : किती ⁇ 
+  CORRECTED: किती
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : मला निळे जीन्स दाखवा.।
+  ASR      : रखख ⁇ 
+  CORRECTED: रक्कम किती आहे?
+
+[~ UNCHANGED]  Mode: FILL   WER: 0.33 → 0.33  (Δ +0.00)
+  REF      : हे दूध द्या.।
+  ASR      : हे दू द्या ⁇ 
+  CORRECTED: हे दूध द्या गरम
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.50 → 0.50  (Δ +0.00)
+  REF      : दोन पॅकेट दूध द्या.।
+  ASR      : दनू द्या ⁇ 
+  CORRECTED: दनू द्या
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.33 → 0.33  (Δ +0.00)
+  REF      : पेपर किती आहे?।
+  ASR      : हे किती आहे ⁇ 
+  CORRECTED: हे किती आहे
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.67 → 0.67  (Δ +0.00)
+  REF      : आजचा पेपर द्या.।
+  ASR      : प द्या ⁇ 
+  CORRECTED: प द्या
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : पुढचा स्टॉप कोणता?।
+  ASR      : पे ⁇ 
+  CORRECTED: याचे पैसे किती?
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.67 → 0.67  (Δ +0.00)
+  REF      : दोन टिकीट द्या.।
+  ASR      : ोनट द्या ⁇ 
+  CORRECTED: ोनट द्या
+
+[~ UNCHANGED]  Mode: SKIP   WER: 0.00 → 0.00  (Δ +0.00)
+  REF      : हे किती आहे?।
+  ASR      : हेी किती आहे ⁇ 
+  CORRECTED: हेी किती आहे
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.67 → 0.67  (Δ +0.00)
+  REF      : किंमत कमी करा.।
+  ASR      : ग करा ⁇ 
+  CORRECTED: ग करा
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.50 → 0.50  (Δ +0.00)
+  REF      : चहा द्या.।
+  ASR      : चा द्या ⁇ 
+  CORRECTED: चा द्या
+
+[~ UNCHANGED]  Mode: RECONSTRUCT_REVERTED   WER: 0.50 → 0.50  (Δ +0.00)
+  REF      : दोन चहा.।
+  ASR      : दना ⁇ 
+  CORRECTED: दना
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.50 → 0.50  (Δ +0.00)
+  REF      : पाणी द्या.।
+  ASR      : द्या ⁇ 
+  CORRECTED: द्या
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.50 → 0.50  (Δ +0.00)
+  REF      : बिल द्या.।
+  ASR      : बी द्या ⁇ 
+  CORRECTED: बी द्या
+
+[~ UNCHANGED]  Mode: SKIP   WER: 0.00 → 0.00  (Δ +0.00)
+  REF      : किती झालं?।
+  ASR      : कती झाल ⁇ 
+  CORRECTED: कती झाल
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 0.67 → 0.67  (Δ +0.00)
+  REF      : मला हे हवं.।
+  ASR      : हें ⁇ 
+  CORRECTED: हे पाहिजे.
+
+[~ UNCHANGED]  Mode: FILL   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : मला ते हवं नाही.।
+  ASR      : हे द ⁇ 
+  CORRECTED: हे काय आहे
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.50 → 0.50  (Δ +0.00)
+  REF      : ठीक आहे.।
+  ASR      : पा आहे ⁇ 
+  CORRECTED: पा आहे
+
+[~ UNCHANGED]  Mode: FILL   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : थोडं वाट बघा.।
+  ASR      : ूट द्या ⁇ 
+  CORRECTED: मला पाणी द्या.
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : लवकर करा.।
+  ASR      : आा ⁇ 
+  CORRECTED: आहे?
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.67 → 0.67  (Δ +0.00)
+  REF      : बाथरूम कुठे आहे?।
+  ASR      : हेुठठे आहे ⁇ 
+  CORRECTED: हेुठठे आहे
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.50 → 0.50  (Δ +0.00)
+  REF      : स्टेशन इकडेच आहे का?।
+  ASR      : इ आहे का ⁇ 
+  CORRECTED: इ आहे का
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : विक्रोली किती वाजता पोहोचेल?।
+  ASR      : पि ⁇ 
+  CORRECTED: पिण्यासाठी पाणी आहे का?
+
+[~ UNCHANGED]  Mode: FILL   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : सीएसटी ला जाणारी बस कोणती?।
+  ASR      : हेी आहे का ⁇ 
+  CORRECTED: दुकान आहे का उघडं?
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.80 → 0.80  (Δ +0.00)
+  REF      : ही बस थानेला जाते का?।
+  ASR      : हेीथने ज का ⁇ 
+  CORRECTED: हेीथने ज का
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : गाडी कधी येईल?।
+  ASR      : आतीीईल ⁇ 
+  CORRECTED: आणतील?
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.67 → 0.67  (Δ +0.00)
+  REF      : प्लॅटफॉर्म बदलला का?।
+  ASR      : का ⁇ 
+  CORRECTED: का
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.80 → 0.80  (Δ +0.00)
+  REF      : ही गाडी दादरला थांबते का?।
+  ASR      : हीसरथ का ⁇ 
+  CORRECTED: हीसरथ का
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : मला छोटा सायझ हवा.।
+  ASR      : छे ⁇ 
+  CORRECTED: छे, मला नको आहे.
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : मला मोठा सायझ हवा.।
+  ASR      : आे ⁇ 
+  CORRECTED: ओ, किती पैसे झाले?
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.80 → 0.80  (Δ +0.00)
+  REF      : हे मोजून बघू शकतो का?।
+  ASR      : हेन का शो का ⁇ 
+  CORRECTED: हेन का शो का
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.75 → 0.75  (Δ +0.00)
+  REF      : रंग बदलू शकतो का?।
+  ASR      : रमूक का ⁇ 
+  CORRECTED: रमूक का
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.67 → 0.67  (Δ +0.00)
+  REF      : आकार चेक करा.।
+  ASR      : आक करा ⁇ 
+  CORRECTED: आक करा
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.75 → 0.75  (Δ +0.00)
+  REF      : दोन फूट पाईप द्या.।
+  ASR      : फ दोन द्या ⁇ 
+  CORRECTED: फ दोन द्या
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.33 → 0.33  (Δ +0.00)
+  REF      : हे मोजून द्या.।
+  ASR      : हे द्या ⁇ 
+  CORRECTED: हे द्या
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.50 → 0.50  (Δ +0.00)
+  REF      : स्क्रू द्या.।
+  ASR      : फर द्या ⁇ 
+  CORRECTED: फर द्या
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.50 → 0.50  (Δ +0.00)
+  REF      : की द्या.।
+  ASR      : पी द्या ⁇ 
+  CORRECTED: पी द्या
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : आयरनिंग कशी करायची सांगा.।
+  ASR      : हेा ⁇ 
+  CORRECTED: हे कधी होणार?
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.67 → 0.67  (Δ +0.00)
+  REF      : उद्या मिळेल का?।
+  ASR      : प का ⁇ 
+  CORRECTED: प का
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.67 → 0.67  (Δ +0.00)
+  REF      : हे धुवून द्या.।
+  ASR      : हेूध द्या ⁇ 
+  CORRECTED: हेूध द्या
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.67 → 0.67  (Δ +0.00)
+  REF      : फोल्ड करून द्या.।
+  ASR      : ब आहे द्या ⁇ 
+  CORRECTED: ब आहे द्या
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.67 → 0.67  (Δ +0.00)
+  REF      : इकडे जातो का?।
+  ASR      : हेट का ⁇ 
+  CORRECTED: हेट का
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.40 → 0.40  (Δ +0.00)
+  REF      : हे रस्ता बरोबर आहे का?।
+  ASR      : हेी आहे का ⁇ 
+  CORRECTED: हेी आहे का
+
+[~ UNCHANGED]  Mode: FILL   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : किती वाजले?।
+  ASR      : हे किती ⁇ 
+  CORRECTED: हे किती आहे?
+
+[~ UNCHANGED]  Mode: RECONSTRUCT_REVERTED   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : उशीर झाला.।
+  ASR      : आला ⁇ 
+  CORRECTED: आला
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : थांबा.।
+  ASR      : हेथांा ⁇ 
+  CORRECTED: हे थांबा
+
+[~ UNCHANGED]  Mode: FILL   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : रोख घेतात का?।
+  ASR      : ब आहे ⁇ 
+  CORRECTED: पाणी आहे काय
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.67 → 0.67  (Δ +0.00)
+  REF      : कार्ड चालतो का?।
+  ASR      : आमात का ⁇ 
+  CORRECTED: आमात का
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : बाकी किती?।
+  ASR      : ब क किती ⁇ 
+  CORRECTED: ब क किती
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.50 → 0.50  (Δ +0.00)
+  REF      : भाजी किती?।
+  ASR      : ब किती ⁇ 
+  CORRECTED: ब किती
+
+[~ UNCHANGED]  Mode: FILL   WER: 0.75 → 0.75  (Δ +0.00)
+  REF      : आज दूध नाही का?।
+  ASR      : आू का ⁇ 
+  CORRECTED: दूध का पाहिजे
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.67 → 0.67  (Δ +0.00)
+  REF      : काळी पिशवी द्या.।
+  ASR      : प द्या ⁇ 
+  CORRECTED: प द्या
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.67 → 0.67  (Δ +0.00)
+  REF      : पांढरी पिशवी द्या.।
+  ASR      : पेि द्या ⁇ 
+  CORRECTED: पेि द्या
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : उद्या दूध ठेवा.।
+  ASR      : पू ⁇ 
+  CORRECTED: पुढील बस कधी?
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.67 → 0.67  (Δ +0.00)
+  REF      : दोन पेपर द्या.।
+  ASR      : ोन द्या ⁇ 
+  CORRECTED: ोन द्या
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.75 → 0.75  (Δ +0.00)
+  REF      : पेपर उशीरा आला का?।
+  ASR      : फ का ⁇ 
+  CORRECTED: फ का
+
+[~ UNCHANGED]  Mode: RECONSTRUCT_REVERTED   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : एक टिकीट.।
+  ASR      : प ⁇ 
+  CORRECTED: प
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.67 → 0.67  (Δ +0.00)
+  REF      : तीन टिकीट द्या.।
+  ASR      : हे दट द्या ⁇ 
+  CORRECTED: हे दट द्या
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : कुठे उतरायचं थानेला?।
+  ASR      : पुठेथा ⁇ 
+  CORRECTED: तुम्ही पुठे थांबा
+
+[~ UNCHANGED]  Mode: RECONSTRUCT_REVERTED   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : दादरला कुठे उतरायचं?।
+  ASR      : पाठ ⁇ 
+  CORRECTED: पाठ
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : लोकल कधी येईल?।
+  ASR      : फिी ⁇ 
+  CORRECTED: फी किती?
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : फास्ट लाईन कोणती?।
+  ASR      : फा येईती ⁇ 
+  CORRECTED: पाणी येईल का?
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.67 → 0.67  (Δ +0.00)
+  REF      : स्टॅंड कुठे आहे?।
+  ASR      : हेुठे आहे ⁇ 
+  CORRECTED: हेुठे आहे
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.50 → 0.50  (Δ +0.00)
+  REF      : ऑटो थांबतो का इथे?।
+  ASR      : ऑट का ⁇ 
+  CORRECTED: ऑट का
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.50 → 0.50  (Δ +0.00)
+  REF      : हॉस्पिटल इकडेच आहे का?।
+  ASR      : फ इ आहे का ⁇ 
+  CORRECTED: फ इ आहे का
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : पोलिस स्टेशन कुठे?।
+  ASR      : पेनठे ⁇ 
+  CORRECTED: पेण कुठे आहे?
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.33 → 0.33  (Δ +0.00)
+  REF      : फार्मसी कुठे आहे?।
+  ASR      : फी कठे आहे ⁇ 
+  CORRECTED: फी कठे आहे
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.50 → 0.50  (Δ +0.00)
+  REF      : टॅब्लेट द्या.।
+  ASR      : द्या ⁇ 
+  CORRECTED: द्या
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.50 → 0.50  (Δ +0.00)
+  REF      : दवा द्या.।
+  ASR      : हेा द्या ⁇ 
+  CORRECTED: हेा द्या
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : डॉक्टर कधी मिळेल?।
+  ASR      : ल ⁇ 
+  CORRECTED: किती पैसे झाले?
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : अपॉइंटमेंट आहे.।
+  ASR      : ट ⁇ 
+  CORRECTED: टॉयलेट कुठे आहे?
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : माझं नाव लिहा.।
+  ASR      : म ⁇ 
+  CORRECTED: मला पाणी पाहिजे.
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : फोन नंबर काय?।
+  ASR      : ोन ⁇ 
+  CORRECTED: दोन चहा द्या.
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : एड्रेस काय?।
+  ASR      : े ⁇ 
+  CORRECTED: काय पाहिजे?
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.50 → 0.50  (Δ +0.00)
+  REF      : सिग्नेचर करा.।
+  ASR      : करा ⁇ 
+  CORRECTED: करा
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.60 → 0.60  (Δ +0.00)
+  REF      : हा पैसा बरोबर आहे का?।
+  ASR      : आहे आहे का ⁇ 
+  CORRECTED: आहे आहे का
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.50 → 0.50  (Δ +0.00)
+  REF      : चिल्लर द्या.।
+  ASR      : हे द्या ⁇ 
+  CORRECTED: हे द्या
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : नोट बदला.।
+  ASR      :  ⁇ 
+  CORRECTED: किती झाले?
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.80 → 0.80  (Δ +0.00)
+  REF      : या नोटला खोटं आहे का?।
+  ASR      : दटलाट का ⁇ 
+  CORRECTED: दटलाट का
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.67 → 0.67  (Δ +0.00)
+  REF      : शॉर्टकट कुठे आहे?।
+  ASR      : टटुठे आहे ⁇ 
+  CORRECTED: टटुठे आहे
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.50 → 0.50  (Δ +0.00)
+  REF      : हॉटेल इकडेच आहे का?।
+  ASR      : टट आहे का ⁇ 
+  CORRECTED: टट आहे का
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.75 → 0.75  (Δ +0.00)
+  REF      : रुम खाली आहे का?।
+  ASR      : हे ब का ⁇ 
+  CORRECTED: हे ब का
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.67 → 0.67  (Δ +0.00)
+  REF      : एक रुम द्या.।
+  ASR      : द्या ⁇ 
+  CORRECTED: द्या
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : दोन रात्री रहायचं.।
+  ASR      : हेोनम ⁇ 
+  CORRECTED: हो ना, मग?
+
+[~ UNCHANGED]  Mode: FILL   WER: 0.67 → 0.67  (Δ +0.00)
+  REF      : बिल किती झालं?।
+  ASR      : हे किती ⁇ 
+  CORRECTED: हे किती आहे
+
+[~ UNCHANGED]  Mode: RECONSTRUCT_REVERTED   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : लगेच येतो.।
+  ASR      : ेत ⁇ 
+  CORRECTED: ेत
+
+[~ UNCHANGED]  Mode: RECONSTRUCT_REVERTED   WER: 0.50 → 0.50  (Δ +0.00)
+  REF      : आता येतो.।
+  ASR      : ्या येत ⁇ 
+  CORRECTED: ्या येत
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : एक मिनिट थांबा.।
+  ASR      : टाांा ⁇ 
+  CORRECTED: जरा पाणी टाका.
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.50 → 0.50  (Δ +0.00)
+  REF      : बरोबर आहे.।
+  ASR      : हे आहे ⁇ 
+  CORRECTED: हे आहे
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.50 → 0.50  (Δ +0.00)
+  REF      : चुकीचं आहे.।
+  ASR      : न आहे ⁇ 
+  CORRECTED: न आहे
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : पुन्हा सांगा.।
+  ASR      : ह्हाग ⁇ 
+  CORRECTED: हा घ्या
+
+[~ UNCHANGED]  Mode: RECONSTRUCT_REVERTED   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : समजलं नाही.।
+  ASR      : ज ⁇ 
+  CORRECTED: ज
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : मला नीट समजलं नाही.।
+  ASR      : ट ⁇ 
+  CORRECTED: दोन तिकीट द्या
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.50 → 0.50  (Δ +0.00)
+  REF      : लिहून द्या.।
+  ASR      : द्या ⁇ 
+  CORRECTED: द्या
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : पुन्हा लिहा.।
+  ASR      : ्हा ⁇ 
+  CORRECTED: ह्या कितीला?
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.75 → 0.75  (Δ +0.00)
+  REF      : हे बरोबर लिहलं का?।
+  ASR      : ी आहे का ⁇ 
+  CORRECTED: ी आहे का
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : मोबाइलवर दाखवा.।
+  ASR      : थांख ⁇ 
+  CORRECTED: थांब
+
+[~ UNCHANGED]  Mode: RECONSTRUCT_REVERTED   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : नकाशा दाखवा.।
+  ASR      : ख ⁇ 
+  CORRECTED: ख
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.60 → 0.60  (Δ +0.00)
+  REF      : या जवळ एटीएम आहे का?।
+  ASR      : हे द्याट आहे आहे का ⁇ 
+  CORRECTED: हे द्याट आहे आहे का
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.33 → 0.33  (Δ +0.00)
+  REF      : बँक कुठे आहे?।
+  ASR      : कुठे आहे ⁇ 
+  CORRECTED: कुठे आहे
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.60 → 0.60  (Δ +0.00)
+  REF      : पोस्ट ऑफिस इकडेच आहे का?।
+  ASR      : ल आहे का ⁇ 
+  CORRECTED: ल आहे का
+
+[~ UNCHANGED]  Mode: RECONSTRUCT_REVERTED   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : पार्सल पाठवायचं.।
+  ASR      : हेे ⁇ 
+  CORRECTED: हेे
+
+[~ UNCHANGED]  Mode: RECONSTRUCT_REVERTED   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : रेजिस्टर्ड करा.।
+  ASR      : ीा ⁇ 
+  CORRECTED: ीा
+
+[~ UNCHANGED]  Mode: FILL   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : कापसाचे कपडे दाखवा.।
+  ASR      : ती द ⁇ 
+  CORRECTED: ती चहा पिते
+
+[~ UNCHANGED]  Mode: RECONSTRUCT_REVERTED   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : सिल्कचं दाखवा.।
+  ASR      : ांख ⁇ 
+  CORRECTED: ांख
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.75 → 0.75  (Δ +0.00)
+  REF      : हे फिट होईल का?।
+  ASR      : आहे का ⁇ 
+  CORRECTED: आहे का
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.75 → 0.75  (Δ +0.00)
+  REF      : ट्राय करू शकतो का?।
+  ASR      : ीको का ⁇ 
+  CORRECTED: ीको का
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.67 → 0.67  (Δ +0.00)
+  REF      : रिटर्न मिळेल का?।
+  ASR      : ल आहे का ⁇ 
+  CORRECTED: ल आहे का
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.67 → 0.67  (Δ +0.00)
+  REF      : एक्सचेंज होईल का?।
+  ASR      : ट आहे का ⁇ 
+  CORRECTED: ट आहे का
+
+[~ UNCHANGED]  Mode: RECONSTRUCT   WER: 1.00 → 1.00  (Δ +0.00)
+  REF      : गिफ्ट रॅप करा.।
+  ASR      : इ ⁇ 
+  CORRECTED: इतकं दे.
+
+[~ UNCHANGED]  Mode: FILL   WER: 0.50 → 0.50  (Δ +0.00)
+  REF      : बॅग द्या.।
+  ASR      : द्या ⁇ 
+  CORRECTED: पाणी द्या
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.67 → 0.67  (Δ +0.00)
+  REF      : प्लॅस्टिकची पिशवी द्या.।
+  ASR      : द्या ⁇ 
+  CORRECTED: द्या
+
+[~ UNCHANGED]  Mode: FILL_REVERTED   WER: 0.67 → 0.67  (Δ +0.00)
+  REF      : कागदाची पिशवी द्या.।
+  ASR      : ी द्या ⁇ 
+  CORRECTED: ी द्या
+
+================================================================================
+END OF REPORT
+================================================================================

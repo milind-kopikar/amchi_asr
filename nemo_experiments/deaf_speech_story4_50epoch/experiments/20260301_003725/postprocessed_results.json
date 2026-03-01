@@ -1,0 +1,2909 @@
+{
+  "summary": {
+    "total_samples": 124,
+    "mean_wer_before": 0.7526,
+    "mean_wer_after": 0.7425,
+    "mean_wer_delta": 0.0101,
+    "improved_samples": 4,
+    "worsened_samples": 0,
+    "unchanged_samples": 120,
+    "perfect_transcriptions_before": 2,
+    "perfect_transcriptions_after": 2,
+    "mode_counts": {
+      "FILL": 76,
+      "RECONSTRUCT": 46,
+      "PASSTHROUGH": 0,
+      "SKIP": 2
+    }
+  },
+  "per_sample": [
+    {
+      "audio": "data/deaf_speech/audio/130.wav",
+      "reference": "दैनंदिन कामे १।",
+      "prediction": "पि ⁇ ",
+      "corrected": "पाणी पिऊ का?",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "पि",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/131.wav",
+      "reference": "दूध किती आहे?।",
+      "prediction": "ू किती ⁇ ",
+      "corrected": "हे किती आहे?",
+      "wer_before": 0.6667,
+      "wer_after": 0.3333,
+      "wer_delta": 0.3333,
+      "mode": "FILL",
+      "word_labels": [
+        [
+          "ू",
+          "GARBLED"
+        ],
+        [
+          "किती",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/132.wav",
+      "reference": "एक लिटर दूध द्या.।",
+      "prediction": "हे दू द्या ⁇ ",
+      "corrected": "हे दूध द्या ना",
+      "wer_before": 0.75,
+      "wer_after": 0.75,
+      "wer_delta": 0.0,
+      "mode": "FILL",
+      "word_labels": [
+        [
+          "हे",
+          "TRUSTED"
+        ],
+        [
+          "दू",
+          "GARBLED"
+        ],
+        [
+          "द्या",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/133.wav",
+      "reference": "चाळीस रुपयांत काय मिळेल?।",
+      "prediction": "प दनय ⁇ ",
+      "corrected": "पाणी द्या ना?",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "प",
+          "GARBLED"
+        ],
+        [
+          "दनय",
+          "UNCERTAIN"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/134.wav",
+      "reference": "पेपर कधी येईल?।",
+      "prediction": "पितीी येईल ⁇ ",
+      "corrected": "पितीी येईल",
+      "wer_before": 0.6667,
+      "wer_after": 0.6667,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "पितीी",
+          "GARBLED"
+        ],
+        [
+          "येईल",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/135.wav",
+      "reference": "बस कधी येईल?।",
+      "prediction": "प कितीी येईल ⁇ ",
+      "corrected": "बस लवकर येईल का",
+      "wer_before": 0.6667,
+      "wer_after": 0.6667,
+      "wer_delta": 0.0,
+      "mode": "FILL",
+      "word_labels": [
+        [
+          "प",
+          "GARBLED"
+        ],
+        [
+          "कितीी",
+          "GARBLED"
+        ],
+        [
+          "येईल",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/136.wav",
+      "reference": "गाडी कोणत्या प्लॅटफॉर्मवर येईल?।",
+      "prediction": "हेटी ⁇ ",
+      "corrected": "हे ठेऊ का?",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "हेटी",
+          "UNCERTAIN"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/137.wav",
+      "reference": "मुलुंडला कुठे उतरायचं?।",
+      "prediction": "ला कं ⁇ ",
+      "corrected": "मला किती?",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "ला",
+          "GARBLED"
+        ],
+        [
+          "कं",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/138.wav",
+      "reference": "चालीमूल्य किती?।",
+      "prediction": "किती ⁇ ",
+      "corrected": "किती",
+      "wer_before": 0.5,
+      "wer_after": 0.5,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "किती",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/139.wav",
+      "reference": "मला निळे जीन्स दाखवा.।",
+      "prediction": "रखख ⁇ ",
+      "corrected": "रक्कम किती आहे?",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "रखख",
+          "UNCERTAIN"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/140.wav",
+      "reference": "हे दूध द्या.।",
+      "prediction": "हे दू द्या ⁇ ",
+      "corrected": "हे दूध द्या गरम",
+      "wer_before": 0.3333,
+      "wer_after": 0.3333,
+      "wer_delta": 0.0,
+      "mode": "FILL",
+      "word_labels": [
+        [
+          "हे",
+          "TRUSTED"
+        ],
+        [
+          "दू",
+          "GARBLED"
+        ],
+        [
+          "द्या",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/141.wav",
+      "reference": "दोन पॅकेट दूध द्या.।",
+      "prediction": "दनू द्या ⁇ ",
+      "corrected": "दनू द्या",
+      "wer_before": 0.5,
+      "wer_after": 0.5,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "दनू",
+          "UNCERTAIN"
+        ],
+        [
+          "द्या",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/142.wav",
+      "reference": "पेपर किती आहे?।",
+      "prediction": "हे किती आहे ⁇ ",
+      "corrected": "हे किती आहे",
+      "wer_before": 0.3333,
+      "wer_after": 0.3333,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "हे",
+          "TRUSTED"
+        ],
+        [
+          "किती",
+          "TRUSTED"
+        ],
+        [
+          "आहे",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/143.wav",
+      "reference": "आजचा पेपर द्या.।",
+      "prediction": "प द्या ⁇ ",
+      "corrected": "प द्या",
+      "wer_before": 0.6667,
+      "wer_after": 0.6667,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "प",
+          "GARBLED"
+        ],
+        [
+          "द्या",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/144.wav",
+      "reference": "पुढचा स्टॉप कोणता?।",
+      "prediction": "पे ⁇ ",
+      "corrected": "याचे पैसे किती?",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "पे",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/145.wav",
+      "reference": "दोन टिकीट द्या.।",
+      "prediction": "ोनट द्या ⁇ ",
+      "corrected": "ोनट द्या",
+      "wer_before": 0.6667,
+      "wer_after": 0.6667,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "ोनट",
+          "UNCERTAIN"
+        ],
+        [
+          "द्या",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/146.wav",
+      "reference": "हे किती आहे?।",
+      "prediction": "हेी किती आहे ⁇ ",
+      "corrected": "हेी किती आहे",
+      "wer_before": 0.0,
+      "wer_after": 0.0,
+      "wer_delta": 0.0,
+      "mode": "SKIP",
+      "word_labels": [
+        [
+          "हेी",
+          "GARBLED"
+        ],
+        [
+          "किती",
+          "TRUSTED"
+        ],
+        [
+          "आहे",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/147.wav",
+      "reference": "किंमत कमी करा.।",
+      "prediction": "ग करा ⁇ ",
+      "corrected": "ग करा",
+      "wer_before": 0.6667,
+      "wer_after": 0.6667,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "ग",
+          "GARBLED"
+        ],
+        [
+          "करा",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/148.wav",
+      "reference": "पन्नास रुपये देऊ शकतो.।",
+      "prediction": "पपये दो शो ⁇ ",
+      "corrected": "दोनशे रुपये?",
+      "wer_before": 1.0,
+      "wer_after": 0.75,
+      "wer_delta": 0.25,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "पपये",
+          "UNCERTAIN"
+        ],
+        [
+          "दो",
+          "GARBLED"
+        ],
+        [
+          "शो",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/149.wav",
+      "reference": "चहा द्या.।",
+      "prediction": "चा द्या ⁇ ",
+      "corrected": "चा द्या",
+      "wer_before": 0.5,
+      "wer_after": 0.5,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "चा",
+          "GARBLED"
+        ],
+        [
+          "द्या",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/150.wav",
+      "reference": "दोन चहा.।",
+      "prediction": "दना ⁇ ",
+      "corrected": "दना",
+      "wer_before": 0.5,
+      "wer_after": 0.5,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT_REVERTED",
+      "word_labels": [
+        [
+          "दना",
+          "UNCERTAIN"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/151.wav",
+      "reference": "पाणी द्या.।",
+      "prediction": "द्या ⁇ ",
+      "corrected": "द्या",
+      "wer_before": 0.5,
+      "wer_after": 0.5,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "द्या",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/152.wav",
+      "reference": "बिल द्या.।",
+      "prediction": "बी द्या ⁇ ",
+      "corrected": "बी द्या",
+      "wer_before": 0.5,
+      "wer_after": 0.5,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "बी",
+          "GARBLED"
+        ],
+        [
+          "द्या",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/153.wav",
+      "reference": "किती झालं?।",
+      "prediction": "कती झाल ⁇ ",
+      "corrected": "कती झाल",
+      "wer_before": 0.0,
+      "wer_after": 0.0,
+      "wer_delta": 0.0,
+      "mode": "SKIP",
+      "word_labels": [
+        [
+          "कती",
+          "UNCERTAIN"
+        ],
+        [
+          "झाल",
+          "UNCERTAIN"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/154.wav",
+      "reference": "मला हे हवं.।",
+      "prediction": "हें ⁇ ",
+      "corrected": "हे पाहिजे.",
+      "wer_before": 0.6667,
+      "wer_after": 0.6667,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "हें",
+          "UNCERTAIN"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/155.wav",
+      "reference": "मला ते हवं नाही.।",
+      "prediction": "हे द ⁇ ",
+      "corrected": "हे काय आहे",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "FILL",
+      "word_labels": [
+        [
+          "हे",
+          "TRUSTED"
+        ],
+        [
+          "द",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/156.wav",
+      "reference": "ठीक आहे.।",
+      "prediction": "पा आहे ⁇ ",
+      "corrected": "पा आहे",
+      "wer_before": 0.5,
+      "wer_after": 0.5,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "पा",
+          "GARBLED"
+        ],
+        [
+          "आहे",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/157.wav",
+      "reference": "थोडं वाट बघा.।",
+      "prediction": "ूट द्या ⁇ ",
+      "corrected": "मला पाणी द्या.",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "FILL",
+      "word_labels": [
+        [
+          "ूट",
+          "GARBLED"
+        ],
+        [
+          "द्या",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/158.wav",
+      "reference": "लवकर करा.।",
+      "prediction": "आा ⁇ ",
+      "corrected": "आहे?",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "आा",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/159.wav",
+      "reference": "बाथरूम कुठे आहे?।",
+      "prediction": "हेुठठे आहे ⁇ ",
+      "corrected": "हेुठठे आहे",
+      "wer_before": 0.6667,
+      "wer_after": 0.6667,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "हेुठठे",
+          "GARBLED"
+        ],
+        [
+          "आहे",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/160.wav",
+      "reference": "स्टेशन इकडेच आहे का?।",
+      "prediction": "इ आहे का ⁇ ",
+      "corrected": "इ आहे का",
+      "wer_before": 0.5,
+      "wer_after": 0.5,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "इ",
+          "GARBLED"
+        ],
+        [
+          "आहे",
+          "TRUSTED"
+        ],
+        [
+          "का",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/161.wav",
+      "reference": "विक्रोली किती वाजता पोहोचेल?।",
+      "prediction": "पि ⁇ ",
+      "corrected": "पिण्यासाठी पाणी आहे का?",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "पि",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/162.wav",
+      "reference": "सीएसटी ला जाणारी बस कोणती?।",
+      "prediction": "हेी आहे का ⁇ ",
+      "corrected": "दुकान आहे का उघडं?",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "FILL",
+      "word_labels": [
+        [
+          "हेी",
+          "GARBLED"
+        ],
+        [
+          "आहे",
+          "TRUSTED"
+        ],
+        [
+          "का",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/163.wav",
+      "reference": "ही बस थानेला जाते का?।",
+      "prediction": "हेीथने ज का ⁇ ",
+      "corrected": "हेीथने ज का",
+      "wer_before": 0.8,
+      "wer_after": 0.8,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "हेीथने",
+          "GARBLED"
+        ],
+        [
+          "ज",
+          "GARBLED"
+        ],
+        [
+          "का",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/164.wav",
+      "reference": "गाडी कधी येईल?।",
+      "prediction": "आतीीईल ⁇ ",
+      "corrected": "आणतील?",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "आतीीईल",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/165.wav",
+      "reference": "प्लॅटफॉर्म बदलला का?।",
+      "prediction": "का ⁇ ",
+      "corrected": "का",
+      "wer_before": 0.6667,
+      "wer_after": 0.6667,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "का",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/166.wav",
+      "reference": "ही गाडी दादरला थांबते का?।",
+      "prediction": "हीसरथ का ⁇ ",
+      "corrected": "हीसरथ का",
+      "wer_before": 0.8,
+      "wer_after": 0.8,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "हीसरथ",
+          "UNCERTAIN"
+        ],
+        [
+          "का",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/167.wav",
+      "reference": "मला छोटा सायझ हवा.।",
+      "prediction": "छे ⁇ ",
+      "corrected": "छे, मला नको आहे.",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "छे",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/168.wav",
+      "reference": "मला मोठा सायझ हवा.।",
+      "prediction": "आे ⁇ ",
+      "corrected": "ओ, किती पैसे झाले?",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "आे",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/169.wav",
+      "reference": "हे मोजून बघू शकतो का?।",
+      "prediction": "हेन का शो का ⁇ ",
+      "corrected": "हेन का शो का",
+      "wer_before": 0.8,
+      "wer_after": 0.8,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "हेन",
+          "UNCERTAIN"
+        ],
+        [
+          "का",
+          "TRUSTED"
+        ],
+        [
+          "शो",
+          "GARBLED"
+        ],
+        [
+          "का",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/170.wav",
+      "reference": "रंग बदलू शकतो का?।",
+      "prediction": "रमूक का ⁇ ",
+      "corrected": "रमूक का",
+      "wer_before": 0.75,
+      "wer_after": 0.75,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "रमूक",
+          "UNCERTAIN"
+        ],
+        [
+          "का",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/171.wav",
+      "reference": "आकार चेक करा.।",
+      "prediction": "आक करा ⁇ ",
+      "corrected": "आक करा",
+      "wer_before": 0.6667,
+      "wer_after": 0.6667,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "आक",
+          "GARBLED"
+        ],
+        [
+          "करा",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/172.wav",
+      "reference": "दोन फूट पाईप द्या.।",
+      "prediction": "फ दोन द्या ⁇ ",
+      "corrected": "फ दोन द्या",
+      "wer_before": 0.75,
+      "wer_after": 0.75,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "फ",
+          "GARBLED"
+        ],
+        [
+          "दोन",
+          "TRUSTED"
+        ],
+        [
+          "द्या",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/173.wav",
+      "reference": "हे मोजून द्या.।",
+      "prediction": "हे द्या ⁇ ",
+      "corrected": "हे द्या",
+      "wer_before": 0.3333,
+      "wer_after": 0.3333,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "हे",
+          "TRUSTED"
+        ],
+        [
+          "द्या",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/174.wav",
+      "reference": "स्क्रू द्या.।",
+      "prediction": "फर द्या ⁇ ",
+      "corrected": "फर द्या",
+      "wer_before": 0.5,
+      "wer_after": 0.5,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "फर",
+          "GARBLED"
+        ],
+        [
+          "द्या",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/175.wav",
+      "reference": "की द्या.।",
+      "prediction": "पी द्या ⁇ ",
+      "corrected": "पी द्या",
+      "wer_before": 0.5,
+      "wer_after": 0.5,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "पी",
+          "GARBLED"
+        ],
+        [
+          "द्या",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/176.wav",
+      "reference": "आयरनिंग कशी करायची सांगा.।",
+      "prediction": "हेा ⁇ ",
+      "corrected": "हे कधी होणार?",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "हेा",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/177.wav",
+      "reference": "उद्या मिळेल का?।",
+      "prediction": "प का ⁇ ",
+      "corrected": "प का",
+      "wer_before": 0.6667,
+      "wer_after": 0.6667,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "प",
+          "GARBLED"
+        ],
+        [
+          "का",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/178.wav",
+      "reference": "हे धुवून द्या.।",
+      "prediction": "हेूध द्या ⁇ ",
+      "corrected": "हेूध द्या",
+      "wer_before": 0.6667,
+      "wer_after": 0.6667,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "हेूध",
+          "GARBLED"
+        ],
+        [
+          "द्या",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/179.wav",
+      "reference": "फोल्ड करून द्या.।",
+      "prediction": "ब आहे द्या ⁇ ",
+      "corrected": "ब आहे द्या",
+      "wer_before": 0.6667,
+      "wer_after": 0.6667,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "ब",
+          "GARBLED"
+        ],
+        [
+          "आहे",
+          "TRUSTED"
+        ],
+        [
+          "द्या",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/180.wav",
+      "reference": "इकडे जातो का?।",
+      "prediction": "हेट का ⁇ ",
+      "corrected": "हेट का",
+      "wer_before": 0.6667,
+      "wer_after": 0.6667,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "हेट",
+          "UNCERTAIN"
+        ],
+        [
+          "का",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/181.wav",
+      "reference": "हे रस्ता बरोबर आहे का?।",
+      "prediction": "हेी आहे का ⁇ ",
+      "corrected": "हेी आहे का",
+      "wer_before": 0.4,
+      "wer_after": 0.4,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "हेी",
+          "GARBLED"
+        ],
+        [
+          "आहे",
+          "TRUSTED"
+        ],
+        [
+          "का",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/182.wav",
+      "reference": "किती वाजले?।",
+      "prediction": "हे किती ⁇ ",
+      "corrected": "हे किती आहे?",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "FILL",
+      "word_labels": [
+        [
+          "हे",
+          "TRUSTED"
+        ],
+        [
+          "किती",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/183.wav",
+      "reference": "उशीर झाला.।",
+      "prediction": "आला ⁇ ",
+      "corrected": "आला",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT_REVERTED",
+      "word_labels": [
+        [
+          "आला",
+          "UNCERTAIN"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/184.wav",
+      "reference": "थांबा.।",
+      "prediction": "हेथांा ⁇ ",
+      "corrected": "हे थांबा",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "हेथांा",
+          "UNCERTAIN"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/185.wav",
+      "reference": "रोख घेतात का?।",
+      "prediction": "ब आहे ⁇ ",
+      "corrected": "पाणी आहे काय",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "FILL",
+      "word_labels": [
+        [
+          "ब",
+          "GARBLED"
+        ],
+        [
+          "आहे",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/186.wav",
+      "reference": "कार्ड चालतो का?।",
+      "prediction": "आमात का ⁇ ",
+      "corrected": "आमात का",
+      "wer_before": 0.6667,
+      "wer_after": 0.6667,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "आमात",
+          "UNCERTAIN"
+        ],
+        [
+          "का",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/187.wav",
+      "reference": "बाकी किती?।",
+      "prediction": "ब क किती ⁇ ",
+      "corrected": "ब क किती",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "ब",
+          "GARBLED"
+        ],
+        [
+          "क",
+          "GARBLED"
+        ],
+        [
+          "किती",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/188.wav",
+      "reference": "भाजी किती?।",
+      "prediction": "ब किती ⁇ ",
+      "corrected": "ब किती",
+      "wer_before": 0.5,
+      "wer_after": 0.5,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "ब",
+          "GARBLED"
+        ],
+        [
+          "किती",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/189.wav",
+      "reference": "आज दूध नाही का?।",
+      "prediction": "आू का ⁇ ",
+      "corrected": "दूध का पाहिजे",
+      "wer_before": 0.75,
+      "wer_after": 0.75,
+      "wer_delta": 0.0,
+      "mode": "FILL",
+      "word_labels": [
+        [
+          "आू",
+          "GARBLED"
+        ],
+        [
+          "का",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/190.wav",
+      "reference": "काळी पिशवी द्या.।",
+      "prediction": "प द्या ⁇ ",
+      "corrected": "प द्या",
+      "wer_before": 0.6667,
+      "wer_after": 0.6667,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "प",
+          "GARBLED"
+        ],
+        [
+          "द्या",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/191.wav",
+      "reference": "पांढरी पिशवी द्या.।",
+      "prediction": "पेि द्या ⁇ ",
+      "corrected": "पेि द्या",
+      "wer_before": 0.6667,
+      "wer_after": 0.6667,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "पेि",
+          "GARBLED"
+        ],
+        [
+          "द्या",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/192.wav",
+      "reference": "उद्या दूध ठेवा.।",
+      "prediction": "पू ⁇ ",
+      "corrected": "पुढील बस कधी?",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "पू",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/193.wav",
+      "reference": "दोन पेपर द्या.।",
+      "prediction": "ोन द्या ⁇ ",
+      "corrected": "ोन द्या",
+      "wer_before": 0.6667,
+      "wer_after": 0.6667,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "ोन",
+          "GARBLED"
+        ],
+        [
+          "द्या",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/194.wav",
+      "reference": "पेपर उशीरा आला का?।",
+      "prediction": "फ का ⁇ ",
+      "corrected": "फ का",
+      "wer_before": 0.75,
+      "wer_after": 0.75,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "फ",
+          "GARBLED"
+        ],
+        [
+          "का",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/195.wav",
+      "reference": "एक टिकीट.।",
+      "prediction": "प ⁇ ",
+      "corrected": "प",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT_REVERTED",
+      "word_labels": [
+        [
+          "प",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/196.wav",
+      "reference": "तीन टिकीट द्या.।",
+      "prediction": "हे दट द्या ⁇ ",
+      "corrected": "हे दट द्या",
+      "wer_before": 0.6667,
+      "wer_after": 0.6667,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "हे",
+          "TRUSTED"
+        ],
+        [
+          "दट",
+          "GARBLED"
+        ],
+        [
+          "द्या",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/197.wav",
+      "reference": "कुठे उतरायचं थानेला?।",
+      "prediction": "पुठेथा ⁇ ",
+      "corrected": "तुम्ही पुठे थांबा",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "पुठेथा",
+          "UNCERTAIN"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/198.wav",
+      "reference": "दादरला कुठे उतरायचं?।",
+      "prediction": "पाठ ⁇ ",
+      "corrected": "पाठ",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT_REVERTED",
+      "word_labels": [
+        [
+          "पाठ",
+          "UNCERTAIN"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/199.wav",
+      "reference": "लोकल कधी येईल?।",
+      "prediction": "फिी ⁇ ",
+      "corrected": "फी किती?",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "फिी",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/200.wav",
+      "reference": "फास्ट लाईन कोणती?।",
+      "prediction": "फा येईती ⁇ ",
+      "corrected": "पाणी येईल का?",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "फा",
+          "GARBLED"
+        ],
+        [
+          "येईती",
+          "UNCERTAIN"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/201.wav",
+      "reference": "स्टॅंड कुठे आहे?।",
+      "prediction": "हेुठे आहे ⁇ ",
+      "corrected": "हेुठे आहे",
+      "wer_before": 0.6667,
+      "wer_after": 0.6667,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "हेुठे",
+          "GARBLED"
+        ],
+        [
+          "आहे",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/202.wav",
+      "reference": "ऑटो थांबतो का इथे?।",
+      "prediction": "ऑट का ⁇ ",
+      "corrected": "ऑट का",
+      "wer_before": 0.5,
+      "wer_after": 0.5,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "ऑट",
+          "GARBLED"
+        ],
+        [
+          "का",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/203.wav",
+      "reference": "ऑटो चाली किती?।",
+      "prediction": "हेऑटकिती ⁇ ",
+      "corrected": "हे ऑटो किती?",
+      "wer_before": 1.0,
+      "wer_after": 0.6667,
+      "wer_delta": 0.3333,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "हेऑटकिती",
+          "UNCERTAIN"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/204.wav",
+      "reference": "हॉस्पिटल इकडेच आहे का?।",
+      "prediction": "फ इ आहे का ⁇ ",
+      "corrected": "फ इ आहे का",
+      "wer_before": 0.5,
+      "wer_after": 0.5,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "फ",
+          "GARBLED"
+        ],
+        [
+          "इ",
+          "GARBLED"
+        ],
+        [
+          "आहे",
+          "TRUSTED"
+        ],
+        [
+          "का",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/205.wav",
+      "reference": "पोलिस स्टेशन कुठे?।",
+      "prediction": "पेनठे ⁇ ",
+      "corrected": "पेण कुठे आहे?",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "पेनठे",
+          "UNCERTAIN"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/206.wav",
+      "reference": "फार्मसी कुठे आहे?।",
+      "prediction": "फी कठे आहे ⁇ ",
+      "corrected": "फी कठे आहे",
+      "wer_before": 0.3333,
+      "wer_after": 0.3333,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "फी",
+          "GARBLED"
+        ],
+        [
+          "कठे",
+          "UNCERTAIN"
+        ],
+        [
+          "आहे",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/207.wav",
+      "reference": "टॅब्लेट द्या.।",
+      "prediction": "द्या ⁇ ",
+      "corrected": "द्या",
+      "wer_before": 0.5,
+      "wer_after": 0.5,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "द्या",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/208.wav",
+      "reference": "दवा द्या.।",
+      "prediction": "हेा द्या ⁇ ",
+      "corrected": "हेा द्या",
+      "wer_before": 0.5,
+      "wer_after": 0.5,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "हेा",
+          "GARBLED"
+        ],
+        [
+          "द्या",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/209.wav",
+      "reference": "डॉक्टर कधी मिळेल?।",
+      "prediction": "ल ⁇ ",
+      "corrected": "किती पैसे झाले?",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "ल",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/210.wav",
+      "reference": "अपॉइंटमेंट आहे.।",
+      "prediction": "ट ⁇ ",
+      "corrected": "टॉयलेट कुठे आहे?",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "ट",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/211.wav",
+      "reference": "माझं नाव लिहा.।",
+      "prediction": "म ⁇ ",
+      "corrected": "मला पाणी पाहिजे.",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "म",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/212.wav",
+      "reference": "फोन नंबर काय?।",
+      "prediction": "ोन ⁇ ",
+      "corrected": "दोन चहा द्या.",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "ोन",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/213.wav",
+      "reference": "एड्रेस काय?।",
+      "prediction": "े ⁇ ",
+      "corrected": "काय पाहिजे?",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "े",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/214.wav",
+      "reference": "सिग्नेचर करा.।",
+      "prediction": "करा ⁇ ",
+      "corrected": "करा",
+      "wer_before": 0.5,
+      "wer_after": 0.5,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "करा",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/215.wav",
+      "reference": "हा पैसा बरोबर आहे का?।",
+      "prediction": "आहे आहे का ⁇ ",
+      "corrected": "आहे आहे का",
+      "wer_before": 0.6,
+      "wer_after": 0.6,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "आहे",
+          "TRUSTED"
+        ],
+        [
+          "आहे",
+          "TRUSTED"
+        ],
+        [
+          "का",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/216.wav",
+      "reference": "चिल्लर द्या.।",
+      "prediction": "हे द्या ⁇ ",
+      "corrected": "हे द्या",
+      "wer_before": 0.5,
+      "wer_after": 0.5,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "हे",
+          "TRUSTED"
+        ],
+        [
+          "द्या",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/217.wav",
+      "reference": "नोट बदला.।",
+      "prediction": " ⁇ ",
+      "corrected": "किती झाले?",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/218.wav",
+      "reference": "या नोटला खोटं आहे का?।",
+      "prediction": "दटलाट का ⁇ ",
+      "corrected": "दटलाट का",
+      "wer_before": 0.8,
+      "wer_after": 0.8,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "दटलाट",
+          "UNCERTAIN"
+        ],
+        [
+          "का",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/219.wav",
+      "reference": "शॉर्टकट कुठे आहे?।",
+      "prediction": "टटुठे आहे ⁇ ",
+      "corrected": "टटुठे आहे",
+      "wer_before": 0.6667,
+      "wer_after": 0.6667,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "टटुठे",
+          "UNCERTAIN"
+        ],
+        [
+          "आहे",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/220.wav",
+      "reference": "हॉटेल इकडेच आहे का?।",
+      "prediction": "टट आहे का ⁇ ",
+      "corrected": "टट आहे का",
+      "wer_before": 0.5,
+      "wer_after": 0.5,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "टट",
+          "GARBLED"
+        ],
+        [
+          "आहे",
+          "TRUSTED"
+        ],
+        [
+          "का",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/221.wav",
+      "reference": "रुम खाली आहे का?।",
+      "prediction": "हे ब का ⁇ ",
+      "corrected": "हे ब का",
+      "wer_before": 0.75,
+      "wer_after": 0.75,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "हे",
+          "TRUSTED"
+        ],
+        [
+          "ब",
+          "GARBLED"
+        ],
+        [
+          "का",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/222.wav",
+      "reference": "एक रुम द्या.।",
+      "prediction": "द्या ⁇ ",
+      "corrected": "द्या",
+      "wer_before": 0.6667,
+      "wer_after": 0.6667,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "द्या",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/223.wav",
+      "reference": "दोन रात्री रहायचं.।",
+      "prediction": "हेोनम ⁇ ",
+      "corrected": "हो ना, मग?",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "हेोनम",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/224.wav",
+      "reference": "बिल किती झालं?।",
+      "prediction": "हे किती ⁇ ",
+      "corrected": "हे किती आहे",
+      "wer_before": 0.6667,
+      "wer_after": 0.6667,
+      "wer_delta": 0.0,
+      "mode": "FILL",
+      "word_labels": [
+        [
+          "हे",
+          "TRUSTED"
+        ],
+        [
+          "किती",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/225.wav",
+      "reference": "चेकआउट किती वाजता?।",
+      "prediction": "फिती ⁇ ",
+      "corrected": "किती?",
+      "wer_before": 1.0,
+      "wer_after": 0.6667,
+      "wer_delta": 0.3333,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "फिती",
+          "UNCERTAIN"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/226.wav",
+      "reference": "लगेच येतो.।",
+      "prediction": "ेत ⁇ ",
+      "corrected": "ेत",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT_REVERTED",
+      "word_labels": [
+        [
+          "ेत",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/227.wav",
+      "reference": "आता येतो.।",
+      "prediction": "्या येत ⁇ ",
+      "corrected": "्या येत",
+      "wer_before": 0.5,
+      "wer_after": 0.5,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT_REVERTED",
+      "word_labels": [
+        [
+          "्या",
+          "UNCERTAIN"
+        ],
+        [
+          "येत",
+          "UNCERTAIN"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/228.wav",
+      "reference": "एक मिनिट थांबा.।",
+      "prediction": "टाांा ⁇ ",
+      "corrected": "जरा पाणी टाका.",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "टाांा",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/229.wav",
+      "reference": "बरोबर आहे.।",
+      "prediction": "हे आहे ⁇ ",
+      "corrected": "हे आहे",
+      "wer_before": 0.5,
+      "wer_after": 0.5,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "हे",
+          "TRUSTED"
+        ],
+        [
+          "आहे",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/230.wav",
+      "reference": "चुकीचं आहे.।",
+      "prediction": "न आहे ⁇ ",
+      "corrected": "न आहे",
+      "wer_before": 0.5,
+      "wer_after": 0.5,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "न",
+          "GARBLED"
+        ],
+        [
+          "आहे",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/231.wav",
+      "reference": "पुन्हा सांगा.।",
+      "prediction": "ह्हाग ⁇ ",
+      "corrected": "हा घ्या",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "ह्हाग",
+          "UNCERTAIN"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/232.wav",
+      "reference": "समजलं नाही.।",
+      "prediction": "ज ⁇ ",
+      "corrected": "ज",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT_REVERTED",
+      "word_labels": [
+        [
+          "ज",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/233.wav",
+      "reference": "मला नीट समजलं नाही.।",
+      "prediction": "ट ⁇ ",
+      "corrected": "दोन तिकीट द्या",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "ट",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/234.wav",
+      "reference": "लिहून द्या.।",
+      "prediction": "द्या ⁇ ",
+      "corrected": "द्या",
+      "wer_before": 0.5,
+      "wer_after": 0.5,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "द्या",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/235.wav",
+      "reference": "पुन्हा लिहा.।",
+      "prediction": "्हा ⁇ ",
+      "corrected": "ह्या कितीला?",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "्हा",
+          "UNCERTAIN"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/236.wav",
+      "reference": "हे बरोबर लिहलं का?।",
+      "prediction": "ी आहे का ⁇ ",
+      "corrected": "ी आहे का",
+      "wer_before": 0.75,
+      "wer_after": 0.75,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "ी",
+          "GARBLED"
+        ],
+        [
+          "आहे",
+          "TRUSTED"
+        ],
+        [
+          "का",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/237.wav",
+      "reference": "मोबाइलवर दाखवा.।",
+      "prediction": "थांख ⁇ ",
+      "corrected": "थांब",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "थांख",
+          "UNCERTAIN"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/238.wav",
+      "reference": "नकाशा दाखवा.।",
+      "prediction": "ख ⁇ ",
+      "corrected": "ख",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT_REVERTED",
+      "word_labels": [
+        [
+          "ख",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/239.wav",
+      "reference": "या जवळ एटीएम आहे का?।",
+      "prediction": "हे द्याट आहे आहे का ⁇ ",
+      "corrected": "हे द्याट आहे आहे का",
+      "wer_before": 0.6,
+      "wer_after": 0.6,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "हे",
+          "TRUSTED"
+        ],
+        [
+          "द्याट",
+          "UNCERTAIN"
+        ],
+        [
+          "आहे",
+          "TRUSTED"
+        ],
+        [
+          "आहे",
+          "TRUSTED"
+        ],
+        [
+          "का",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/240.wav",
+      "reference": "बँक कुठे आहे?।",
+      "prediction": "कुठे आहे ⁇ ",
+      "corrected": "कुठे आहे",
+      "wer_before": 0.3333,
+      "wer_after": 0.3333,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "कुठे",
+          "TRUSTED"
+        ],
+        [
+          "आहे",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/241.wav",
+      "reference": "पोस्ट ऑफिस इकडेच आहे का?।",
+      "prediction": "ल आहे का ⁇ ",
+      "corrected": "ल आहे का",
+      "wer_before": 0.6,
+      "wer_after": 0.6,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "ल",
+          "GARBLED"
+        ],
+        [
+          "आहे",
+          "TRUSTED"
+        ],
+        [
+          "का",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/242.wav",
+      "reference": "पार्सल पाठवायचं.।",
+      "prediction": "हेे ⁇ ",
+      "corrected": "हेे",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT_REVERTED",
+      "word_labels": [
+        [
+          "हेे",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/243.wav",
+      "reference": "रेजिस्टर्ड करा.।",
+      "prediction": "ीा ⁇ ",
+      "corrected": "ीा",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT_REVERTED",
+      "word_labels": [
+        [
+          "ीा",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/244.wav",
+      "reference": "कापसाचे कपडे दाखवा.।",
+      "prediction": "ती द ⁇ ",
+      "corrected": "ती चहा पिते",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "FILL",
+      "word_labels": [
+        [
+          "ती",
+          "TRUSTED"
+        ],
+        [
+          "द",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/245.wav",
+      "reference": "सिल्कचं दाखवा.।",
+      "prediction": "ांख ⁇ ",
+      "corrected": "ांख",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT_REVERTED",
+      "word_labels": [
+        [
+          "ांख",
+          "UNCERTAIN"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/246.wav",
+      "reference": "हे फिट होईल का?।",
+      "prediction": "आहे का ⁇ ",
+      "corrected": "आहे का",
+      "wer_before": 0.75,
+      "wer_after": 0.75,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "आहे",
+          "TRUSTED"
+        ],
+        [
+          "का",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/247.wav",
+      "reference": "ट्राय करू शकतो का?।",
+      "prediction": "ीको का ⁇ ",
+      "corrected": "ीको का",
+      "wer_before": 0.75,
+      "wer_after": 0.75,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "ीको",
+          "UNCERTAIN"
+        ],
+        [
+          "का",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/248.wav",
+      "reference": "रिटर्न मिळेल का?।",
+      "prediction": "ल आहे का ⁇ ",
+      "corrected": "ल आहे का",
+      "wer_before": 0.6667,
+      "wer_after": 0.6667,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "ल",
+          "GARBLED"
+        ],
+        [
+          "आहे",
+          "TRUSTED"
+        ],
+        [
+          "का",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/249.wav",
+      "reference": "एक्सचेंज होईल का?।",
+      "prediction": "ट आहे का ⁇ ",
+      "corrected": "ट आहे का",
+      "wer_before": 0.6667,
+      "wer_after": 0.6667,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "ट",
+          "GARBLED"
+        ],
+        [
+          "आहे",
+          "TRUSTED"
+        ],
+        [
+          "का",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/250.wav",
+      "reference": "गिफ्ट रॅप करा.।",
+      "prediction": "इ ⁇ ",
+      "corrected": "इतकं दे.",
+      "wer_before": 1.0,
+      "wer_after": 1.0,
+      "wer_delta": 0.0,
+      "mode": "RECONSTRUCT",
+      "word_labels": [
+        [
+          "इ",
+          "GARBLED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/251.wav",
+      "reference": "बॅग द्या.।",
+      "prediction": "द्या ⁇ ",
+      "corrected": "पाणी द्या",
+      "wer_before": 0.5,
+      "wer_after": 0.5,
+      "wer_delta": 0.0,
+      "mode": "FILL",
+      "word_labels": [
+        [
+          "द्या",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/252.wav",
+      "reference": "प्लॅस्टिकची पिशवी द्या.।",
+      "prediction": "द्या ⁇ ",
+      "corrected": "द्या",
+      "wer_before": 0.6667,
+      "wer_after": 0.6667,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "द्या",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    },
+    {
+      "audio": "data/deaf_speech/audio/253.wav",
+      "reference": "कागदाची पिशवी द्या.।",
+      "prediction": "ी द्या ⁇ ",
+      "corrected": "ी द्या",
+      "wer_before": 0.6667,
+      "wer_after": 0.6667,
+      "wer_delta": 0.0,
+      "mode": "FILL_REVERTED",
+      "word_labels": [
+        [
+          "ी",
+          "GARBLED"
+        ],
+        [
+          "द्या",
+          "TRUSTED"
+        ],
+        [
+          "⁇",
+          "GARBLED"
+        ]
+      ]
+    }
+  ]
+}

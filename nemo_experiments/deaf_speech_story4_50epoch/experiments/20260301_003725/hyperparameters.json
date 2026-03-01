@@ -1,0 +1,110 @@
+{
+  "model": {
+    "language": "mr",
+    "nemo_model": "models/indicconformer_stt_mr_hybrid_ctc_rnnt_large/indicconformer_stt_mr_hybrid_rnnt_large.nemo",
+    "tokenizer": {
+      "dir": "tokenizers",
+      "model_path": "tokenizers/marathi_tokenizer.model",
+      "type": "bpe"
+    },
+    "preprocessor": {
+      "_target_": "nemo.collections.asr.modules.AudioToMelSpectrogramPreprocessor",
+      "sample_rate": 16000,
+      "normalize": "per_feature",
+      "window_size": 0.025,
+      "window_stride": 0.01,
+      "window": "hann",
+      "features": 80,
+      "n_fft": 512,
+      "frame_splicing": 1,
+      "dither": 1e-05,
+      "pad_to": 16,
+      "stft_conv": false
+    },
+    "encoder": {
+      "_target_": "nemo.collections.asr.modules.ConformerEncoder",
+      "feat_in": 80,
+      "feat_out": -1,
+      "n_layers": 18,
+      "d_model": 512
+    },
+    "loss": {
+      "loss_name": "ctc"
+    },
+    "decoder_type": "ctc"
+  },
+  "trainer": {
+    "devices": 1,
+    "accelerator": "gpu",
+    "max_epochs": 50,
+    "max_steps": -1,
+    "num_nodes": 1,
+    "accumulate_grad_batches": 1,
+    "enable_checkpointing": true,
+    "logger": true,
+    "log_every_n_steps": 5,
+    "check_val_every_n_epoch": 1,
+    "strategy": null
+  },
+  "optim": {
+    "name": "adamw",
+    "lr": 0.0001,
+    "weight_decay": 0.001
+  },
+  "data": {
+    "train_ds": {
+      "manifest_filepath": "data/deaf_speech/train/manifest.jsonl",
+      "sample_rate": 16000,
+      "batch_size": 4,
+      "shuffle": true,
+      "num_workers": 4,
+      "pin_memory": true,
+      "max_duration": 30.0,
+      "min_duration": 0.1,
+      "trim_silence": true,
+      "load_audio": true,
+      "use_start_end_token": false,
+      "return_language_id": false
+    },
+    "validation_ds": {
+      "manifest_filepath": "data/deaf_speech/dev/manifest.jsonl",
+      "sample_rate": 16000,
+      "batch_size": 4,
+      "shuffle": false,
+      "num_workers": 4,
+      "pin_memory": true,
+      "max_duration": 30.0,
+      "min_duration": 0.1,
+      "trim_silence": true,
+      "load_audio": true,
+      "use_start_end_token": false,
+      "return_language_id": false
+    },
+    "test_ds": {
+      "manifest_filepath": "data/deaf_speech/test/manifest.jsonl",
+      "sample_rate": 16000,
+      "batch_size": 4,
+      "shuffle": false,
+      "num_workers": 4,
+      "pin_memory": true,
+      "max_duration": 30.0,
+      "min_duration": 0.1,
+      "trim_silence": true,
+      "load_audio": true,
+      "use_start_end_token": false,
+      "return_language_id": false
+    }
+  },
+  "exp_manager": {
+    "exp_dir": "nemo_experiments/deaf_speech_story4_50epoch",
+    "name": "deaf_speech_story4_50epoch",
+    "create_tensorboard_logger": true,
+    "create_checkpoint_callback": true,
+    "always_save_nemo": true,
+    "checkpoint_callback_params": {
+      "monitor": "val_wer",
+      "mode": "min",
+      "save_top_k": 3
+    }
+  }
+}

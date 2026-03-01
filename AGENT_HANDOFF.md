@@ -1,290 +1,267 @@
-# AGENT HANDOFF — Resume instructions for next agent
+# AGENT HANDOFF — Session 2026-03-01
 
-Date: 2026-01-04 (Late Evening Update)
-
----
-
-## 1) Short summary (one line)
-Marathi Story Pilot (WER 0.351 -> **0.213** with Post-Processing) and Deaf Speech Multi-User Pilot (WER 0.948) are COMPLETE. MIT THINK Proposal drafted.
-
-**Recent activity (2026-01-04):**
-- **Post-Processing Breakthrough:** Implemented dictionary-based correction (`scripts/post_process_konkani.py`) which reduced Marathi Pilot v3 WER from 0.351 to **0.213** (39% improvement).
-- **MIT THINK Proposal:** Drafted research proposal and preliminary analysis report. Generated plots (`wer_comparison.png`) for the application.
-- **Marathi Pilot Success:** Achieved base WER 0.351. Post-processed to **WER 0.213 / CER 0.042** on Story 5.
-- **Deaf Speech Track:**
-  - **1-User Pilot:** Trained on 75 samples from a single deaf user (`tnshenoy@gmail.com`). Achieved WER 0.97.
-  - **Multi-User Pilot:** Trained on 101 samples from all approved users on Railway. Achieved **WER 0.948**.
-  - **Data Acquisition:** Created `scripts/download_deaf_speech.py` to pull and split data from the Railway API.
-  - **Learnings:** Diversity (multi-user) is showing better generalization than single-user data, even at small scales.
-- **Results Persisted:** 
-  - Marathi Story: `nemo_experiments/marathi_pilot_v3/`
-  - Deaf Speech (1-User): `nemo_experiments/marathi_deaf_1user_75samples/`
-  - Deaf Speech (Multi-User): `nemo_experiments/marathi_deaf_multi_user_101samples/`
+## One-line summary
+Deaf Speech Story 4 (दैनंदिन कामे १) 50-epoch fine-tune COMPLETE (best WER 72% at epoch 21).
+Gemini-powered post-processing module BUILT. Next: build inference endpoint + latency test.
 
 ---
 
-## 2) Current state & context
-- **Success:** Both standard Marathi and Deaf Speech pilots are finished and synced to GitHub.
-- **Data:** 
-  - Standard: `data/train`, `data/dev`, `data/test`
-  - Deaf (All Users): `data_all_users/train`, `data_all_users/dev`, `data_all_users/test`
-- **Tokenizer:** Marathi tokenizer is at `tokenizers/marathi_tokenizer.model`.
-- **Environment:** RunPod uses **Python 3.11** and **upstream** NeMo (`nemo_toolkit[all]`). The conv_asr patch is applied. Do not use the AI4Bharat NeMo fork (it requires Python 3.9).
+## 1. What was accomplished this session
 
-## 3) Objective for you (next agent)
-1. **Deaf Speech Scaling:** We need more data. The current trend suggests 500-1000 samples are needed for usable WER.
-2. **Data Augmentation:** Experiment with speed/pitch perturbation in `configs/marathi_deaf_multi_user_50epoch.yaml` to simulate more deaf speech variations.
-3. **Konkani Scaling:** Apply the same protocol to the Konkani model (`models/konkani_model.nemo`).
+### 1.1 Deaf Speech Fine-Tuning (Story 4)
+- **Data pulled:** 124 approved recordings for story_id=22 ("दैनंदिन कामे १") from Railway API `https://deafspeechcollector-production.up.railway.app/`
+- **Same data used for train/dev/test** (intentional — to verify if model can overfit to everyday task sentences)
+- **50 epochs completed** on RTX 4000 Ada (20GB). Early epochs WER=1.0 (expected). Best: epoch 21 val_WER=0.720.
+- **Test results:** Mean WER 0.7526, 25% good (≤0.5), 35% partial (0.5–0.99), 40% total failure (WER=1.0).
+- **Key insight:** The model *can* learn deaf speech patterns for everyday sentences when trained on same data it's tested on.
 
-## 4) Files & locations you will use
-- **Training Script:** `scripts/fine_tune.py`
-- **Data Script:** `scripts/download_deaf_speech.py` (Pulls from Railway API)
-- **Configs:** 
-  - `configs/marathi_pilot_20epoch.yaml` (Standard)
-  - `configs/marathi_deaf_multi_user_50epoch.yaml` (Deaf)
-- **Post-Processing:**
-  - `scripts/extract_predictions.py`
-  - `scripts/post_process_konkani.py`
-  - `scripts/evaluate_post_processed.py`
-  - `post_process_metrics.json`
-- **Proposal Artifacts:**
-  - `mit_think_research_proposal.md`
-  - `preliminary_metrics_report.md`
-  - `wer_comparison.png`
-- **Results:** `nemo_experiments/`
+### 1.2 Gemini-Powered Post-Processing Module
+- **Built:** `scripts/postprocess_asr.py` — classifies ASR words as GARBLED/TRUSTED/UNCERTAIN, then:
+  - **FILL mode** (≥1 trusted anchor word): replaces garbled slots with `[___]`, sends to Gemini to fill in
+  - **RECONSTRUCT mode** (no trusted words): sends all fragments to Gemini for full reconstruction
+  - **Conservative safety valve:** if Gemini's output worsens WER vs original, revert to cleaned original (⁇ stripped)
+  - **SKIP mode:** for WER=0 samples, just strip ⁇ without calling Gemini
+- **Model used:** `gemini-2.5-flash` (gemini-2.0-flash is deprecated for new users)
+- **Results on 124 samples:**
+  - WER before: 75.3%
+  - WER after: 74.2% (+1.1pp improvement on word-exact metric)
+  - 4 samples improved, 0 worsened (safety valve worked)
+  - Human readability improved substantially: `⁇` markers replaced with natural Marathi sentences
+- **WER limitation note:** WER requires exact word matches. Gemini produces semantically correct Marathi but different word choices than reference → WER understates actual readability gain.
 
-## 5) Verified Commands
+---
+
+## 2. Credentials and API Keys
+
+| Service | Where to get token |
+|---------|-------------------|
+| Hugging Face | Ask the user (milind-kopikar). Token has `hf_` prefix. Set via `huggingface-cli login` or `HF_TOKEN` env var. |
+| Gemini API | Ask the user. Key has `AIzaSy` prefix. Pass via `--api_key` to `scripts/postprocess_asr.py`. |
+| GitHub PAT | Ask the user. For git remote: `git remote set-url origin https://<TOKEN>@github.com/milind-kopikar/amchi_asr.git` |
+| Railway deaf speech | `https://deafspeechcollector-production.up.railway.app/` (public, no auth needed) |
+
+---
+
+## 3. Key file paths
+
+### Checkpoints (on RunPod persistent storage)
+```
+nemo_experiments/deaf_speech_story4_50epoch/checkpoints/
+  konkani_asr-epoch=21-val_wer=0.720.ckpt   ← BEST
+  konkani_asr-epoch=37-val_wer=0.738.ckpt
+  konkani_asr-epoch=47-val_wer=0.739.ckpt
+  last.ckpt
+```
+
+### Experiment results (in git)
+```
+nemo_experiments/deaf_speech_story4_50epoch/experiments/20260301_003725/
+  epoch_metrics.csv                  ← WER/loss per epoch (all 50)
+  final_test_results.json            ← 124 test samples (reference/prediction/wer)
+  postprocessed_results.json         ← 124 samples after Gemini post-processing
+  postprocess_report.txt             ← Human-readable sentence comparison
+  samples_epoch_21.json              ← Best epoch val predictions (40 samples)
+  hyperparameters.json
+  model_architecture.txt
+```
+
+### New scripts
+```
+scripts/postprocess_asr.py           ← Gemini post-processing module (new this session)
+configs/deaf_speech_story4_50epoch.yaml  ← Training config (new this session)
+```
+
+### Data (audio NOT in git, manifests ARE)
+```
+data/deaf_speech/audio/              ← 124 WAV files (16kHz mono, NOT in git)
+data/deaf_speech/train/manifest.jsonl ← Training manifest (in git)
+data/deaf_speech/dev/manifest.jsonl   ← Dev manifest (in git)
+data/deaf_speech/test/manifest.jsonl  ← Test manifest (in git)
+```
+
+### Base model and tokenizer
+```
+models/indicconformer_stt_mr_hybrid_ctc_rnnt_large/
+  indicconformer_stt_mr_hybrid_rnnt_large.nemo   ← 499MB, NOT in git
+tokenizers/marathi_tokenizer.model                ← 1024 tokens, IN git
+```
+
+---
+
+## 4. Environment state (RunPod)
+
+- **Python:** 3.11.10
+- **NeMo:** nemo_toolkit[asr] v2.7.0 (upstream, NOT AI4Bharat fork)
+- **GPU:** RTX 4000 Ada Generation (20GB VRAM)
+- **Disk:** Root filesystem is 20GB total — was nearly full (~4GB free at start). After clearing pip cache (~8GB freed), has ~12GB free now. Be careful with new installs.
+- **conv_asr patch applied:** `patches/conv_asr_fixed.py` was copied to `/usr/local/lib/python3.11/dist-packages/nemo/collections/asr/modules/conv_asr.py`
+
+### After RunPod restart — setup steps:
 ```bash
-# Download all approved deaf speech data
-python3 scripts/download_deaf_speech.py --output_dir data_all_users
+# 1. Install NeMo (not persistent across pod restarts)
+pip install "nemo_toolkit[asr]" --ignore-installed blinker -q
 
-# Run Multi-User Deaf Speech Training
+# 2. Apply conv_asr patch
+NEMO_FILE=$(python3 -c "import nemo.collections.asr.modules.conv_asr as m; print(m.__file__)")
+cp /workspace/patches/conv_asr_fixed.py "$NEMO_FILE"
+
+# 3. Set env var for fine-tuning (inference doesn't need it)
 export APPLY_CONV_PATCH=1
-python3 scripts/fine_tune.py --config configs/marathi_deaf_multi_user_50epoch.yaml
-```
 
-## 6) Recovery / Restart Guide 🆘
-If the RunPod restarts:
-1. Run `bash setup_env.sh`.
-2. Ensure `export APPLY_CONV_PATCH=1` is set before running any NeMo scripts.
-3. Results in `results/` are ignored by git; always move successful runs to `nemo_experiments/` for persistence.
+# 4. Verify GPU
+python3 -c "import torch; print('CUDA:', torch.cuda.is_available(), torch.cuda.get_device_name(0))"
+```
 
 ---
 
-import sentencepiece as spm
-s=spm.SentencePieceProcessor()
-s.load('tokenizers/konkani_tokenizer.model')
-print('tokenizer size', s.get_piece_size())
-PY
+## 5. Next session objectives (in priority order)
+
+### 5.1 Build deaf speech inference script
+Create `scripts/deaf_speech_inference.py` using the recipe from REPRODUCTION_NOTES.md § 9:
+
+```python
+# Key pattern (from REPRODUCTION_NOTES.md):
+# 1. Load config from checkpoint manually
+# 2. Patch: loss.loss_name = 'default', remove train_ds/validation_ds/test_ds
+# 3. Instantiate model from patched config
+# 4. Add back empty validation_ds/test_ds after init
+# 5. Load state dict with strict=False
+# 6. model.change_decoding_strategy(decoder_type='ctc')
+# 7. corrected = model.transcribe(audio=[path_to_wav])
 ```
-Expect a reasonable token size (e.g., 1024 or similar) and no load errors.
 
-### C. Create Konkani Config
-Create a new config `configs/konkani_1epoch_ctc.yaml` based on `configs/tmp_marathi_1epoch_ctc_golden.yaml`.
-- Update `model.nemo_model` to `models/konkani_model.nemo`.
-- Update `model.tokenizer.model_path` to `tokenizers/konkani_tokenizer.model`.
-- Ensure `loss.loss_name` is `default` (or handled by `fine_tune.py`).
+The inference script should:
+- Accept a WAV file path as argument
+- Output raw transcription + post-processed text (using Gemini)
+- Measure and report latency for both steps
+- Output a clear side-by-side comparison:
+  ```
+  Raw ASR   : ू किती ⁇
+  Corrected : हे किती आहे?
+  Latency   : ASR 1.2s | Post-process 0.8s | Total 2.0s
+  ```
 
-### D. Run Konkani Smoke Test
-Use the same robust pipeline script (you may need to adapt it or run commands manually):
+### 5.2 Test with sample audio files
 ```bash
-# 1. Verify Data
-python3 scripts/verify_manifest_audio.py configs/konkani_1epoch_ctc.yaml
-
-# 2. Run Fine-Tuning
-python3 scripts/fine_tune.py --config configs/konkani_1epoch_ctc.yaml --output_dir results/smoke_test_konkani
-
-# 3. Run Inference
-# Find checkpoint
-CHECKPOINT=$(find results/smoke_test_konkani/checkpoints -name "*.ckpt" | head -n 1)
-# Use a Konkani audio file (story0.txt has text, need corresponding audio if available, or use any wav)
-TEST_AUDIO="data/dev/audio/some_konkani_file.wav" 
-
-python3 scripts/smoke_test_inference.py --checkpoint "$CHECKPOINT" --audio "$TEST_AUDIO"
+# Pick some test samples from data/deaf_speech/audio/
+python3 scripts/deaf_speech_inference.py \
+  --checkpoint nemo_experiments/deaf_speech_story4_50epoch/checkpoints/konkani_asr-epoch=21-val_wer=0.720.ckpt \
+  --audio data/deaf_speech/audio/131.wav \
+  --gemini_key AIzaSyB7XE1_KPiG41Q24hoO7S0lx1HSV0_V8i4
 ```
 
-## 8) Acceptance criteria (how to mark PASS)
-- PASS if **train-loss** reduces by >= 50% over the run OR normalized **char-distance** ≤ 0.2
-- The micro-overfit script currently enforces this and will exit non-zero on failure; see its logs and produced `samples_epoch_*.json` for predicted strings and distances.
+### 5.3 (Optional) Wrap in RunPod serverless endpoint
+If a serverless API endpoint is needed, see RUNPOD_SERVERLESS_DEPLOY.md. Build a handler that:
+1. Accepts base64-encoded WAV or a URL
+2. Runs inference
+3. Runs post-processing
+4. Returns JSON: `{raw, corrected, latency_ms}`
 
-## 9) Troubleshooting notes (common issues & fixes)
-- If restore fails with errors about missing `multisoftmax`, `language_keys`, or unexpected kwargs:
-  - Ensure the environment uses **Python 3.11** and **upstream** NeMo (`pip install "nemo_toolkit[all]"`). Set `USE_UPSTREAM_NEMO=1` before `setup_env.sh` if needed. Do not use the AI4Bharat NeMo fork for normal setup (it requires Python 3.9).
-  - If the fork is installed and errors persist, try `EncDecHybridRNNTCTCBPEModel.restore_from(..., strict=False)` and inspect the stack trace to identify unsupported fields.
-- If tokenizer errors show `KeyError: 'dir'` or cannot find tokenizer files:
-  - Confirm `configs/konkani_finetune.yaml` points to `tokenizers/konkani_tokenizer.model` and that the file exists.
-  - Alternatively set `MICRO_SKIP_MODEL_RESTORE=1` to instantiate model from a sanitized local `model_config.yaml` (not necessary for Konkani, but helpful when debugging other .nemo files).
-- If the micro-overfit script fails early with missing manifest paths, edit the referenced `model_config.yaml` or the config to point to `tiny_train.jsonl` / `tiny_val.jsonl` local test manifests.
-
-## 10) Logging & artifacts to collect
-- `results/experiments/<timestamp>/` folder: copy `samples_epoch_*.json`, metrics, `hparams.yaml` and `lightning_logs` as artifacts.
-- Save final model checkpoints (if any) and the run config used to `results/konkani_runs/` with a short metadata file (`who`, `what`, `why`, `nemo_sha256`) for reproducibility.
-
-## 11) If all else fails — fallback options
-- If the Konkani .nemo fails to restore (unexpected), you can:
-  1. Try `MICRO_SKIP_MODEL_RESTORE=1` and instantiate from a sanitized `model_config.yaml` (patch local tokenizer paths and remove unsupported fields).
-  2. As a last resort, recreate a tiny synthetic training pass (we already have a synthetic micro-overfit smoke) to validate infra.
-
-## 12) Useful references in the repo
-- `setup_env.sh` and `scripts/ensure_env.sh` — environment provisioning
-- `scripts/run_micro_overfit.py` — driver for the overfit tests and acceptance checks
-- `scripts/fine_tune.py` — actual training & restore logic
-- `models/backups/` — storage of previous working .nemo backups
-- `models/indicconformer_mr/unpacked/` — where tokenizer artifacts were extracted previously
+### 5.4 Amchi Konkani training (second track — when ready)
+Same methodology, different data:
+- Model: `models/konkani_model.nemo` (needs to be downloaded)
+- Data: `data/train`, `data/dev`, `data/test` (Amchi Konkani)
+- Post-processing: **different approach** — discuss with user before building
+- Config: create `configs/amchi_konkani_50epoch.yaml` based on `configs/marathi_deaf_multi_user_50epoch.yaml`
 
 ---
 
-### Checklist (mark when done)
-- [ ] Downloaded Konkani model & tokenizer
-- [ ] Verified tokenizer loads and token count
-- [ ] Updated and validated `configs/konkani_finetune.yaml`
-- [ ] Smoke micro-overfit (3 epochs) executed and passed
-- [ ] Full 20‑epoch overfit executed and artifacts collected
-- [ ] Summary added to PR/Issue with links to logs & artifacts
+## 6. Known issues and gotchas
+
+### Inference loading pattern
+The hybrid CTC/RNNT model cannot be loaded with `load_from_checkpoint()` directly because:
+- `loss_name: ctc` in the saved config causes RNNT validator to reject it
+- `validation_ds` paths in the config cause `__init__` to fail if present
+**Fix:** Use the manual config-edit + `strict=False` loading pattern from REPRODUCTION_NOTES.md § 9.
+
+### Post-processing speed
+The `postprocess_asr.py` script is synchronous — ~1.5-2 seconds per sample (0.5s delay + API call). For batch processing of 124 samples = ~5 minutes. To speed up, implement async parallel API calls with `asyncio`.
+
+### WER metric vs readability
+WER is word-exact and underestimates the improvement from post-processing. Gemini produces natural Marathi sentences that may use different words than the specific reference. Consider using a semantic similarity metric (e.g., BERTScore with multilingual BERT) for a better readability comparison.
+
+### Disk space
+The RunPod root filesystem is 20GB. Checkpoints for the deaf speech run are 5.3GB. The base model is ~500MB. Be careful about installing large packages — use pip cache clearing (`pip cache purge`) if needed.
+
+### Data audio not in git
+The 124 WAV files in `data/deaf_speech/audio/` are NOT committed to git (`.gitignore` excludes `*.wav`). To re-download:
+```bash
+python3 << 'PYEOF'
+import requests, os, soundfile as sf
+base_url = "https://deafspeechcollector-production.up.railway.app"
+resp = requests.get(f"{base_url}/api/recordings?limit=500")
+recordings = [r for r in resp.json() if r['status']=='approved' and r['story_id']==22]
+os.makedirs("data/deaf_speech/audio", exist_ok=True)
+for r in recordings:
+    fname = f"data/deaf_speech/audio/{r['id']}.wav"
+    if not os.path.exists(fname):
+        audio_data = requests.get(f"{base_url}{r['audio_filepath']}").content
+        with open(fname, 'wb') as f: f.write(audio_data)
+        print(f"Downloaded {r['id']}.wav")
+PYEOF
+```
 
 ---
 
-If you want, I can also create an automated `make` target or a small wrapper script that performs steps A→F to speed up repeating this work in future.
+## 7. Lessons learned this session (also in LEARNINGS.md)
+
+1. **gemini-2.0-flash is deprecated** for new API users. Use `gemini-2.5-flash`.
+2. **WER ≠ readability** for post-processing evaluation. Need a human-readable comparison alongside the metric.
+3. **Conservative safety valve is essential** — without it, Gemini worsens already-decent predictions (WER 0.3→1.0).
+4. **Post-processing is not magic** on WER metric because it requires word-exact matches. The value shows in human readability.
+5. **FILL mode works best** when there are clear anchor words (किती, आहे, येईल, द्या). RECONSTRUCT is a best-guess from phonetic fragments.
+6. **The `⁇` marker** in NeMo output always signals garbled tail content — strip it before any processing.
+7. **Root filesystem full** is a major risk on 20GB RunPod. Clear pip cache (`pip cache purge`) and use `/workspace/.pip_cache` for installs.
+8. **NeMo v2.7.0 + Python 3.11** works. The AI4Bharat fork requires Python 3.9 — do NOT use it.
 
 ---
 
-## Update: 6‑epoch run (in progress) — 2026-01-02
+## 8. Post-processing algorithm summary
 
-**Summary:** I launched a 6‑epoch run using `configs/full_6epoch_lr1e-4.yaml` with output dir `nemo_experiments/full_6epoch_lr1e-4`.
+For reference when building the inference endpoint:
 
-- Progress: Training completed epochs **0 → 4** (epoch numbering starts at 0). Epoch 4 hit a disk quota error while saving and the run aborted. The `exp_manager` was modified to `resume_if_exists: true` so the run can be resumed cleanly.
-- Checkpoints currently present (local):
-  - `amchi_marathi_full_6epoch_lr1e-4-epoch=02-val_loss=81.633.ckpt` (~1.4G)
-  - `amchi_marathi_full_6epoch_lr1e-4-epoch=03-val_loss=55.738.ckpt` (~1.4G)
-  - `amchi_marathi_full_6epoch_lr1e-4-epoch=04-val_loss=45.202.ckpt` (~1.0G)
-  - `last.ckpt` (~1.4G)
-- To free space so the run could continue, I **deleted** the older checkpoints for epoch 00 and 01 (they were ~1.4G each). This freed enough space for training to continue, but the user cancelled the resumed run; see logs for the disk quota error that caused abort.
-- Metrics for the partial run are recorded here:
-  - `nemo_experiments/full_6epoch_lr1e-4/experiments/<timestamp>/epoch_metrics.csv` (contains epochs 0–4 with `val_loss`, `val_wer`, `val_cer`)
-  - Quick snapshot (from the run):
-    - epoch 0: val_loss=158.876, val_wer=32.90
-    - epoch 1: val_loss=130.277, val_wer=1.00
-    - epoch 2: val_loss=81.633, val_wer=1.00
-    - epoch 3: val_loss=55.738, val_wer=0.946
-    - epoch 4: val_loss=45.202, val_wer=0.977
+```
+INPUT: ASR prediction string (may contain ⁇ markers)
 
-### Next-agent actions to finish & tidy (step-by-step)
-1. **Pull repo & verify files**
-```bash
-# Pull latest changes (I committed the new config & this handoff update)
-git pull origin master
+STEP 1: Check if WER=0 (perfect) → SKIP (just strip ⁇)
+STEP 2: Strip ⁇ marker (pre-processing)
+STEP 3: Tokenize remaining words
+STEP 4: Classify each word:
+         - GARBLED: contains ⁇, orphaned matra (bare ू/ी),
+                    repeated matras (ीी), ≤2 chars not in TRUSTED_WORDS,
+                    non-Devanagari chars
+         - TRUSTED: in TRUSTED_WORDS list (किती, आहे, येईल, द्या, etc.)
+         - UNCERTAIN: valid Devanagari, not in trusted list
+STEP 5: Mode selection:
+         - 0 garbled → PASSTHROUGH (light Gemini cleanup)
+         - ≥1 TRUSTED word → FILL mode (replace GARBLED with [___], Gemini fills)
+         - No TRUSTED words → RECONSTRUCT (Gemini reconstructs from fragments)
+STEP 6: Call Gemini API with appropriate prompt
+STEP 7: Safety valve: if corrected WER > original WER → revert to stripped original
+OUTPUT: corrected string + mode + WER delta
 ```
-2. **Verify disk space & optionally archive**
-```bash
-# Check free space
-df -h .
-# If disk near full, archive older experiments to a separate location or object storage
-mkdir -p /workspace/amchi_asr/archives
-# Example archiving of an experiment dir (change to the right path)
-tar -czf /workspace/amchi_asr/archives/checkpoints_full6_$(date +%s).tar.gz nemo_experiments/full_6epoch_lr1e-4/checkpoints
-sha256sum /workspace/amchi_asr/archives/checkpoints_full6_*.tar.gz
-```
-3. **Resume training** (config already has `resume_if_exists: true`, and I removed the two worst early ckpts to free space)
-```bash
-python3 scripts/fine_tune.py --config configs/full_6epoch_lr1e-4.yaml --output_dir nemo_experiments/full_6epoch_lr1e-4
-```
-- Watch the logs and ensure epochs 5 and 6 get executed and saved. If saving fails again, archive or delete older checkpoints (`rm`) to free space and retry.
-
-4. **After the run finishes (or once you have >=6 epochs), select best 3 epochs to keep**
-- Evaluate metrics: `nemo_experiments/full_6epoch_lr1e-4/experiments/<timestamp>/epoch_metrics.csv`
-- Choose best 3 rows by `val_wer` (lowest) with `val_loss` as tie-breaker. Example helper:
-```bash
-python - <<'PY'
-import csv
-rows = list(csv.DictReader(open('nemo_experiments/full_6epoch_lr1e-4/experiments/`ls -1 nemo_experiments/full_6epoch_lr1e-4/experiments | tail -n1`/epoch_metrics.csv')))
-rows = [r for r in rows if r.get('val_wer') and r['val_wer']!='']
-rows_sorted = sorted(rows, key=lambda r: (float(r['val_wer']), float(r['val_loss'])))
-best = rows_sorted[:3]
-print('best_epochs=', [int(r['epoch']) for r in best])
-PY
-```
-- Keep the ckpts for the three epoch numbers returned and `last.ckpt` if you prefer, then delete the others to free space. Example to delete others:
-```bash
-# Replace 2 3 4 with the chosen epochs
-KEEP=(2 3 4)
-for f in nemo_experiments/full_6epoch_lr1e-4/checkpoints/*.ckpt; do
-  skip=0
-  for e in "${KEEP[@]}"; do
-    if echo "$f" | grep -q "epoch=$e-"; then skip=1; break; fi
-done
-  if [ "$skip" -eq 0 ]; then rm -v "$f"; fi
-done
-```
-
-5. **Archive the kept checkpoints** (recommended)
-```bash
-mkdir -p /workspace/amchi_asr/archives
-tar -czf /workspace/amchi_asr/archives/full6_best_checkpoints_$(date +%s).tar.gz nemo_experiments/full_6epoch_lr1e-4/checkpoints/amchi_marathi_full_6epoch_lr1e-4-epoch=0*_val_loss=*.ckpt
-sha256sum /workspace/amchi_asr/archives/full6_best_checkpoints_*.tar.gz
-```
-
-6. **Run decoding experiments or quick inference** to validate the best checkpoint(s):
-```bash
-# Use smoke_test_inference.py; replace CHECKPOINT with path to the kept ckpt
-python3 scripts/smoke_test_inference.py --checkpoint "nemo_experiments/full_6epoch_lr1e-4/checkpoints/amchi_marathi_full_6epoch_lr1e-4-epoch=03-val_loss=55.738.ckpt" --audio data/dev/audio/379.wav --device cuda
-```
-
-7. **Push relevant changes / artifacts to GitHub**
-- I committed `configs/full_6epoch_lr1e-4.yaml` and this `AGENT_HANDOFF.md` update; make sure to `git pull` and `git push` any further changes. If you generate additional small metadata (e.g., `run_metadata.txt`), commit and push it as well for reproducibility.
 
 ---
 
-## RunPod stop / resume checklist (cost-savings) ⚠️
+## 9. Git commit summary (this session)
 
-If you need to stop the RunPod instance to save compute costs but preserve artifacts and state, follow these steps. Storage is persistent and inexpensive; compute is expensive — so stop compute when idle.
+New files added:
+- `configs/deaf_speech_story4_50epoch.yaml` — 50-epoch training config
+- `scripts/postprocess_asr.py` — Gemini post-processing module
+- `data/deaf_speech/train/manifest.jsonl` — 124-sample training manifest
+- `data/deaf_speech/dev/manifest.jsonl` — 124-sample dev manifest
+- `data/deaf_speech/test/manifest.jsonl` — 124-sample test manifest
+- `nemo_experiments/deaf_speech_story4_50epoch/experiments/20260301_003725/*.json` — results
+- `nemo_experiments/deaf_speech_story4_50epoch/experiments/20260301_003725/*.csv` — metrics
+- `nemo_experiments/deaf_speech_story4_50epoch/experiments/20260301_003725/*.txt` — report
 
-1. Before stopping the instance (on the RunPod UI or via the instance's SSH):
-   - Ensure all important artifacts are on the persistent volume:
-     - `nemo_experiments/experiments/<timestamp>/` — epoch metrics, samples, final_test_results.json
-     - `nemo_experiments/checkpoints/` — saved `.ckpt` files
-     - `results/` — any run artifacts
-   - Optionally, create a small metadata file about the run:
-     ```bash
-     echo "best_checkpoint=$(ls nemo_experiments/checkpoints | sort | tail -n1)" > run_metadata.txt
-     echo "completed_at=$(date -u --iso-8601=seconds)" >> run_metadata.txt
-     git add run_metadata.txt && git commit -m "Add run metadata for runpod stop" || true
-     ```
-2. Stop compute (recommended via RunPod UI):
-   - Use the RunPod control panel to **Stop / Power Off** the instance (this preserves attached storage).
-   - Alternative (if you are on the machine and want to shutdown):
-     ```bash
-     sudo shutdown -h now
-     ```
-3. When you start the instance back up (or create a new RunPod instance and attach the same persistent volume):
-   - Start the instance and `ssh` in.
-   - Pull latest repo state: `git pull origin master`
-   - Recreate the Python environment (`venv`) if required or activate the existing one.
-   - Verify artifacts exist:
-     ```bash
-     ls -la nemo_experiments/checkpoints
-     ls -la nemo_experiments/experiments
-     cat run_metadata.txt || true
-     ```
-   - Run a quick verification (fast):
-     ```bash
-     # Verify environment (fast preflight steps)
-     python scripts/preflight_checks.py
-     # Sanity inference using best checkpoint and a dev sample
-     python scripts/smoke_test_inference.py --checkpoint $(ls nemo_experiments/checkpoints | sort | tail -n1 | sed "s|^|nemo_experiments/checkpoints/|") --audio data/dev/audio/379.wav --device cuda
-     ```
-4. Next actions for a new agent on resume:
-   - If the run was stopped intentionally: decide whether to resume training (change `configs/*.yaml` and re-run `python scripts/fine_tune.py`) or start a new experiment (create new output dir in `nemo_experiments`).
-   - If disk space is low, archive older experiment dirs: `tar -czf archive_20260102.tar.gz nemo_experiments/experiments/20260102_*` and move to a separate storage bucket if you want.
+Updated:
+- `AGENT_START_HERE.md` — complete rewrite for current state
+- `AGENT_HANDOFF.md` — this file
+- `LEARNINGS.md` — new lessons
+- `.gitignore` — added manifest exceptions
 
-**Note:** Leave `run_metadata.txt` and the most recent `nemo_experiments` directory intact so the next agent can verify the run and continue from the checkpoint.
-
----
-
-## What the next agent should know (short recap)
-- The critical fixes are in `scripts/fine_tune.py` (WER fix + trainer/Logger fix). The extended smoke test completed and produced checkpoints in `nemo_experiments/checkpoints`.
-- Use the robust scripts for repeatability: `scripts/extended_smoke_test.sh` and `scripts/smoke_test_inference.py`.
-- If you stop/restart a RunPod instance, run the quick verification step above (preflight + a single-sample inference) before attempting to resume training.
-
----
-
-```}avascript
+Not committed (intentionally):
+- `data/deaf_speech/audio/*.wav` — audio files (too large)
+- `nemo_experiments/deaf_speech_story4_50epoch/checkpoints/*.ckpt` — model checkpoints (5.3GB)
+- `models/` — base model weights

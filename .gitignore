@@ -30,6 +30,7 @@ enhanced_corpus_v2/
 enhanced_corpus_v3/
 final_corpus/
 data/
+!data/**/manifest.jsonl
 models/
 
 # Results: track metrics and small artifacts; ignore heavy checkpoints

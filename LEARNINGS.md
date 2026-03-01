@@ -39,3 +39,71 @@ This document records what we learned from running the preflight suite, smoke te
 ---
 
 **See also:** `MASTER_REPRODUCTION_GUIDE.md`, `REPRODUCTION_NOTES.md`, `results/smoke_tests/README.md`, `scripts/README_SMOKE.md`.
+
+---
+
+## 5. Deaf Speech Fine-Tuning (Session 2026-03-01)
+
+### Environment
+- `nemo_toolkit[asr]` v2.7.0 works with Python 3.11. Install with `--ignore-installed blinker` to avoid conflicts.
+- Do NOT install `nemo_toolkit[all]` — the root filesystem on RunPod is only 20GB and `[all]` fills it up. Use `[asr]` only.
+- Clear pip cache before large installs: `pip cache purge` (frees ~8GB on a typical RunPod instance).
+- Use `PIP_CACHE_DIR=/workspace/.pip_cache` for all pip installs to keep cache on the larger workspace volume.
+
+### Training
+- Best checkpoint for deaf speech Story 4 arrived at epoch 21 (val_WER=0.720). After epoch 21, the model oscillated without improving — overfitting to training data, consistent with 124-sample dataset.
+- `log_every_n_steps: 5` is appropriate for small datasets (124 samples). With batch_size=4, each epoch = 31 steps.
+- The same 124 samples used for train/dev/test is intentional for an "overfit verification" experiment.
+- WER=1.0 for first 6-7 epochs is normal for deaf speech — the model is starting from hearing speech weights and needs time to adjust to atypical speech patterns.
+
+### Inference loading (CRITICAL)
+Loading a fine-tuned checkpoint from disk is NOT straightforward. The config inside the checkpoint has:
+1. `loss_name: ctc` — which the RNNT validator rejects on load
+2. Train/dev/test dataset paths that don't exist in inference context
+
+**Solution (from REPRODUCTION_NOTES.md § 9):**
+```python
+# Load config from checkpoint without running it
+ckpt = torch.load(ckpt_path, map_location='cpu', weights_only=False)
+cfg = ckpt['hyper_parameters']['cfg']
+# Patch config for inference
+cfg.loss.loss_name = 'default'
+del cfg.train_ds, cfg.validation_ds, cfg.test_ds
+# Instantiate with patched config
+model = EncDecHybridRNNTCTCBPEModel(cfg=cfg, trainer=None)
+# Add empty ds configs back (transcribe() needs them)
+cfg.validation_ds = OmegaConf.create({})
+cfg.test_ds = OmegaConf.create({})
+# Load weights
+model.load_state_dict(ckpt['state_dict'], strict=False)
+# Force CTC decoding
+model.change_decoding_strategy(decoder_type='ctc')
+# Transcribe
+result = model.transcribe(audio=['path/to/audio.wav'])
+```
+
+### Post-Processing with Gemini
+- **gemini-2.0-flash is deprecated** for new API key users (as of early 2026). Use `gemini-2.5-flash`.
+- The `google-generativeai` package is deprecated. Use the new `google-genai` package: `pip install google-genai`.
+- Synchronous Gemini calls: ~1-2 seconds each. For 124 samples with 0.5s delay: ~5 minutes. Parallelize with `asyncio` for faster batch processing.
+- **The conservative safety valve** (revert to original if Gemini worsens WER) is essential. Without it, Gemini changes words in already-correct predictions.
+- **WER metric understates post-processing value** because WER requires word-exact matches. Even when Gemini produces the correct meaning (e.g. `बस लवकर येईल का?` ≈ `बस कधी येईल?`), WER counts it as wrong.
+- The `⁇` marker in NeMo CTC output signals "cannot decode this token." Strip it before any processing or WER calculation.
+
+### .gitignore for data manifests
+The `data/` directory is in `.gitignore` to exclude large audio files. But manifest files (*.jsonl) are small text files that SHOULD be tracked. Add exceptions:
+```
+# In .gitignore:
+data/
+!data/**/manifest.jsonl
+```
+
+---
+
+## 6. What We Do Not Push to Git
+
+- **Audio files:** `data/**/*.wav`, `data/**/*.mp3`, etc. — too large.
+- **Model weights:** `*.nemo`, `*.ckpt`, `*.pt`, `*.pth` — too large. Use HuggingFace Hub or RunPod persistent storage.
+- **Python environments:** `venv/`, `.venv/`, pip cache.
+- **Experiment checkpoints:** `nemo_experiments/**/*.ckpt` — excluded by `.gitignore`.
+- **DO commit:** `nemo_experiments/**/*.json`, `*.csv`, `*.txt` — lightweight result artifacts are valuable and tracked.
