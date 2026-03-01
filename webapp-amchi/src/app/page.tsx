@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
@@ -193,6 +194,19 @@ export default function Home() {
     <main className="min-h-screen bg-gray-50 py-6 px-4">
       <div className="max-w-2xl mx-auto space-y-5">
 
+        {/* ── Nav ── */}
+        <nav className="flex gap-1 border-b border-gray-200 pb-0">
+          <span className="px-3 py-1.5 text-sm font-medium text-indigo-600 border-b-2 border-indigo-600 -mb-px">
+            Demo
+          </span>
+          <Link
+            href="/results"
+            className="px-3 py-1.5 text-sm font-medium text-gray-500 hover:text-gray-700 border-b-2 border-transparent -mb-px transition-colors"
+          >
+            Results
+          </Link>
+        </nav>
+
         {/* ── Header ── */}
         <header className="text-center space-y-1 pb-1">
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
@@ -312,7 +326,7 @@ export default function Home() {
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-lg leading-none">🔴</span>
                   <span className="text-sm font-semibold text-gray-700">
-                    Raw ASR Output
+                    Fine-Tuned ASR Output
                   </span>
                 </div>
                 <div className="min-h-[3rem] text-gray-800">
@@ -334,7 +348,7 @@ export default function Home() {
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-lg leading-none">✅</span>
                   <span className="text-sm font-semibold text-gray-700">
-                    Post-processed Output
+                    Post-Processed Output
                   </span>
                 </div>
                 <div className="devanagari min-h-[3rem] text-gray-900 text-lg leading-relaxed">
