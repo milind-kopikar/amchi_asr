@@ -1,8 +1,9 @@
-# AGENT HANDOFF — Session 2026-03-01
+# AGENT HANDOFF — Session 2026-03-01 (updated end-of-day)
 
 ## One-line summary
-Deaf Speech Story 4 (दैनंदिन कामे १) 50-epoch fine-tune COMPLETE (best WER 72% at epoch 21).
-Gemini-powered post-processing module BUILT. Next: build inference endpoint + latency test.
+Deaf Speech Story 4 fine-tune COMPLETE. Gemini post-processing BUILT. Inference script BUILT
+(`scripts/deaf_speech_inference.py`). ASR tested ✓ (0.27s, `ू किती ⁇`). Next: run full
+inference+postprocess test with a valid Gemini API key.
 
 ---
 
@@ -116,8 +117,34 @@ python3 -c "import torch; print('CUDA:', torch.cuda.is_available(), torch.cuda.g
 
 ## 5. Next session objectives (in priority order)
 
-### 5.1 Build deaf speech inference script
-Create `scripts/deaf_speech_inference.py` using the recipe from REPRODUCTION_NOTES.md § 9:
+### 5.0 What is already done (no need to redo)
+- `scripts/deaf_speech_inference.py` is BUILT and TESTED (ASR part works, 0.27s latency).
+- The inference script:
+  - Loads checkpoint with config-patch + strict=False + CTC strategy
+  - Transcribes a WAV file and measures ASR latency
+  - Calls Gemini post-processing (from `postprocess_asr.py`) and measures PP latency
+  - Prints a clean side-by-side summary
+- Tested on `data/deaf_speech/audio/131.wav` → raw ASR: `ू किती ⁇` in 0.27s
+- Post-processing failed only because the old Gemini API key in `postprocess_asr.py` expired.
+  **To test: just pass a valid `--gemini_key`.**
+
+### 5.1 Run the full end-to-end test (first thing tomorrow)
+```bash
+python3 scripts/deaf_speech_inference.py \
+  --checkpoint nemo_experiments/deaf_speech_story4_50epoch/checkpoints/konkani_asr-epoch=21-val_wer=0.720.ckpt \
+  --audio data/deaf_speech/audio/131.wav \
+  --gemini_key <YOUR_FRESH_GEMINI_KEY>
+```
+Expected output:
+```
+  Raw ASR   : ू किती ⁇
+  Corrected : हे किती आहे?  [FILL]
+  Latency   : ASR 0.27s | Post-process ~1.5s | Total ~1.8s
+```
+Try a few more audio files (132.wav, 133.wav etc.) to see the range of outputs.
+
+### 5.2 Old 5.1 — Build deaf speech inference script (DONE)
+~~Create `scripts/deaf_speech_inference.py` using the recipe from REPRODUCTION_NOTES.md § 9:~~
 
 ```python
 # Key pattern (from REPRODUCTION_NOTES.md):
