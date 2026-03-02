@@ -26,6 +26,84 @@ function mean(values: number[]) {
   return values.reduce((a, b) => a + b, 0) / values.length;
 }
 
+// ─── Wilcoxon Signed-Rank Test ───────────────────────────────────────────────
+// Two-tailed, normal approximation with continuity correction + tie handling.
+// Returns: W+ (sum of positive ranks), W- (sum of negative ranks),
+//          n (non-zero pairs), z (test statistic), p (two-tailed), r (effect size).
+
+interface WilcoxonResult {
+  Wplus: number;
+  Wminus: number;
+  n: number;
+  nZeros: number;
+  z: number;
+  p: number;
+  r: number;
+}
+
+function erf(x: number): number {
+  // Abramowitz & Stegun approximation (max error < 1.5e-7)
+  const a = [0.254829592, -0.284496736, 1.421413741, -1.453152027, 1.061405429];
+  const p = 0.3275911;
+  const sign = x < 0 ? -1 : 1;
+  const t = 1 / (1 + p * Math.abs(x));
+  let poly = 0, tp = t;
+  for (const ai of a) { poly += ai * tp; tp *= t; }
+  return sign * (1 - poly * Math.exp(-x * x));
+}
+
+function normalSurv(z: number): number {
+  return 0.5 * (1 - erf(z / Math.sqrt(2)));
+}
+
+function wilcoxonSignedRank(before: number[], after: number[]): WilcoxonResult {
+  const diffs = before.map((b, i) => b - after[i]);
+  const nonZero = diffs.filter((d) => Math.abs(d) > 1e-9);
+  const nZeros = diffs.length - nonZero.length;
+  const n = nonZero.length;
+
+  if (n === 0) return { Wplus: 0, Wminus: 0, n: 0, nZeros, z: 0, p: 1, r: 0 };
+
+  // Sort by |diff|, preserving original index for rank assignment
+  const items = nonZero.map((d, i) => ({ d, abs: Math.abs(d), orig: i }));
+  items.sort((a, b) => a.abs - b.abs);
+
+  const ranks = new Array<number>(n);
+  let i = 0;
+  while (i < n) {
+    let j = i;
+    while (j < n - 1 && Math.abs(items[j + 1].abs - items[j].abs) < 1e-9) j++;
+    const avgRank = (i + j) / 2 + 1; // 1-indexed average rank
+    for (let k = i; k <= j; k++) ranks[items[k].orig] = avgRank;
+    i = j + 1;
+  }
+
+  let Wplus = 0, Wminus = 0;
+  for (let i = 0; i < n; i++) {
+    if (nonZero[i] > 0) Wplus += ranks[i];
+    else Wminus += ranks[i];
+  }
+
+  // Tie correction for variance
+  const tieMap: Record<string, number> = {};
+  for (const it of items) {
+    const key = it.abs.toFixed(8);
+    tieMap[key] = (tieMap[key] ?? 0) + 1;
+  }
+  const tieCorr = Object.values(tieMap).reduce((s, t) => s + (t ** 3 - t), 0) / 48;
+
+  const mu = (n * (n + 1)) / 4;
+  const sigma = Math.sqrt((n * (n + 1) * (2 * n + 1)) / 24 - tieCorr);
+
+  const W = Math.min(Wplus, Wminus);
+  const Wadj = W + (W < mu ? 0.5 : -0.5); // continuity correction
+  const z = (Wadj - mu) / sigma;
+  const p = 2 * normalSurv(Math.abs(z));
+  const r = Math.abs(z) / Math.sqrt(n); // effect size
+
+  return { Wplus, Wminus, n, nZeros, z, p, r };
+}
+
 // ─── SVG Histogram ──────────────────────────────────────────────────────────
 
 interface HistogramProps {
@@ -235,6 +313,10 @@ export default function ResultsPage() {
   const meanCerBefore = Math.round(mean(cerBefore) * 100);
   const meanCerAfter = Math.round(mean(cerAfter) * 100);
 
+  // Wilcoxon tests — computed at build time (server component)
+  const werTest = wilcoxonSignedRank(werBefore, werAfter);
+  const cerTest = wilcoxonSignedRank(cerBefore, cerAfter);
+
   return (
     <main className="min-h-screen bg-gray-50 py-6 px-4">
       <div className="max-w-3xl mx-auto space-y-6">
@@ -343,6 +425,104 @@ export default function ResultsPage() {
               meanColor="#059669"
               xAxisLabel="CER"
             />
+          </div>
+        </section>
+
+        {/* ── Statistical Analysis ── */}
+        <section className="space-y-4">
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+            Statistical analysis — Wilcoxon Signed-Rank Test
+          </p>
+          <p className="text-xs text-gray-500">
+            Paired non-parametric test comparing each sample before and after
+            post-processing. H₀: no change in median error rate. Two-tailed,
+            normal approximation with continuity correction and tie handling.
+            Effect size r = |z| / √n.
+          </p>
+
+          {/* Results table */}
+          <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
+            <table className="w-full text-sm bg-white">
+              <thead>
+                <tr className="border-b border-gray-100 text-xs text-gray-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-2.5">Metric</th>
+                  <th className="text-right px-3 py-2.5">n pairs</th>
+                  <th className="text-right px-3 py-2.5">W⁺ (↓ better)</th>
+                  <th className="text-right px-3 py-2.5">W⁻ (↑ worse)</th>
+                  <th className="text-right px-3 py-2.5">z</th>
+                  <th className="text-right px-3 py-2.5">p (two-tailed)</th>
+                  <th className="text-right px-3 py-2.5">r</th>
+                  <th className="text-left px-4 py-2.5">Result</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {[
+                  { label: "WER", test: werTest, direction: "WER improved in 3/37 samples" },
+                  { label: "CER", test: cerTest, direction: "CER changed in 10/37 samples" },
+                ].map(({ label, test, direction }) => {
+                  const sig = test.p < 0.05;
+                  const improved = test.Wplus > test.Wminus; // more rank weight on improvements
+                  return (
+                    <tr key={label} className="text-gray-700">
+                      <td className="px-4 py-3 font-semibold">{label}</td>
+                      <td className="text-right px-3 py-3 text-gray-500">
+                        {test.n}
+                        {test.nZeros > 0 && (
+                          <span className="text-gray-400"> (+{test.nZeros} tied)</span>
+                        )}
+                      </td>
+                      <td className="text-right px-3 py-3">{test.Wplus.toFixed(1)}</td>
+                      <td className="text-right px-3 py-3">{test.Wminus.toFixed(1)}</td>
+                      <td className="text-right px-3 py-3">{test.z.toFixed(2)}</td>
+                      <td className="text-right px-3 py-3 font-mono">
+                        <span className={sig ? (improved ? "text-emerald-700 font-semibold" : "text-amber-700 font-semibold") : "text-gray-500"}>
+                          {test.p < 0.001 ? "< 0.001" : test.p.toFixed(3)}
+                        </span>
+                      </td>
+                      <td className="text-right px-3 py-3 text-gray-500">{test.r.toFixed(2)}</td>
+                      <td className="px-4 py-3">
+                        {!sig ? (
+                          <span className="inline-flex items-center gap-1 text-xs text-gray-500 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded-full">
+                            Not significant
+                          </span>
+                        ) : improved ? (
+                          <span className="inline-flex items-center gap-1 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                            ✓ Significant improvement
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                            ⚠ Significant degradation
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Interpretation callout */}
+          <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-4 space-y-2 text-sm">
+            <p className="font-semibold text-indigo-800">Interpretation</p>
+            <ul className="space-y-1.5 text-indigo-700 text-xs leading-relaxed list-none">
+              <li>
+                <span className="font-medium">WER (p = {werTest.p.toFixed(3)}, not significant):</span>{" "}
+                The safety valve reverted {werTest.nZeros}/{n} samples where Gemini would have
+                worsened WER, leaving only {werTest.n} samples with any WER change. With n = {werTest.n}
+                effective pairs, the test is underpowered — a minimum of ~6 pairs is needed to
+                reach p &lt; 0.05. The safety valve successfully prevented WER regression but
+                also limits detectable improvement.
+              </li>
+              <li>
+                <span className="font-medium">CER (p = {cerTest.p.toFixed(3)}, significant):</span>{" "}
+                W⁻ ({cerTest.Wminus.toFixed(0)}) ≫ W⁺ ({cerTest.Wplus.toFixed(0)}) — when
+                post-processing does change text, it introduces character-level drift
+                (substitutions and insertions) even when the overall word-level output is
+                preserved by the safety valve. This is a known limitation of LLM-based
+                correction on low-resource scripts.
+              </li>
+            </ul>
           </div>
         </section>
 
