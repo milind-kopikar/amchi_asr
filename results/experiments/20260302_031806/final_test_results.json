@@ -1,0 +1,778 @@
+{
+  "best_checkpoint": "/workspace/results/checkpoints/konkani_asr-epoch=47-val_wer=0.532.ckpt",
+  "summary": {
+    "total_samples": 104,
+    "mean_wer": 0.5467,
+    "per_speaker": {
+      "speaker_1": {
+        "speaker_id": "ashaheble@gmail.com",
+        "n_samples": 35,
+        "mean_wer": 0.5169,
+        "median_wer": 0.5,
+        "std_wer": 0.2042,
+        "min_wer": 0.0,
+        "max_wer": 1.0
+      },
+      "speaker_2": {
+        "speaker_id": "dipti.ajgaonkar21@gmail.com",
+        "n_samples": 35,
+        "mean_wer": 0.603,
+        "median_wer": 0.625,
+        "std_wer": 0.1927,
+        "min_wer": 0.1429,
+        "max_wer": 1.0
+      },
+      "speaker_3": {
+        "speaker_id": "lalimomadi@gmail.com",
+        "n_samples": 34,
+        "mean_wer": 0.5194,
+        "median_wer": 0.5,
+        "std_wer": 0.1975,
+        "min_wer": 0.125,
+        "max_wer": 1.0
+      }
+    },
+    "pilot_baseline": {
+      "note": "20-epoch pilot (Jan 2026): Story 5, ~38 samples, ~1 speaker (ashaheble), test WER=35.1%",
+      "test_wer": 0.351,
+      "test_cer_approx": 0.142,
+      "n_samples": 38,
+      "n_speakers": 1
+    },
+    "std_wer": 0.2022,
+    "best_checkpoint": "/workspace/results/checkpoints/konkani_asr-epoch=47-val_wer=0.532.ckpt",
+    "n_speakers": 3,
+    "test_story": 5,
+    "note": "50-epoch run (2026-03-02): Story 5, 104 samples, 3 speakers"
+  },
+  "per_sample": [
+    {
+      "audio": "data/amchi/test/audio/570.wav",
+      "reference": "रोहन होड ज़ाल्लो!",
+      "prediction": "रोहन होड ज़ाल्लो",
+      "wer": 0.0,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/571.wav",
+      "reference": "धा वर्सांचो रोहन उत्साहाने आनि खुशालेने उड्तशिलो -",
+      "prediction": "धव वषांचो रोहन उत्हने आनि खुशालेने उड्तशिलो",
+      "wer": 0.42857142857142855,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/572.wav",
+      "reference": "तो आप्णागले भारत देशु रज्जेन्तु वत्तशिलो!",
+      "prediction": "तो आप्णागले भार्रत देेशु रजेन्तु वत्तशिलो",
+      "wer": 0.3333333333333333,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/573.wav",
+      "reference": "आम्माने आन्नुने सांगिल्ताका काण्यो सुमार -",
+      "prediction": "आम्माने आान्नुनेे सांगिललेो ताक्का काणि्यो सुमार ⁇ ",
+      "wer": 0.4,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/574.wav",
+      "reference": "तांगेले चेर्ल्ड्पणाचे गम्मते खब्र्यो, आंग्णांतु खेऴ्तालिं भरपूर",
+      "prediction": "तांगलेचेर्डेपणाचे गमत खब्र्य आांगणान्तु खेळ्तालि भरपूर",
+      "wer": 0.7142857142857143,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/575.wav",
+      "reference": "मुंबई - थंयि थाव्नु गोवा वच्चेशिलीं तीं",
+      "prediction": "मुम्बय थंयथाव्नु गोवा वच्चेशिल तीं ⁇ ",
+      "wer": 0.5,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/576.wav",
+      "reference": "कुलदेवतांगेले दर्शन घेव्नु समुद्र तटाचेरि खेऴ्चेशिलीं!",
+      "prediction": "कुलदेवत तांगले दर्क्षन घेव्नु सम्र ताटचेरि खेळ्चेशिलि",
+      "wer": 0.8333333333333334,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/577.wav",
+      "reference": "ताक्का सांगिलें आनि एक विशेष गम्मति आस्स म्हुणु",
+      "prediction": "ताक्का सांगिलें आनि एकु विशेष कवति आस्स म्हुणु ⁇ ",
+      "wer": 0.125,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/578.wav",
+      "reference": "शिरालींतु युवांखतिरि एक शिबीर - वाह! राक्तशिलो रोहनु!",
+      "prediction": "शिराालिंततु यववा खतिरि एकु शिबिर वा ⁇  राक्तशिलो रोहाननु ⁇ ",
+      "wer": 0.7142857142857143,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/579.wav",
+      "reference": "प्रार्थना वर्गांतु भारतीय संस्कृति वैभवाबद्दल तान्ने आय्कलेलें-",
+      "prediction": "प्र्नना वर्गांतु भारत संृति वय्वा बद्दल तान्ने आय्कललें",
+      "wer": 0.7142857142857143,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/580.wav",
+      "reference": "ज़ाल्यारि प्रत्यक्ष पोऴोंचे आनुभवु विंगड आश्शिलें!",
+      "prediction": "ज़ाल्यारि प्रत्य पळोचे अनुभ भव वििंगड आश्शिलें",
+      "wer": 0.6666666666666666,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/581.wav",
+      "reference": "परम पूज्य स्वाम्यांक पऴय्लेले तान्ने चित्रांतु",
+      "prediction": "परमपूज स्वामांक पळय्लेले तान्ने चित्रानां्तु",
+      "wer": 0.8333333333333334,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/582.wav",
+      "reference": "स्वाम्यांगले खब्र्यो सांग्तालिं पाच्च्यो प्रार्थना वर्गांतु!",
+      "prediction": "स्वाागल खब्र सांगततालि पााज प्रर््नना वर्गानां्तु",
+      "wer": 1.0,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/583.wav",
+      "reference": "आह! आय्लो तो गोम्टो दिवसु, तागले हेर्दे धडधड्तशिलें -",
+      "prediction": "आ अ  ⁇  आय्लो तो गोम्टटो दिवसु ⁇  तागले हेर्दे धडदधड्तशिलें ⁇ ",
+      "wer": 0.5,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/584.wav",
+      "reference": "शिरालींतु श्री चित्रापुर मठ इद्रारि दिस्तशिलें",
+      "prediction": "शिराालिंततु श्र चित्रपूर म्ठ ईद्रि दिस्तशिलें",
+      "wer": 0.3333333333333333,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/585.wav",
+      "reference": "चारिदिक्काने आशिलीं लोक मार्गदर्शन आनि सहायु कोरूक",
+      "prediction": "चार्रि दिकाने आशिलिोक मामार्ग दक्षन आनि सहाय कोर्क",
+      "wer": 0.7142857142857143,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/586.wav",
+      "reference": "चिके सानु आस्सुनूय, गर्वाने रोहनानै शिबिरान्तु भागु घेत्लो",
+      "prediction": "चिक्केु आस्सुनुय घर्वाने रोने शिबिरां्तु भाग घेत्लो",
+      "wer": 0.625,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/587.wav",
+      "reference": "तेचि वेऴारि तांका थंचे स्कूलाक व्हेल्ले",
+      "prediction": "ते वेळरि तांका थंचे स्कूुलाक व्हेलें",
+      "wer": 0.5,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/588.wav",
+      "reference": "थंयि तान्ने तागले प्रायेचे चेर्ल्डवांक इंग्लिश शिकय्लें!",
+      "prediction": "थंयि तान्ने तागले प्रयचेचेडवांक इंग्लुि शिकय्लें",
+      "wer": 0.42857142857142855,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/589.wav",
+      "reference": "ते वर्गांतुलो कार्तिक आनि  रोहनु उल्लय्त बस्लीं",
+      "prediction": "ते वग्गांतुलोकार्तिक आनि रोहाननु उलय्त बस्लि",
+      "wer": 0.5714285714285714,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/590.wav",
+      "reference": "प्रति दिवसांतु कलकले कर्ताति म्हुणु एकमेकांक सांग्तशिलीं",
+      "prediction": "प्रति दिवसांतु कल्लेल्लें कर्ति म्हुणु एकमेकांक सांगतशिलि",
+      "wer": 0.2857142857142857,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/591.wav",
+      "reference": "रोहनाने आप्णागले खेऴ्सामानु, गेजेट्स आनि स्विमिंग पूला बद्दल सांग्लें",
+      "prediction": "रोने आप्णागले खेळ स सामानु गगेजेस आनि स्वमिंग पुुल्याला बद्दल सांग्ले",
+      "wer": 0.6666666666666666,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/592.wav",
+      "reference": "कार्तिकाने सांगिले आय्कतना, रोहनाक अग्दि आश्चर्य ज़ाल्लें!",
+      "prediction": "ककार्तिकानने सांगिलें आय्कत्तना रोहनाणाक अग्दि आश्चर््य ज़ाल्लें",
+      "wer": 0.42857142857142855,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/593.wav",
+      "reference": "गाद्यान्तु मस्त परिश्रम तो कर्तालो नित्य बाप्सु सांगाति",
+      "prediction": "ग घेदानांतु मस्त परिश्रम तो कर्तालो नित बप्सु सांगातति ⁇ ",
+      "wer": 0.5,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/594.wav",
+      "reference": "विशेष ज़ाव्नु केद्ना भात तैयार ज़ाव्नु म्हण्ताले-\" माका व्हराति!\"",
+      "prediction": "विशेष ज़ाव्नु ⁇  क्ना भात तैय्यारु ज़ाव्नु म्हण्तले ⁇  माक्का वराति ⁇ ",
+      "wer": 0.4444444444444444,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/595.wav",
+      "reference": "तो आनि तागलि भय्णि घाराय सहायु कर्ताति - हें आय्कुनु",
+      "prediction": "तो आनि तागलि भय्नणि घारायस कर्ति ⁇  हें आय्कुनु ⁇ ",
+      "wer": 0.4444444444444444,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/596.wav",
+      "reference": "कित्लो प्रभावु ज़ाल्लो रोहनाचेरि म्हुणु कऴ्ताले ताक्का पोऴोव्नु!",
+      "prediction": "कित्ले प्रभ भाव ज़ाल्लो रोनाचेरि म्हुणु कळय्तले ताक्का पळोव्नु ⁇ ",
+      "wer": 0.625,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/597.wav",
+      "reference": "ह्रदयाक स्पर्श ज़ाल्ले आनि वच्च वेऴारि पोटोऴ्नु घेत्लें कार्तिकाक",
+      "prediction": "ह्रदक स्पर्ष ज़ाल्ले आनि वच्चे वेळरि पटोळनु घेत्लेकार्तिकक ⁇ ",
+      "wer": 0.6666666666666666,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/598.wav",
+      "reference": "स्कूलान्थाव्नु भाय्रसर्तना खुशालेने आंग हल्के दिस्लें रोहनाक!",
+      "prediction": "स्ुल्यालाथाव्नु भाय्रसर््तना खुशालेनेे आांग हलक दिस्लें रोनाणाक",
+      "wer": 0.2857142857142857,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/599.wav",
+      "reference": "मोडा वय्रि चम्कतशिल वारि अनुभवु ज़ाल्ले",
+      "prediction": "मोडाय्रि चमकतशिले वारि अनुभ भव ज़ाल्लो",
+      "wer": 0.6666666666666666,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/600.wav",
+      "reference": "कार्तिका बद्दल सग्ऴ्यांक सांग्या म्हुणु दिस्लें",
+      "prediction": "कारर््तिक बद्दल सग्ळ्यांक सांगे म्हुणु दिस्लें",
+      "wer": 0.5,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/601.wav",
+      "reference": "प्रथम सांग्ले परम पूज्य स्वाम्यांकचि तान्ने सहज़",
+      "prediction": "प्रथम सांगले परमपू्जी स्वामंकचि तान्नें सह",
+      "wer": 0.5714285714285714,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/602.wav",
+      "reference": "प्रसन्न ज़ाल्लीं स्वामीजी, दिस्सुनु आय्लें तांका हाज्जि गरज़!",
+      "prediction": "प्रस्स्न ज़ाल्लि स्वामजि ⁇  दिस्सुनु आय्लें तांक्का ⁇  हाज्जीगर ⁇ ",
+      "wer": 0.5,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/603.wav",
+      "reference": "घारा पाव्नु आप्णागलि काम कर्तालो तो उत्साहेने",
+      "prediction": "घारा पाव्नु आप्णागलि कामाम कर्तालो तो उत्हने",
+      "wer": 0.2857142857142857,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/604.wav",
+      "reference": "होडु ज़ाल्लो आम्गेलो रोहनु  तें एक स्पर्शाने!",
+      "prediction": "होडु ज़ाल्लो आम्गेलो रोहाननु ⁇  ते एक स्पर्षाने",
+      "wer": 0.2857142857142857,
+      "speaker_id": "ashaheble@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/657.wav",
+      "reference": "रोहन होड ज़ाल्लो!",
+      "prediction": "वहान कोूरु ज़ाल्लो",
+      "wer": 0.6666666666666666,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/658.wav",
+      "reference": "धा वर्सांचो रोहन उत्साहाने आनि खुशालेने उड्तशिलो -",
+      "prediction": "उडरा ववरर्ारुहाननु उत्ताहने आनि कुशालने उर््तशिलो ⁇ ",
+      "wer": 0.8571428571428571,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/659.wav",
+      "reference": "तो आप्णागले भारत देशु रज्जेन्तु वत्तशिलो!",
+      "prediction": "तो आप्णागले भार्रत देश्शु रज्जेन्तु वत्तशिलो",
+      "wer": 0.3333333333333333,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/660.wav",
+      "reference": "आम्माने आन्नुने सांगिल्ताका काण्यो सुमार -",
+      "prediction": "आम्ने आान्नुनेे सांगिल ताका काण्यो सुमार",
+      "wer": 0.6,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/661.wav",
+      "reference": "तांगेले चेर्ल्ड्पणाचे गम्मते खब्र्यो, आंग्णांतु खेऴ्तालिं भरपूर",
+      "prediction": "चांगलचेल्लेंपणाचे गम्तते खब्र्य ⁇  आांगणाान्तु खे्तालि भरपूर",
+      "wer": 0.7142857142857143,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/662.wav",
+      "reference": "मुंबई - थंयि थाव्नु गोवा वच्चेशिलीं तीं",
+      "prediction": "मुमय थंयिथाव्नु कोोव वच्चचेशिल ती ⁇ ",
+      "wer": 0.8333333333333334,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/663.wav",
+      "reference": "कुलदेवतांगेले दर्शन घेव्नु समुद्र तटाचेरि खेऴ्चेशिलीं!",
+      "prediction": "कुदेव तांगले दक्ष्न घेव्नु समद्र तिटचेरि खेळ्चेशिले",
+      "wer": 0.6666666666666666,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/664.wav",
+      "reference": "ताक्का सांगिलें आनि एक विशेष गम्मति आस्स म्हुणु",
+      "prediction": "ता सांगिले आनि एक विशेष गोमातति आस्स म्हुणु",
+      "wer": 0.25,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/665.wav",
+      "reference": "शिरालींतु युवांखतिरि एक शिबीर - वाह! राक्तशिलो रोहनु!",
+      "prediction": "शिरालिंततु यव खतिरि एकु शिबिर ⁇  वा ⁇  राक्तशिल रहनु",
+      "wer": 0.5714285714285714,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/666.wav",
+      "reference": "प्रार्थना वर्गांतु भारतीय संस्कृति वैभवाबद्दल तान्ने आय्कलेलें-",
+      "prediction": "प्र्ना वर्गां्तु भारत संृति व्य्वा बद्दल तान्ने आय्कलें",
+      "wer": 0.8571428571428571,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/667.wav",
+      "reference": "ज़ाल्यारि प्रत्यक्ष पोऴोंचे आनुभवु विंगड आश्शिलें!",
+      "prediction": "आान्रि प्रत्यक्ष पळचे अनुभ भव वििंड आशिलें",
+      "wer": 1.0,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/668.wav",
+      "reference": "परम पूज्य स्वाम्यांक पऴय्लेले तान्ने चित्रांतु",
+      "prediction": "परमपुत स्वामंतक पळय्लिलें तान्ने चित्रांतु ⁇ ",
+      "wer": 0.6666666666666666,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/669.wav",
+      "reference": "स्वाम्यांगले खब्र्यो सांग्तालिं पाच्च्यो प्रार्थना वर्गांतु!",
+      "prediction": "स्वागले खब्र्यो सांग्तालि ताज्चे प्रर््थना वर्ां्तु",
+      "wer": 0.5,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/670.wav",
+      "reference": "आह! आय्लो तो गोम्टो दिवसु, तागले हेर्दे धडधड्तशिलें -",
+      "prediction": "आवा आय्ल तोग गु्टु दिवसु ⁇  तागले हेर् धडदधड्तशिलें",
+      "wer": 0.625,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/671.wav",
+      "reference": "शिरालींतु श्री चित्रापुर मठ इद्रारि दिस्तशिलें",
+      "prediction": "शिरराालिन्तु शी चित््रापूर मठ् उद्र दिस्तशिलें",
+      "wer": 0.5,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/672.wav",
+      "reference": "चारिदिक्काने आशिलीं लोक मार्गदर्शन आनि सहायु कोरूक",
+      "prediction": "चार्रि दिकाने आश्शिलिोक माार्ग दक्षन आनि स महायुरु",
+      "wer": 1.0,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/673.wav",
+      "reference": "चिके सानु आस्सुनूय, गर्वाने रोहनानै शिबिरान्तु भागु घेत्लो",
+      "prediction": "तिक्ाे सानसुनुय गर्वाने रोने शिबिरां्तु भाग घेत्लो",
+      "wer": 0.625,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/674.wav",
+      "reference": "तेचि वेऴारि तांका थंचे स्कूलाक व्हेल्ले",
+      "prediction": "ते वेळरि ताां्का थंचे स्कुलाक वहेलें",
+      "wer": 0.5,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/675.wav",
+      "reference": "थंयि तान्ने तागले प्रायेचे चेर्ल्डवांक इंग्लिश शिकय्लें!",
+      "prediction": "थंयि तान्ने तागले पळयचे चडवंक इंगग्लिष शिक्य्लें",
+      "wer": 0.42857142857142855,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/676.wav",
+      "reference": "ते वर्गांतुलो कार्तिक आनि  रोहनु उल्लय्त बस्लीं",
+      "prediction": "तेे वगांतिलकार्तिक आनि रहनु उलय्त बस्लि",
+      "wer": 0.42857142857142855,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/677.wav",
+      "reference": "प्रति दिवसांतु कलकले कर्ताति म्हुणु एकमेकांक सांग्तशिलीं",
+      "prediction": "प्रति दिवांतु कलल्ल्लें कर्तति म्हुणु एकमेककाक सांगतयशिल",
+      "wer": 0.5714285714285714,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/678.wav",
+      "reference": "रोहनाने आप्णागले खेऴ्सामानु, गेजेट्स आनि स्विमिंग पूला बद्दल सांग्लें",
+      "prediction": "रोने आप्णागले खेळ सामानु ⁇  गगेजेस आनि स्वमिंगुल्ला बद्दल सांग्ले",
+      "wer": 0.6666666666666666,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/679.wav",
+      "reference": "कार्तिकाने सांगिले आय्कतना, रोहनाक अग्दि आश्चर्य ज़ाल्लें!",
+      "prediction": "गार्तिकांतु सांगिले आय्क्तना रोणाक अग्दि आश्चर् ज़ाल्लें",
+      "wer": 0.42857142857142855,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/680.wav",
+      "reference": "गाद्यान्तु मस्त परिश्रम तो कर्तालो नित्य बाप्सु सांगाति",
+      "prediction": "आ अद्वान्तुं मस्त परिश्रम तो कर्तालो निित् पप्सु सांगातति ⁇ ",
+      "wer": 0.625,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/681.wav",
+      "reference": "विशेष ज़ाव्नु केद्ना भात तैयार ज़ाव्नु म्हण्ताले-\" माका व्हराति!\"",
+      "prediction": "विशेष ज़ाव्नु के दि्ना भात तय्यार ज़ाव्नु म्हण्ताले ⁇  माक्का ववरातति",
+      "wer": 0.5555555555555556,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/682.wav",
+      "reference": "तो आनि तागलि भय्णि घाराय सहायु कर्ताति - हें आय्कुनु",
+      "prediction": "तो आनि तागल भयि ⁇  घाराय कर्तता ति हें आय्कुनु",
+      "wer": 0.3333333333333333,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/683.wav",
+      "reference": "कित्लो प्रभावु ज़ाल्लो रोहनाचेरि म्हुणु कऴ्ताले ताक्का पोऴोव्नु!",
+      "prediction": "किकित्लो प्र भाव ज़ाल्लो रोणाचेरि म्हुणु कळ्तालें ⁇  ताक्काळोाव्नु",
+      "wer": 0.875,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/684.wav",
+      "reference": "ह्रदयाक स्पर्श ज़ाल्ले आनि वच्च वेऴारि पोटोऴ्नु घेत्लें कार्तिकाक",
+      "prediction": "वगळ्याक स्पर्ष ज़ाल्ले आनि वच् वेलेरि होटुोनु घेत्लेकार्तिकाक",
+      "wer": 0.7777777777777778,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/685.wav",
+      "reference": "स्कूलान्थाव्नु भाय्रसर्तना खुशालेने आंग हल्के दिस्लें रोहनाक!",
+      "prediction": "स्कुल्यालान्तथाव्नु बाय्रसर््तनाुशालेने आांग हल्क दिस्लें रोनाचाक",
+      "wer": 0.5714285714285714,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/686.wav",
+      "reference": "मोडा वय्रि चम्कतशिल वारि अनुभवु ज़ाल्ले",
+      "prediction": "मोडायि चम्कतशिल वारि अनुभ भव ज़ाल्लें",
+      "wer": 0.6666666666666666,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/688.wav",
+      "reference": "कार्तिका बद्दल सग्ऴ्यांक सांग्या म्हुणु दिस्लें",
+      "prediction": "कारकार्तिक बद्दल सग्ळ्यांक सांगका म्हुणु दिस्लें",
+      "wer": 0.5,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/689.wav",
+      "reference": "प्रथम सांग्ले परम पूज्य स्वाम्यांकचि तान्ने सहज़",
+      "prediction": "प्र्म सांगले परमपू्जी स्वा्यांकचि तान्नें सह",
+      "wer": 0.7142857142857143,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/690.wav",
+      "reference": "प्रसन्न ज़ाल्लीं स्वामीजी, दिस्सुनु आय्लें तांका हाज्जि गरज़!",
+      "prediction": "प्रस्सन्न ज़ाल्लि स्वामजी ⁇  दिस्सु आय्ल तांगका ⁇  आज्जी गरर्ज़ु",
+      "wer": 0.625,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/691.wav",
+      "reference": "घारा पाव्नु आप्णागलि काम कर्तालो तो उत्साहेने",
+      "prediction": "घारा पाव्नु आ अ्नाणागलि काम कर्तलं तो उत्ताहने",
+      "wer": 0.42857142857142855,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/692.wav",
+      "reference": "होडु ज़ाल्लो आम्गेलो रोहनु  तें एक स्पर्शाने!",
+      "prediction": "होोडु ज़ाल्लो आम्गेलो रोहनु ⁇  ते एक स्पर्षाने",
+      "wer": 0.14285714285714285,
+      "speaker_id": "dipti.ajgaonkar21@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/380.wav",
+      "reference": "धा वर्सांचो रोहन उत्साहाने आनि खुशालेने उड्तशिलो -",
+      "prediction": "धा वषांचो रोन उत्ने आनि खुशालेनेे उड्तशिलो ⁇ ",
+      "wer": 0.42857142857142855,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/381.wav",
+      "reference": "तो आप्णागले भारत देशु रज्जेन्तु वत्तशिलो!",
+      "prediction": "तो आप्णागले भार्रत देशु रजेन्तु वत्तशिलो",
+      "wer": 0.3333333333333333,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/382.wav",
+      "reference": "आम्माने आन्नुने सांगिल्ताका काण्यो सुमार -",
+      "prediction": "तागले आम्माने आान्नुे सांगिलेने ताक्का काणि्यो सुमार ⁇ ",
+      "wer": 0.8,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/383.wav",
+      "reference": "तांगेले चेर्ल्ड्पणाचे गम्मते खब्र्यो, आंग्णांतु खेऴ्तालिं भरपूर",
+      "prediction": "तांगले चंडपणाचे गमत खब्र्यो आांगणाानां्तु खेळ्तनि भरपूर ⁇ ",
+      "wer": 0.5714285714285714,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/384.wav",
+      "reference": "मुंबई - थंयि थाव्नु गोवा वच्चेशिलीं तीं",
+      "prediction": "मुम्बय थंय्ंथाव्नु गोवा वच्चशिलिं तीं ⁇ ",
+      "wer": 0.5,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/385.wav",
+      "reference": "कुलदेवतांगेले दर्शन घेव्नु समुद्र तटाचेरि खेऴ्चेशिलीं!",
+      "prediction": "कुलदेव तांगले दर्क्षशन घेव्नु सम्रातटचेरि खे्ोलेचेशिन",
+      "wer": 1.0,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/386.wav",
+      "reference": "ताक्का सांगिलें आनि एक विशेष गम्मति आस्स म्हुणु",
+      "prediction": "ताक्का सांगिलें आनि एक विशेष गमति आस्स म्हुणु ⁇ ",
+      "wer": 0.125,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/387.wav",
+      "reference": "शिरालींतु युवांखतिरि एक शिबीर - वाह! राक्तशिलो रोहनु!",
+      "prediction": "शिरराालेनंततु युववाक खतिरि एक शिबीिर व वा राक्ब्तशिलो रोहनु ⁇ ",
+      "wer": 0.8571428571428571,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/388.wav",
+      "reference": "प्रार्थना वर्गांतु भारतीय संस्कृति वैभवाबद्दल तान्ने आय्कलेलें-",
+      "prediction": "प्रर््थनना वर्गांतु भार्रत संकृति वय्वा बद्दल तान्ने आय्कलेलें ⁇ ",
+      "wer": 0.7142857142857143,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/390.wav",
+      "reference": "ज़ाल्यारि प्रत्यक्ष पोऴोंचे आनुभवु विंगड आश्शिलें!",
+      "prediction": "ज़ाल्यारि प्रत्यक्ष पळोचे अनुभ भवु विंगड आशिलें",
+      "wer": 0.6666666666666666,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/392.wav",
+      "reference": "परम पूज्य स्वाम्यांक पऴय्लेले तान्ने चित्रांतु",
+      "prediction": "परम पूज स्वामिांक पळय्लेले तान्नें चित्रान्तु",
+      "wer": 0.6666666666666666,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/393.wav",
+      "reference": "स्वाम्यांगले खब्र्यो सांग्तालिं पाच्च्यो प्रार्थना वर्गांतु!",
+      "prediction": "स्वाांगले खब्र्यो सांगततालि पााज्च्यो प्रर््नना वर्ां्तु ⁇ ",
+      "wer": 0.8333333333333334,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/394.wav",
+      "reference": "आह! आय्लो तो गोम्टो दिवसु, तागले हेर्दे धडधड्तशिलें -",
+      "prediction": "आह ⁇  आय्लो त गोम्टुवो दिवसु ⁇  तागले हेर्द धडदधड्तशिलें ⁇ ",
+      "wer": 0.25,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/395.wav",
+      "reference": "शिरालींतु श्री चित्रापुर मठ इद्रारि दिस्तशिलें",
+      "prediction": "शिरलिंततु श्र चित्रापुर म्ठ इ उद्रि दिस्तशिलें",
+      "wer": 0.5,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/396.wav",
+      "reference": "चारिदिक्काने आशिलीं लोक मार्गदर्शन आनि सहायु कोरूक",
+      "prediction": "चार्रि दिकाकाने आशिलोक माार्ग दर्न आनि सहय् कोर्ुक ⁇ ",
+      "wer": 0.7142857142857143,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/397.wav",
+      "reference": "चिके सानु आस्सुनूय, गर्वाने रोहनानै शिबिरान्तु भागु घेत्लो",
+      "prediction": "चिक्के सानु आस्सुनुय गर्वाने रोय शिबिरांतु भागु घेत्लो",
+      "wer": 0.375,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/398.wav",
+      "reference": "तेचि वेऴारि तांका थंचे स्कूलाक व्हेल्ले",
+      "prediction": "तेचि वेळरि तांका थंचे स्कुल्यालाक वहेलें",
+      "wer": 0.5,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/399.wav",
+      "reference": "थंयि तान्ने तागले प्रायेचे चेर्ल्डवांक इंग्लिश शिकय्लें!",
+      "prediction": "थंयि तान्ने तागले प्रयचे चिर्डवांक इिंगलु शिकय्लें",
+      "wer": 0.2857142857142857,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/400.wav",
+      "reference": "ते वर्गांतुलो कार्तिक आनि  रोहनु उल्लय्त बस्लीं",
+      "prediction": "ते वग्गांतुलोकारतिक आनि रोहनु उलय्त बस्लि ⁇ ",
+      "wer": 0.42857142857142855,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/401.wav",
+      "reference": "प्रति दिवसांतु कलकले कर्ताति म्हुणु एकमेकांक सांग्तशिलीं",
+      "prediction": "प्रति दिवसाां्तु कल्लकले कर्तिी म्हुणु एकमेकांक सांगतशिि ⁇ ",
+      "wer": 0.42857142857142855,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/403.wav",
+      "reference": "रोहनाने आप्णागले खेऴ्सामानु, गेजेट्स आनि स्विमिंग पूला बद्दल सांग्लें",
+      "prediction": "रोने आप्णागले खेळ सामानु गगेजेस आनि स्वम्िंग पुुल्याला बद्दल सांग्ले ⁇ ",
+      "wer": 0.5555555555555556,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/404.wav",
+      "reference": "कार्तिकाने सांगिले आय्कतना, रोहनाक अग्दि आश्चर्य ज़ाल्लें!",
+      "prediction": "काकार्तिकने सांगिले आय्कत्तना रोनाणाक अग्दि आश्चर््य ज़ाल्लें",
+      "wer": 0.42857142857142855,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/406.wav",
+      "reference": "गाद्यान्तु मस्त परिश्रम तो कर्तालो नित्य बाप्सु सांगाति",
+      "prediction": "गादद्ल्यान्तु मस्त परिश्रम तो कर्ततालो निमप्त बाप्सु सांगाति ⁇ ",
+      "wer": 0.375,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/407.wav",
+      "reference": "विशेष ज़ाव्नु केद्ना भात तैयार ज़ाव्नु म्हण्ताले-\" माका व्हराति!\"",
+      "prediction": "विशेष ज़ाव्नु ⁇  केर््ना भात तैय्यार ज़ाव्नु म्हण्तलें  ⁇  माक्का वरातति ⁇ ",
+      "wer": 0.4444444444444444,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/408.wav",
+      "reference": "तो आनि तागलि भय्णि घाराय सहायु कर्ताति - हें आय्कुनु",
+      "prediction": "तो आनि तागलि भय्नि घाराय सयु कर्तिी ⁇  हें आय्कुनु ⁇ ",
+      "wer": 0.3333333333333333,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/409.wav",
+      "reference": "कित्लो प्रभावु ज़ाल्लो रोहनाचेरि म्हुणु कऴ्ताले ताक्का पोऴोव्नु!",
+      "prediction": "कित्लो प्रभ भाव ज़ाल्लो रोणाचेरि म्हुणु कळ्तताले ताक्का पळोनु",
+      "wer": 0.625,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/410.wav",
+      "reference": "ह्रदयाक स्पर्श ज़ाल्ले आनि वच्च वेऴारि पोटोऴ्नु घेत्लें कार्तिकाक",
+      "prediction": "हृक स्पर्ष ज़ाल्ले आनि वच्चे वेळरि पटोवनु घेत्ले ककार्तिकक",
+      "wer": 0.5555555555555556,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/411.wav",
+      "reference": "स्कूलान्थाव्नु भाय्रसर्तना खुशालेने आंग हल्के दिस्लें रोहनाक!",
+      "prediction": "स्ुल्यालान्तुथाव्नु भाय्रसर्तना खुशाले ननेे आांग हलकि दिस्लें रोणाक",
+      "wer": 0.5714285714285714,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/412.wav",
+      "reference": "मोडा वय्रि चम्कतशिल वारि अनुभवु ज़ाल्ले",
+      "prediction": "म मोडय्ररि चम्कतशिलले वारि अनुभव ज़ाल्लें",
+      "wer": 0.5,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/413.wav",
+      "reference": "कार्तिका बद्दल सग्ऴ्यांक सांग्या म्हुणु दिस्लें",
+      "prediction": "का ककार्तिक बद्दल सग्ळ्यांकय सांग म्हुणु दिस्लें",
+      "wer": 0.6666666666666666,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/414.wav",
+      "reference": "प्रथम सांग्ले परम पूज्य स्वाम्यांकचि तान्ने सहज़",
+      "prediction": "प्र्थम सांगले परमपूज स्वामंांकचि तान्ने सह",
+      "wer": 0.5714285714285714,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/415.wav",
+      "reference": "प्रसन्न ज़ाल्लीं स्वामीजी, दिस्सुनु आय्लें तांका हाज्जि गरज़!",
+      "prediction": "प्रस्स्न ज़ाल्लि स्वामजी दिस्सु आय्लि तांक्का खाजजे गऱ ⁇ ",
+      "wer": 0.625,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/416.wav",
+      "reference": "घारा पाव्नु आप्णागलि काम कर्तालो तो उत्साहेने",
+      "prediction": "घारा पाव्नु आप्णागलि काम कर्ततालो तो उत्हने",
+      "wer": 0.2857142857142857,
+      "speaker_id": "lalimomadi@gmail.com"
+    },
+    {
+      "audio": "data/amchi/test/audio/417.wav",
+      "reference": "होडु ज़ाल्लो आम्गेलो रोहनु  तें एक स्पर्शाने!",
+      "prediction": "होडु ज़ाल्लो आम्गेलो रोहनु ते एक स्पर्षाने",
+      "wer": 0.14285714285714285,
+      "speaker_id": "lalimomadi@gmail.com"
+    }
+  ]
+}

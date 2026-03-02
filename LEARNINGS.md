@@ -100,7 +100,53 @@ data/
 
 ---
 
-## 6. What We Do Not Push to Git
+## 6. Amchi Konkani Fine-Tuning — 50-epoch Run (Session 2026-03-02)
+
+### Environment fix: CUDA 12.8 torchvision/torchaudio mismatch
+Fresh RunPod pods now ship with PyTorch 2.10.0+cu128. If `nemo_toolkit[asr]` is installed on top, it pulls in `torchvision` and `torchaudio` built for cu124, causing `RuntimeError: operator torchvision::nms does not exist` and `OSError: Could not load libtorchaudio.so`. Fix:
+```bash
+pip install --force-reinstall torch torchvision torchaudio \
+  --index-url https://download.pytorch.org/whl/cu128 -q
+```
+Then re-apply the conv_asr patch (the NeMo install overwrites it):
+```bash
+NEMO_FILE=$(python3 -c "import nemo.collections.asr.modules.conv_asr as m; print(m.__file__)" 2>&1 | tail -1)
+cp patches/conv_asr_fixed.py "$NEMO_FILE"
+```
+
+### Two WER metrics in fine_tune.py
+The `fine_tune.py` script logs two separate WER metrics simultaneously:
+- **RNNT val_wer** — logged to `epoch_metrics.csv`. Plateaus early (~64% by epoch 6).
+- **CTC val_wer** — monitored by `ModelCheckpoint` callback and shown in checkpoint filenames. This is the metric that continues improving throughout training (reached 53.2% at epoch 47).
+
+The final `final_test_results.json` uses the CTC decoder on the best checkpoint. Always use the checkpoint-filename WER, not the CSV val_wer, as the primary quality signal.
+
+### Training results
+| Metric | Value |
+|--------|-------|
+| Best checkpoint | epoch 47, CTC val_wer = 53.2% |
+| Test WER (Story 5, 104 samples, 3 speakers) | **54.7%** |
+| Pilot baseline test WER (Story 5, 38 samples) | 35.1% |
+| RNNT val_wer plateau | ~62–64% (from epoch 6) |
+| Train loss at epoch 50 | 0.17 (overfitting — val_loss rose to 2× epoch-6 value) |
+
+### Why test WER (54.7%) is higher than baseline (35.1%)
+1. **Test set is harder**: 3 speakers × 35 sentences = 104 samples vs 38 samples from likely 1 speaker. Unseen speakers are the main challenge.
+2. **Overfitting signal**: val_loss increased 2× from epoch 6 to epoch 49 while train_loss fell to 0.17. Model memorised training data.
+3. **Not a fair comparison**: baseline test set was single-speaker; new test set is 3-speaker.
+
+### Data paths changed (amchi split)
+- Output dir is now `data/amchi/` (not `data/`) to avoid clashing with deaf speech data.
+- Config updated: manifests now at `data/amchi/train|dev|test/manifest.jsonl`.
+- Story 7 (काय्ळो) added to train set (35 recordings); Story 5 is still the held-out test set.
+- Story split now: `{1,2,3,7} → train`, `4 → dev`, `5 → test`.
+
+### Checkpoint location
+Checkpoints now save to `/workspace/results/checkpoints/` (not `nemo_experiments/`) — this is controlled by the `output_dir` passed to `fine_tune.py`, which defaults to `results/`. If resuming, look there first.
+
+---
+
+## 7. What We Do Not Push to Git
 
 - **Audio files:** `data/**/*.wav`, `data/**/*.mp3`, etc. — too large.
 - **Model weights:** `*.nemo`, `*.ckpt`, `*.pt`, `*.pth` — too large. Use HuggingFace Hub or RunPod persistent storage.

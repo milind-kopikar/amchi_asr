@@ -4,30 +4,37 @@
 
 ---
 
-## 1. Where we left off (last session — 2026-03-01)
+## 1. Where we left off (last session — 2026-03-02)
 
-### Active track: Deaf Speech ASR (Story 4 — दैनंदिन कामे १)
+### Active track: Amchi Konkani ASR — 50-epoch run COMPLETE
 
-- **Fine-tuning COMPLETE:** 50 epochs on 124 deaf speech recordings from story_id=22. Best checkpoint at **epoch 21, val_WER=72.0%**.
-- **Post-processing module BUILT:** `scripts/postprocess_asr.py` — uses Gemini 2.5 Flash API (key in AGENT_HANDOFF.md) to correct garbled ASR output using FILL/RECONSTRUCT modes.
-- **What remains:** Build an inference endpoint (RunPod persistent pod or serverless), test it with sample audio, measure transcription latency, and present side-by-side results (raw ASR → post-processed).
-- **Post-processing results:** WER 75.3% → 74.2% (metric), but human readability improved significantly (garbled `⁇` tokens replaced with natural Marathi sentences).
+- **Fine-tuning COMPLETE:** 50 epochs on 511 train / 58 dev / 104 test samples (Stories 1,2,3,7 → train; Story 4 → dev; Story 5 → test).
+- **Best checkpoint:** epoch 47, CTC val_WER = 53.2% — at `/workspace/results/checkpoints/konkani_asr-epoch=47-val_wer=0.532.ckpt`
+- **Test WER:** 54.7% on Story 5 (104 samples, **3 speakers**). Baseline was 35.1% on 38 samples (1 speaker).
+- **Results saved:** `results/experiments/20260302_031806/` — epoch_metrics.csv, final_test_results.json, per-epoch sample JSONs.
+- **Post-processing:** Not yet built — discuss with user first (see AMCHI_KONKANI_TRAINING_GUIDE.md §8).
+- **Statistical analysis script:** `scripts/analyze_results.py` — ready to run once post-processing is done.
 
-**To continue:** Read **[AGENT_HANDOFF.md](AGENT_HANDOFF.md)** — it has all paths, credentials, and exact next steps.
+**What remains:**
+1. Decide on post-processing (Option A: none; Option B: simple Gemini cleanup; Option C: extend existing post-processor).
+2. Run `scripts/analyze_results.py --results ... --manifest data/amchi/test/manifest.jsonl` for full statistical analysis.
+3. Consider a second longer run (100 epochs, or with LR scheduling) — model was still improving at epoch 47 and val_loss showed overfitting; more regularization may help.
+
+**Key environment note for next session:** Fresh pods have PyTorch cu128 — after `pip install nemo_toolkit[asr]`, run:
+```bash
+pip install --force-reinstall torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128 -q
+```
+See LEARNINGS.md §6 for full details.
 
 ---
 
-### Second track (next session): Amchi Konkani fine-tuning
+### Deaf Speech track (done — inference endpoint pending)
 
-Same methodology as deaf speech but different data and objective. The deaf speech endpoint is now done (Phase 1 web app + Phase 2 RunPod serverless). Amchi Konkani is the next training run.
+- **Fine-tuning COMPLETE:** 50 epochs on 124 deaf speech recordings. Best checkpoint at **epoch 21, val_WER=72.0%**.
+- **Post-processing BUILT:** `scripts/postprocess_asr.py` (Gemini FILL/RECONSTRUCT). WER 75.3% → 74.2%, but human readability improved significantly.
+- **What remains:** Build RunPod serverless inference endpoint (see RUNPOD_SERVERLESS_DEAF.md).
 
-**Start here:** Read **[AMCHI_KONKANI_TRAINING_GUIDE.md](AMCHI_KONKANI_TRAINING_GUIDE.md)** — it is the complete, self-contained guide for the next agent. It covers RunPod setup, data download, training, evaluation, and the post-processing decision.
-
-Key facts:
-- Config is ready: `configs/amchi_konkani_50epoch.yaml`
-- Baseline to beat: test WER 35.1% (20-epoch pilot, Jan 2026)
-- Data from: `konkanicollector-production.up.railway.app` (different from deaf speech!)
-- Post-processing approach: **discuss with user before building** (see guide §8)
+**To continue deaf speech track:** Read **[AGENT_HANDOFF.md](AGENT_HANDOFF.md)**.
 
 ---
 

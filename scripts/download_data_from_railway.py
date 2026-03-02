@@ -4,7 +4,7 @@ Download audio recordings and manifests from Railway/R2 storage
 For use with konkani_collector data.
 
 Story split convention (--use_story_split):
-  - Stories 1, 2, 3 -> train
+  - Stories 1, 2, 3, 7 -> train
   - Story 4 -> dev (validation during finetuning). Do not use for final test.
   - Story 5 -> test (held-out for evaluation). Always use Story 5 for testing.
 """
@@ -70,7 +70,8 @@ def create_manifest(recordings: list, output_path: str, split: str = 'train', pa
             "text": rec['sentence_text'],  # Devanagari text
             "duration": rec.get('duration', 0),
             "lang": "mr",  # Use "mr" (Marathi) for Konkani (AI4Bharat convention)
-            "sample_id": f"{split}_{idx:04d}"  # Unique ID: train_0000, dev_0000, etc.
+            "sample_id": f"{split}_{idx:04d}",  # Unique ID: train_0000, dev_0000, etc.
+            "speaker_id": rec.get('user_id', 'unknown'),  # for per-speaker analysis
         }
         manifest_lines.append(json.dumps(manifest_entry, ensure_ascii=False))
     
@@ -157,7 +158,7 @@ def main():
 
         # Story-based split (deterministic) if requested
         if args.use_story_split:
-            logger.info("Using story-based splitting by story_id: {1,2,3}->train, 4->dev, 5->test")
+            logger.info("Using story-based splitting by story_id: {1,2,3,7}->train, 4->dev, 5->test")
             train_recordings = []
             dev_recordings = []
             test_recordings = []
@@ -168,7 +169,7 @@ def main():
                     sid_int = int(sid)
                 except Exception:
                     sid_int = None
-                if sid_int in (1, 2, 3):
+                if sid_int in (1, 2, 3, 7):
                     train_recordings.append(rec)
                 elif sid_int == 4:
                     dev_recordings.append(rec)

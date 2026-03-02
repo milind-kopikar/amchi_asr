@@ -1,15 +1,21 @@
-# Fine-tuning config: Amchi Konkani ASR (Normal speech, not deaf speech)
-# Base model: AI4Bharat Marathi IndicConformer (same base that reached WER 35.1% in pilot)
-# Data: Amchi Konkani stories from konkanicollector-production.up.railway.app
-#   Train: Stories 1, 2, 3, 7  (~511 samples)
-#   Dev:   Story 4              (~58 samples)
-#   Test:  Story 5              (~104 samples, 3 speakers)
-# Goal: Improve on the 35.1% test WER from the 20-epoch pilot run
-# Python 3.11 + upstream NeMo (nemo_toolkit[asr])
-# Based on: deaf_speech_story4_50epoch.yaml + DATA_SNAPSHOT_AMCHI_KONKANI.md
+# Fine-tuning config: Amchi Konkani ASR — Run A (Frozen Encoder)
+# Base: amchi_konkani_50epoch.yaml with freeze_encoder: true
+# Rationale: Encoder has 115M params; freezing it reduces trainable params from 119M -> ~4.4M
+#            This massively reduces overfitting on 511 training samples.
+#            Previous run (50 epochs, all params): val_loss doubled 49->98; test WER 54.7%
+# Expected: Lower overfitting, better generalization to test set.
+#
+# Data:
+#   Train: Stories 1, 2, 3, 7  (511 samples)
+#   Dev:   Story 4              (58 samples)
+#   Test:  Story 5              (104 samples, 3 speakers)
+#
+# Run this after pip-fixing cu128 and applying conv_asr patch. See AMCHI_KONKANI_FINETUNING_TODOS.md.
+
+freeze_encoder: true   # Only decoder (~4.4M params) will be trained — encoder weights frozen
 
 model:
-  language: "mr"   # keep "mr" — AI4Bharat convention for Marathi/Konkani Devanagari
+  language: "mr"
   nemo_model: "models/indicconformer_stt_mr_hybrid_ctc_rnnt_large/indicconformer_stt_mr_hybrid_rnnt_large.nemo"
   tokenizer:
     dir: "tokenizers"
@@ -47,7 +53,7 @@ trainer:
   accumulate_grad_batches: 1
   enable_checkpointing: true
   logger: true
-  log_every_n_steps: 5      # ~94 steps/epoch at batch_size=4, 472 samples
+  log_every_n_steps: 5
   check_val_every_n_epoch: 1
   strategy: null
 
@@ -64,7 +70,7 @@ data:
     shuffle: true
     num_workers: 4
     pin_memory: true
-    max_duration: 30.0      # some story segments exceed default 16.7s limit
+    max_duration: 30.0
     min_duration: 0.1
     trim_silence: true
     load_audio: true
@@ -99,7 +105,7 @@ data:
 
 exp_manager:
   exp_dir: "/workspace/nemo_experiments"
-  name: "amchi_konkani_50epoch"
+  name: "amchi_konkani_run_a_frozen_encoder"
   create_tensorboard_logger: true
   create_checkpoint_callback: true
   always_save_nemo: true

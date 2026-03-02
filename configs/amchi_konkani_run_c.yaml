@@ -1,15 +1,25 @@
-# Fine-tuning config: Amchi Konkani ASR (Normal speech, not deaf speech)
-# Base model: AI4Bharat Marathi IndicConformer (same base that reached WER 35.1% in pilot)
-# Data: Amchi Konkani stories from konkanicollector-production.up.railway.app
-#   Train: Stories 1, 2, 3, 7  (~511 samples)
-#   Dev:   Story 4              (~58 samples)
-#   Test:  Story 5              (~104 samples, 3 speakers)
-# Goal: Improve on the 35.1% test WER from the 20-epoch pilot run
-# Python 3.11 + upstream NeMo (nemo_toolkit[asr])
-# Based on: deaf_speech_story4_50epoch.yaml + DATA_SNAPSHOT_AMCHI_KONKANI.md
+# Fine-tuning config: Amchi Konkani ASR — Run C (RECOMMENDED NEXT)
+# Combines: Frozen Encoder + Cosine LR Scheduling + 100 Epochs + Higher Weight Decay
+# Rationale:
+#   - freeze_encoder: reduces trainable params 119M -> ~4.4M (prevents overfitting)
+#   - Cosine LR with warmup: better convergence than flat 0.0001 (which caused val_loss to double)
+#   - 100 epochs: model was still improving at epoch 47 in previous run; more time to converge
+#   - weight_decay 0.01 (vs 0.001): additional L2 regularisation
+#
+# Previous run (50 epochs, no freeze, flat LR): test WER 54.7%; val_loss doubled epoch 6->49
+# Expected: significantly lower WER due to reduced overfitting
+#
+# Data:
+#   Train: Stories 1, 2, 3, 7  (511 samples)
+#   Dev:   Story 4              (58 samples)
+#   Test:  Story 5              (104 samples, 3 speakers)
+#
+# Run this after pip-fixing cu128 and applying conv_asr patch. See AMCHI_KONKANI_FINETUNING_TODOS.md.
+
+freeze_encoder: true   # Only decoder (~4.4M params) trained
 
 model:
-  language: "mr"   # keep "mr" — AI4Bharat convention for Marathi/Konkani Devanagari
+  language: "mr"
   nemo_model: "models/indicconformer_stt_mr_hybrid_ctc_rnnt_large/indicconformer_stt_mr_hybrid_rnnt_large.nemo"
   tokenizer:
     dir: "tokenizers"
@@ -41,20 +51,24 @@ model:
 trainer:
   devices: 1
   accelerator: "gpu"
-  max_epochs: 50
+  max_epochs: 100
   max_steps: -1
   num_nodes: 1
   accumulate_grad_batches: 1
   enable_checkpointing: true
   logger: true
-  log_every_n_steps: 5      # ~94 steps/epoch at batch_size=4, 472 samples
+  log_every_n_steps: 5
   check_val_every_n_epoch: 1
   strategy: null
 
 optim:
   name: adamw
   lr: 0.0001
-  weight_decay: 0.001
+  weight_decay: 0.01    # Stronger regularisation (was 0.001 in 50-epoch run)
+  sched:
+    name: CosineAnnealing
+    warmup_steps: 500   # ~4 epochs of warmup (128 steps/epoch * 4 = 512 steps)
+    min_lr: 0.000001    # Floor for cosine decay
 
 data:
   train_ds:
@@ -64,7 +78,7 @@ data:
     shuffle: true
     num_workers: 4
     pin_memory: true
-    max_duration: 30.0      # some story segments exceed default 16.7s limit
+    max_duration: 30.0
     min_duration: 0.1
     trim_silence: true
     load_audio: true
@@ -99,7 +113,7 @@ data:
 
 exp_manager:
   exp_dir: "/workspace/nemo_experiments"
-  name: "amchi_konkani_50epoch"
+  name: "amchi_konkani_run_c_frozen_cosine_100ep"
   create_tensorboard_logger: true
   create_checkpoint_callback: true
   always_save_nemo: true
