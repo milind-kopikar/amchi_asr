@@ -194,3 +194,34 @@ git push
 ```bash
 source .env && huggingface-cli login --token "$HF_TOKEN"
 ```
+
+---
+
+## 8. Deaf Speech Experiments — Frozen Encoder vs. Full Fine-Tune (2026-03-07)
+
+### Results summary
+| Experiment | Encoder | Data | Best val_WER | Test WER |
+|---|---|---|---|---|
+| Baseline (50-epoch) | Full fine-tune | 124 samples (train=dev=test) | 72.0% (epoch 21) | 75.3% |
+| DS-A (100-epoch) | **Frozen** | 124 samples (train=dev=test) | 76.6% (epoch 96) | **79.6%** |
+
+### Key finding: Freezing the encoder HURTS deaf speech (unlike Konkani)
+
+**Why freezing helped Konkani but hurts deaf speech:**
+- **Konkani**: Acoustically very close to Marathi. Pre-trained encoder already captures the right features (similar vowels, consonants, prosody). Freezing it prevents overfitting and lets the CTC head adapt to Konkani vocabulary.
+- **Deaf speech**: Fundamentally different acoustic patterns — unusual pitch contours, reduced consonants, breathy phonation, atypical timing. The encoder was trained on hearing speech and its representations do NOT transfer to deaf speech. It **must** update to learn these new acoustic mappings.
+
+**Practical rule:** Freeze encoder when source and target acoustics are close (same language family, dialect adaptation, accent variation). Unfreeze (or partially unfreeze) when the acoustic domain is genuinely different (deaf speech, heavily accented speech, whispered speech, noisy environments).
+
+### val_WER trajectory (DS-A)
+- Epoch 0: 685% (started far from hearing-speech prior)
+- Epoch 5: 198% (fast initial drop — CTC head adapting)
+- Epoch 21: ~100% (same epoch where baseline peaked — frozen encoder has not improved beyond baseline)
+- Epoch 96: 76.6% (best — still worse than baseline 72.0% at same epoch)
+- Pattern: model improves slowly throughout but never beats the full fine-tune baseline
+
+### What to try next for deaf speech
+1. **DS-B**: Full fine-tune + extended data (75 additional tnshenoy recordings from stories 19/20/21) — tests if more data alone helps
+2. **DS-C**: Full fine-tune + extended + speed-perturbed data (3× augmentation at 0.9/1.0/1.1× speed) — tests if synthetic augmentation further helps with limited deaf speech data
+3. **Future**: Partial freeze (bottom N encoder layers frozen, top layers + decoder trained) — a compromise that prevents lower-level acoustic features from drifting while still allowing upper layers to adapt to deaf speech
+
