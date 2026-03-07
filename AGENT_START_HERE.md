@@ -24,15 +24,18 @@ Do the RunPod environment setup once (§3 of the experiment guide), then run bot
 
 ## 1. Where we left off (last updated 2026-03-07)
 
-### Active track: Amchi Konkani ASR — analysis complete, two experiments queued
+### Active track: Deaf Speech ASR — Amchi Konkani complete, DS-A next
 
-- **50-epoch run COMPLETE:** Test WER **54.7%** (Story 5, 104 samples, 3 speakers).
-- **Root cause analysis done** (`scripts/analyze_runs_comparison.py`, results in `results/amchi_analysis/`):
-  - Overfitting: all 115M encoder params trained on 511 samples; CTC val_loss 1.86× worse by epoch 49
-  - Speaker imbalance: dipti had only 3 train samples but 35 test samples → WER 60.3%
-  - RNNT does NOT corrupt the encoder (training_step is CTC-only monkey-patched)
-  - Pilot 35.1% was on val=test same file (selection bias) + single speaker
-- **Two experiments designed** — see `AMCHI_KONKANI_NEXT_EXPERIMENTS.md`
+**Amchi Konkani — COMPLETE (2026-03-07):**
+- Baseline (50-epoch full fine-tune): **54.7% WER** (104 samples, Story 5)
+- **Run C** (frozen encoder, story split, 100ep): **49.1% WER** — results in `results/experiments/run_c_story_split/`
+- **Run S** (frozen encoder, stratified split, 100ep): **34.1% WER** (99 samples) — results in `results/experiments/run_c_stratified_split/`
+- Root causes confirmed: overfitting (frozen encoder helps) + speaker imbalance (stratification helps more)
+
+**Deaf Speech — next (DS-A then DS-B):**
+- Baseline: 50-epoch full fine-tune, val_WER 72.0% at epoch 21 (same 124 samples for train/dev/test)
+- DS-A: same data, freeze encoder, 100 epochs → hypothesis: less overfitting
+- DS-B: same + 75 additional tnshenoy recordings (stories 19/20/21) → hypothesis: more data helps
 
 **Key environment note:** Fresh pods have PyTorch cu128 — after `pip install nemo_toolkit[asr]`, run:
 ```bash
