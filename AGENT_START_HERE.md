@@ -1,178 +1,212 @@
-# Agent start here — Amchi ASR project map
+# AGENT START HERE — Amchi ASR Project
 
-**Read this file first.** It is the single entry point to the repo: where everything is documented, how to continue from the last session, and how to run the full pipeline.
+**This is the single entry point.** Read this file first. It tells you the current
+state of every experiment, where all checkpoints are, and exactly which doc to read
+for the task you need to do. All other docs are referenced from here.
+
+**Last updated: 2026-03-07**
 
 ---
 
-## ⚡ CURRENT TASK (2026-03-07) — Two new Amchi Konkani experiments
+## 1. What is this project?
 
-**Read [`AMCHI_KONKANI_NEXT_EXPERIMENTS.md`](AMCHI_KONKANI_NEXT_EXPERIMENTS.md) for the
-complete step-by-step guide.** It covers full RunPod setup, both experiments, evaluation,
-and how to save results back to GitHub.
+Fine-tuning the AI4Bharat IndicConformer ASR model (Marathi base) for two use cases:
+1. **Amchi Konkani** — speech recognition for Konkani language recordings
+2. **Deaf Speech** — recognising speech from deaf/hard-of-hearing speakers (Marathi story 4)
 
-| | Experiment 1 — Run C | Experiment 2 — Run S |
+Both use the same base model, training pipeline, and CTC-only fine-tuning strategy.
+
+---
+
+## 2. Current experiment results (as of 2026-03-07)
+
+### Amchi Konkani
+
+| Experiment | Split | Encoder | Test WER | Status |
+|---|---|---|---|---|
+| Baseline (50ep) | Story-based | Full FT | 54.7% | Done |
+| **Run C** (100ep) | Story-based | **Frozen** | **49.1%** | Done ✓ |
+| **Run S** (100ep) | **Speaker-stratified** | **Frozen** | **34.1%** | Done ✓ ⭐ BEST |
+
+**Key finding:** Stratified split (ensuring all test speakers appear in training) reduced
+WER by 15pp over story-based split. Frozen encoder prevents overfitting on small dataset.
+
+### Deaf Speech
+
+| Experiment | Data | Encoder | Test WER | Status |
+|---|---|---|---|---|
+| Baseline (50ep) | 124 samples | Full FT | 75.3% | Done |
+| DS-A (100ep) | 124 samples | Frozen | 79.6% | Done (worse — freeze hurts deaf speech) |
+| DS-B (100ep) | 188 samples (extended) | Full FT | 93.1% | Done (worse — OOD data hurts) |
+| **DS-D** (100ep) | **372 samples (3× speed)** | **Full FT** | **34.7%** | Done ✓ ⭐ BEST |
+
+**Key finding:** Speed perturbation (0.9×/1.0×/1.1×) on the same 124 samples gives 3×
+training data from the same distribution → 40.6pp WER improvement over baseline.
+
+---
+
+## 3. Where are the checkpoints?
+
+**→ Full details: [`docs/CHECKPOINTS_REGISTRY.md`](docs/CHECKPOINTS_REGISTRY.md)**
+
+Quick reference — the two production-ready checkpoints in R2:
+
+| Model | R2 public URL |
+|---|---|
+| **Amchi Konkani Run S** | `https://pub-9686b04ab1a94aad9688b9fb104d51ca.r2.dev/results/run_c_stratified_split/checkpoints/konkani_asr-epoch=88-val_wer=0.334.ckpt` |
+| **Deaf Speech DS-D** | `https://pub-9686b04ab1a94aad9688b9fb104d51ca.r2.dev/results/deaf_speech_dsd/checkpoints/konkani_asr-epoch=96-val_wer=0.269.ckpt` |
+
+R2 bucket: `asr-checkpoints` | Account ID: `c90f9011c5a59d5bf40c808f40e3e34b`
+
+---
+
+## 4. Module guide — "I need to do X, read Y"
+
+This project is organised into four modules. Each has a self-contained doc in `docs/`.
+
+### 4.1 Training a model
+**→ [`docs/MODULE_TRAINING.md`](docs/MODULE_TRAINING.md)**
+
+Covers: RunPod environment setup, applying the conv_asr patch, running `fine_tune.py`,
+speed perturbation, choosing freeze vs. full FT, monitoring, common errors.
+
+Key script: `scripts/fine_tune.py` | Key configs: `configs/*.yaml`
+
+### 4.2 Running inference on audio
+**→ [`docs/MODULE_INFERENCE.md`](docs/MODULE_INFERENCE.md)**
+
+Covers: the non-obvious checkpoint loading pattern (manual config patch + strict=False),
+CTC decoding, Gemini post-processing, latency expectations, audio requirements.
+
+Key scripts: `scripts/deaf_speech_inference.py`, `scripts/postprocess_asr.py`
+
+### 4.3 Building a serverless endpoint (Docker → RunPod)
+**→ [`docs/MODULE_SERVERLESS.md`](docs/MODULE_SERVERLESS.md)**
+
+Covers: Docker build/push, RunPod endpoint creation, environment variables,
+checkpoint URLs to use, handler input/output format, cold start behaviour.
+**Build on your local machine — not on the RunPod pod.**
+
+Key files: `runpod/handler_deaf.py`, `runpod/Dockerfile.deaf`
+
+### 4.4 Checkpoint locations and R2 storage
+**→ [`docs/CHECKPOINTS_REGISTRY.md`](docs/CHECKPOINTS_REGISTRY.md)**
+
+Covers: every experiment's best checkpoint with local path, R2 key, and public URL.
+Also covers the base model location and how to upload new checkpoints.
+
+---
+
+## 5. Data
+
+### Deaf Speech (story_id=22, "दैनंदिन कामे १")
+| Path | Contents | In git? |
 |---|---|---|
-| Config | `configs/amchi_konkani_run_c.yaml` | `configs/amchi_konkani_run_c_stratified.yaml` |
-| Data split | Story-based (existing) | Speaker-stratified (generate first) |
-| Generate split? | No | Yes — `python3 scripts/create_speaker_stratified_split.py ...` |
-| Freeze encoder? | Yes (132K trainable params) | Yes (132K trainable params) |
-| Key question | Does freezing fix overfitting? | Does dipti WER improve with 27 train samples? |
+| `data/deaf_speech/audio/` | 124 WAV files, 16kHz mono | NO (too large) |
+| `data/deaf_speech/train/manifest.jsonl` | 124-sample train manifest | Yes |
+| `data/deaf_speech/dev/manifest.jsonl` | 124-sample dev manifest | Yes |
+| `data/deaf_speech/test/manifest.jsonl` | 124-sample test manifest | Yes |
+| `data/deaf_speech_sp/audio/` | 372 speed-perturbed WAVs (DS-D train data) | NO |
+| `data/deaf_speech_sp/train/manifest.jsonl` | DS-D training manifest | Yes |
 
-Do the RunPod environment setup once (§3 of the experiment guide), then run both.
+Re-download audio: `python3 scripts/download_data_from_railway.py`
+Railway API: `https://deafspeechcollector-production.up.railway.app/`
+
+### Amchi Konkani
+| Path | Contents | In git? |
+|---|---|---|
+| `data/amchi/audio/` | WAV files per story | NO |
+| `data/amchi/{train,dev,test}/manifest.jsonl` | Story-based split (Run C) | Yes |
+| `data/amchi_stratified/{train,dev,test}/manifest.jsonl` | Speaker-stratified split (Run S) | Yes |
+
+Railway API: `https://konkanicollector-production.up.railway.app/`
 
 ---
 
-## 1. Where we left off (last updated 2026-03-07)
+## 6. Environment — key facts
 
-### Active track: Deaf Speech ASR — Amchi Konkani complete, DS-A next
+| Item | Value |
+|---|---|
+| Python | 3.11 |
+| NeMo | `nemo_toolkit[asr]` v2.7.0 (upstream — NOT the AI4Bharat fork) |
+| PyTorch | Must match pod CUDA — reinstall after NeMo (see MODULE_TRAINING.md) |
+| GPU required | Yes — RTX 4000 Ada (20GB) or A40 (48GB) recommended |
+| Root disk | 20GB on RunPod — run `pip cache purge` if low on space |
+| All secrets | `.env` file (git-ignored). Template: `.env.example` |
 
-**Amchi Konkani — COMPLETE (2026-03-07):**
-- Baseline (50-epoch full fine-tune): **54.7% WER** (104 samples, Story 5)
-- **Run C** (frozen encoder, story split, 100ep): **49.1% WER** — results in `results/experiments/run_c_story_split/`
-- **Run S** (frozen encoder, stratified split, 100ep): **34.1% WER** (99 samples) — results in `results/experiments/run_c_stratified_split/`
-- Root causes confirmed: overfitting (frozen encoder helps) + speaker imbalance (stratification helps more)
-
-**Deaf Speech — next (DS-A then DS-B):**
-- Baseline: 50-epoch full fine-tune, val_WER 72.0% at epoch 21 (same 124 samples for train/dev/test)
-- DS-A: same data, freeze encoder, 100 epochs → hypothesis: less overfitting
-- DS-B: same + 75 additional tnshenoy recordings (stories 19/20/21) → hypothesis: more data helps
-
-**Key environment note:** Fresh pods have PyTorch cu128 — after `pip install nemo_toolkit[asr]`, run:
+**Required after every RunPod restart:**
 ```bash
-pip install --force-reinstall torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128 -q
+pip install "nemo_toolkit[asr]" --ignore-installed blinker -q
+pip install --force-reinstall torch torchvision torchaudio \
+  --index-url https://download.pytorch.org/whl/cu128 -q
+NEMO_FILE=$(python3 -c "import nemo.collections.asr.modules.conv_asr as m; print(m.__file__)" 2>&1 | tail -1)
+cp patches/conv_asr_fixed.py "$NEMO_FILE"
+export APPLY_CONV_PATCH=1
 ```
-See LEARNINGS.md §6 for full details.
 
 ---
 
-### Deaf Speech track (done — inference endpoint pending)
+## 7. Git workflow
 
-- **Fine-tuning COMPLETE:** 50 epochs on 124 deaf speech recordings. Best checkpoint at **epoch 21, val_WER=72.0%**.
-- **Post-processing BUILT:** `scripts/postprocess_asr.py` (Gemini FILL/RECONSTRUCT). WER 75.3% → 74.2%, but human readability improved significantly.
-- **What remains:** Build RunPod serverless inference endpoint (see RUNPOD_SERVERLESS_DEAF.md).
+```bash
+source .env
+git remote set-url origin https://${GITHUB_PAT}@github.com/milind-kopikar/amchi_asr.git
+git push origin master
+```
 
-**To continue deaf speech track:** Read **[AGENT_HANDOFF.md](AGENT_HANDOFF.md)**.
-
----
-
-## 2. Documentation index (where to look for what)
-
-### 2.1 Next focus: Amchi Konkani fine-tuning
-
-| Doc | Use when |
-|-----|----------|
-| **[AMCHI_KONKANI_NEXT_EXPERIMENTS.md](AMCHI_KONKANI_NEXT_EXPERIMENTS.md)** | **⚡ START HERE.** Step-by-step guide for Run C and Run S. Covers setup, data, training, evaluation, saving results. |
-| **[AMCHI_KONKANI_FINETUNING_TODOS.md](AMCHI_KONKANI_FINETUNING_TODOS.md)** | Broader list of optimisation runs (A–E) with rationale and results tracking table. |
-| `configs/amchi_konkani_run_c.yaml` | Run C: freeze encoder + cosine LR + 100 epochs (story-based split). |
-| `configs/amchi_konkani_run_c_stratified.yaml` | Run S: same as Run C but with speaker-stratified data paths. |
-| `scripts/create_speaker_stratified_split.py` | Generates `data/amchi_stratified/` manifests for Run S. Run before training. |
-| `scripts/analyze_runs_comparison.py` | Statistical comparison of any two runs vs pilot. Run locally after results downloaded. |
-| **[DATA_SNAPSHOT_AMCHI_KONKANI.md](DATA_SNAPSHOT_AMCHI_KONKANI.md)** | Documents the story-based split convention. |
-
-### 2.2 Deaf speech (done) — inference endpoint
-
-| Doc | Use when |
-|-----|----------|
-| **[AGENT_HANDOFF.md](AGENT_HANDOFF.md)** | Full session history and current state of deaf speech track. |
-| **[RUNPOD_SERVERLESS_DEAF.md](RUNPOD_SERVERLESS_DEAF.md)** | Build/deploy/test the RunPod serverless endpoint (Docker image not yet built). |
-| **[DEMO_WEBAPP_GUIDE.md](DEMO_WEBAPP_GUIDE.md)** | Phase 1 web app: build Next.js demo on local machine → Railway. |
-| **[REPRODUCTION_NOTES.md](REPRODUCTION_NOTES.md)** | CTC-only loading strategy, tokenizer fix, inference smoke test recipe. **Critical reading for inference code.** |
-
-### 2.2 Post-processing module
-
-| File | Description |
-|------|-------------|
-| `scripts/postprocess_asr.py` | Gemini-powered post-processor. FILL mode (anchor words present) + RECONSTRUCT mode (all garbled). Conservative safety valve prevents WER regression. |
-| `nemo_experiments/deaf_speech_story4_50epoch/experiments/20260301_003725/postprocessed_results.json` | Full 124-sample post-processing results (WER before/after + corrected text). |
-| `nemo_experiments/deaf_speech_story4_50epoch/experiments/20260301_003725/postprocess_report.txt` | Human-readable sentence-by-sentence comparison report. |
-
-### 2.3 Environment, training, reproduction (from scratch)
-
-| Doc | Use when |
-|-----|----------|
-| **[MASTER_REPRODUCTION_GUIDE.md](MASTER_REPRODUCTION_GUIDE.md)** | **Single source of truth** for setup and training on a fresh RunPod instance. |
-| **[SETUP_ENV.md](SETUP_ENV.md)** | Detailed environment setup: Python 3.11, NeMo v2.7.0, PyTorch, patches. |
-| **[REPRODUCTION_NOTES.md](REPRODUCTION_NOTES.md)** | CTC-only strategy, tokenizer discovery, inference smoke test. |
-| **[LEARNINGS.md](LEARNINGS.md)** | Accumulated hard-won lessons across all sessions. |
-
-### 2.4 Data
-
-| Doc/Path | Description |
-|----------|-------------|
-| `data/deaf_speech/audio/` | 124 WAV files (story_id=22 deaf recordings, 16kHz mono) |
-| `data/deaf_speech/train/manifest.jsonl` | Training manifest (all 124 samples) |
-| `data/deaf_speech/dev/manifest.jsonl` | Dev manifest (same 124 samples) |
-| `data/deaf_speech/test/manifest.jsonl` | Test manifest (same 124 samples) |
-| `configs/deaf_speech_story4_50epoch.yaml` | Training config used for this run |
-| `scripts/download_data_from_railway.py` | Downloads data from Railway API |
-| **[DATA_SNAPSHOT_AMCHI_KONKANI.md](DATA_SNAPSHOT_AMCHI_KONKANI.md)** | Amchi Konkani data split convention |
-
-### 2.5 Model and checkpoints
-
-| Path | Description |
-|------|-------------|
-| `models/indicconformer_stt_mr_hybrid_ctc_rnnt_large/indicconformer_stt_mr_hybrid_rnnt_large.nemo` | AI4Bharat base Marathi model (499MB) |
-| `tokenizers/marathi_tokenizer.model` | Correct Marathi SentencePiece tokenizer (extracted from .nemo) |
-| `nemo_experiments/deaf_speech_story4_50epoch/checkpoints/konkani_asr-epoch=21-val_wer=0.720.ckpt` | **Best checkpoint** (5.3GB total for top-3 + last) |
-
-### 2.6 Other (reference only when needed)
-
-- **HANDOFF_SERVERLESS_RESUME.md** — Earlier serverless endpoint guide (Amchi Konkani). Refer only if building serverless (not persistent pod).
-- **RUNPOD_QUICK_START.md**, **RUNPOD_SETUP.md** — RunPod general usage.
-- **KONKANI_MODEL_PLAN.md**, **TRAINING_RESULTS_2025-12-18.md** — Amchi Konkani planning and past results.
+**Committed:** configs, scripts, manifests (*.jsonl), result JSONs/CSVs, docs, patches.
+**Not committed:** audio (*.wav), weights (*.ckpt, *.nemo, *.pt), venvs, pip cache, `.env`.
 
 ---
 
-## 3. How to continue from here
+## 8. Documentation map
 
-### A. Build the deaf speech inference endpoint (tomorrow's main task)
+### Current and maintained
+| Doc | What it covers |
+|---|---|
+| **`AGENT_START_HERE.md`** (this file) | Project hub, current results, navigation |
+| **`docs/CHECKPOINTS_REGISTRY.md`** | All checkpoint R2 URLs, local paths, base model |
+| **`docs/MODULE_TRAINING.md`** | How to train / retrain — environment, configs, scripts |
+| **`docs/MODULE_INFERENCE.md`** | How to load a checkpoint and transcribe audio |
+| **`docs/MODULE_SERVERLESS.md`** | How to build Docker image and deploy to RunPod |
+| **`LEARNINGS.md`** | Hard-won lessons from every session (read before starting) |
+| **`AGENT_HANDOFF.md`** | Session-by-session build history and rationale |
 
-1. Read **[AGENT_HANDOFF.md](AGENT_HANDOFF.md)** for the exact recipe.
-2. Build an inference script (`scripts/deaf_speech_inference.py`) based on the pattern in `REPRODUCTION_NOTES.md` § 9 (Inference Smoke Test Strategy).
-3. Test on a sample WAV from `data/deaf_speech/audio/` and measure latency.
-4. Run post-processing (`scripts/postprocess_asr.py`) on the output and show side-by-side.
-5. (Optional) Wrap in a RunPod serverless handler.
+### Detailed reference (consult when needed)
+| Doc | What it covers |
+|---|---|
+| `MASTER_REPRODUCTION_GUIDE.md` | Full from-scratch setup guide |
+| `REPRODUCTION_NOTES.md` | CTC-only loading strategy, inference smoke test recipe |
+| `SETUP_ENV.md` | Detailed environment setup steps |
+| `RUNPOD_SERVERLESS_DEAF.md` | Deep-dive: deaf speech serverless endpoint |
+| `RUNPOD_SERVERLESS_AMCHI_KONKANI.md` | Deep-dive: Konkani serverless endpoint |
+| `R2_SETUP_CHECKPOINTS.md` | How to create R2 bucket and API tokens from scratch |
+| `DATA_SNAPSHOT_AMCHI_KONKANI.md` | Konkani story-split convention |
+| `AMCHI_KONKANI_NEXT_EXPERIMENTS.md` | Step-by-step guide for Run C and Run S |
 
-### B. Start from scratch (fresh RunPod)
-
-1. **Environment:** `bash setup_env.sh` or follow MASTER_REPRODUCTION_GUIDE.md. Python 3.11, upstream NeMo (`nemo_toolkit[asr]`).
-2. **Model:** Download via `scripts/download_model_from_hf.py` with HF token (see AGENT_HANDOFF.md).
-3. **Data:** Already committed in `data/deaf_speech/*/manifest.jsonl`. Audio is NOT in git (too large — re-download from Railway: `python3 scripts/download_data_from_railway.py`).
-4. **Train:** `export APPLY_CONV_PATCH=1 && python3 scripts/fine_tune.py --config configs/deaf_speech_story4_50epoch.yaml`
-5. **Post-process:** `python3 scripts/postprocess_asr.py --input <final_test_results.json> --output <out.json> --report <out.txt> --api_key <GEMINI_KEY>`
-
-### C. Start Amchi Konkani training (second track, when ready)
-
-Follow the same methodology as Section B but:
-- Change model to `models/konkani_model.nemo` and tokenizer to `tokenizers/konkani_tokenizer.model`
-- Use `data/train`, `data/dev`, `data/test` (Amchi Konkani data)
-- Post-processing for Konkani will be different (discuss with user first)
-
----
-
-## 4. Key paths summary
-
-| Purpose | Path |
-|---------|------|
-| **Best deaf speech checkpoint** | `nemo_experiments/deaf_speech_story4_50epoch/checkpoints/konkani_asr-epoch=21-val_wer=0.720.ckpt` |
-| Training config (deaf speech story 4) | `configs/deaf_speech_story4_50epoch.yaml` |
-| Fine-tuning entrypoint | `scripts/fine_tune.py` |
-| Post-processing script | `scripts/postprocess_asr.py` |
-| Post-processing results (JSON) | `nemo_experiments/deaf_speech_story4_50epoch/experiments/20260301_003725/postprocessed_results.json` |
-| Post-processing report (text) | `nemo_experiments/deaf_speech_story4_50epoch/experiments/20260301_003725/postprocess_report.txt` |
-| Base Marathi model | `models/indicconformer_stt_mr_hybrid_ctc_rnnt_large/indicconformer_stt_mr_hybrid_rnnt_large.nemo` |
-| Marathi tokenizer | `tokenizers/marathi_tokenizer.model` |
-| Data manifests (deaf speech) | `data/deaf_speech/{train,dev,test}/manifest.jsonl` |
-| Data audio (deaf speech, NOT in git) | `data/deaf_speech/audio/*.wav` |
-| NeMo conv_asr patch | `patches/conv_asr_fixed.py` |
+### Historical (earlier sessions, may be partially outdated)
+`HANDOFF_SERVERLESS_RESUME.md`, `AMCHI_KONKANI_FINETUNING_TODOS.md`,
+`KONKANI_MODEL_PLAN.md`, `TRAINING_RESULTS_2025-12-18.md`, `DEMO_WEBAPP_GUIDE.md`,
+`PROJECT_STATUS.md`, `DEPLOYMENT.md`, `ARCHITECTURE.md`, `ROADMAP.md`,
+and other pre-2026 docs in the repo root.
 
 ---
 
-## 5. One-line summary for the agent
+## 9. What to do next
 
-- **To continue tomorrow:** Read **AGENT_HANDOFF.md** → build `scripts/deaf_speech_inference.py` → test with sample audio → measure latency → show post-processing side-by-side.
-- **To understand the whole project:** Read **MASTER_REPRODUCTION_GUIDE.md** and **REPRODUCTION_NOTES.md** (especially the Inference Smoke Test Strategy section).
-- **To retrain:** Follow section 3.B above. The `.gitignore` is set up to commit configs, scripts, manifests, and JSON results but NOT audio, checkpoints, or model weights.
-- **To run post-processing standalone:** `python3 scripts/postprocess_asr.py --help`
+### Deploy a serverless endpoint
+1. Read **`docs/MODULE_SERVERLESS.md`**
+2. Build locally: `docker build -f runpod/Dockerfile.deaf -t deaf-speech-asr-runpod .`
+3. Push to DockerHub, create RunPod endpoint
+4. Use DS-D checkpoint URL from `docs/CHECKPOINTS_REGISTRY.md`
 
-All important information is in the docs listed above; this file is the map to them.
+### Run inference locally
+1. Read **`docs/MODULE_INFERENCE.md`**
+2. Run `scripts/deaf_speech_inference.py` with a WAV file path
+
+### Train a new experiment
+1. Read **`docs/MODULE_TRAINING.md`**
+2. Copy an existing config from `configs/`, edit it, run `fine_tune.py`
+3. Upload best checkpoint with `scripts/upload_checkpoint_to_r2.py`
+4. Add the R2 URL to `docs/CHECKPOINTS_REGISTRY.md`
+5. Update the results table in this file (Section 2)
