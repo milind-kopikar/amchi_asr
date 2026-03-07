@@ -1,0 +1,28 @@
+Speaker-stratified split report
+Seed: 42  |  train=70%  dev=15%  test=15%  (min_to_split=10)
+
+  Speaker                         Total  Train    Dev   Test  Note
+  ──────────────────────────────────────────────────────────────────────
+  ashaheble                         211    148     32     31  
+  lalimomadi                        197    138     30     29  
+  avkulkarni                        125     88     19     18  
+  arursushama                        43     30      6      7  
+  sheela.kalawar                     41     29      6      6  
+  dipti.ajgaonkar21                  38     27      6      5  
+  milindkopi                         15     10      2      3  
+  mokshkopi                           3      3      0      0  too few → all train
+  ──────────────────────────────────────────────────────────────────────
+  TOTAL                             673    476    101     99
+
+Test speaker breakdown:
+  ashaheble                     :   31 test samples
+  lalimomadi                    :   29 test samples
+  avkulkarni                    :   18 test samples
+  arursushama                   :    7 test samples
+  sheela.kalawar                :    6 test samples
+  dipti.ajgaonkar21             :    5 test samples
+  milindkopi                    :    3 test samples
+
+Note: audio files are NOT moved. Manifests reference original paths.
+Note: text overlap between splits is expected and acceptable for CTC ASR.
+      Different speakers produce different spectrograms for the same sentence.

@@ -4,23 +4,37 @@
 
 ---
 
-## 1. Where we left off (last session — 2026-03-02)
+## ⚡ CURRENT TASK (2026-03-07) — Two new Amchi Konkani experiments
 
-### Active track: Amchi Konkani ASR — 50-epoch run COMPLETE
+**Read [`AMCHI_KONKANI_NEXT_EXPERIMENTS.md`](AMCHI_KONKANI_NEXT_EXPERIMENTS.md) for the
+complete step-by-step guide.** It covers full RunPod setup, both experiments, evaluation,
+and how to save results back to GitHub.
 
-- **Fine-tuning COMPLETE:** 50 epochs on 511 train / 58 dev / 104 test samples (Stories 1,2,3,7 → train; Story 4 → dev; Story 5 → test).
-- **Best checkpoint:** epoch 47, CTC val_WER = 53.2% — at `/workspace/results/checkpoints/konkani_asr-epoch=47-val_wer=0.532.ckpt`
-- **Test WER:** 54.7% on Story 5 (104 samples, **3 speakers**). Baseline was 35.1% on 38 samples (1 speaker).
-- **Results saved:** `results/experiments/20260302_031806/` — epoch_metrics.csv, final_test_results.json, per-epoch sample JSONs.
-- **Post-processing:** Not yet built — discuss with user first (see AMCHI_KONKANI_TRAINING_GUIDE.md §8).
-- **Statistical analysis script:** `scripts/analyze_results.py` — ready to run once post-processing is done.
+| | Experiment 1 — Run C | Experiment 2 — Run S |
+|---|---|---|
+| Config | `configs/amchi_konkani_run_c.yaml` | `configs/amchi_konkani_run_c_stratified.yaml` |
+| Data split | Story-based (existing) | Speaker-stratified (generate first) |
+| Generate split? | No | Yes — `python3 scripts/create_speaker_stratified_split.py ...` |
+| Freeze encoder? | Yes (132K trainable params) | Yes (132K trainable params) |
+| Key question | Does freezing fix overfitting? | Does dipti WER improve with 27 train samples? |
 
-**What remains:**
-1. Decide on post-processing (Option A: none; Option B: simple Gemini cleanup; Option C: extend existing post-processor).
-2. Run `scripts/analyze_results.py --results ... --manifest data/amchi/test/manifest.jsonl` for full statistical analysis.
-3. Consider a second longer run (100 epochs, or with LR scheduling) — model was still improving at epoch 47 and val_loss showed overfitting; more regularization may help.
+Do the RunPod environment setup once (§3 of the experiment guide), then run both.
 
-**Key environment note for next session:** Fresh pods have PyTorch cu128 — after `pip install nemo_toolkit[asr]`, run:
+---
+
+## 1. Where we left off (last updated 2026-03-07)
+
+### Active track: Amchi Konkani ASR — analysis complete, two experiments queued
+
+- **50-epoch run COMPLETE:** Test WER **54.7%** (Story 5, 104 samples, 3 speakers).
+- **Root cause analysis done** (`scripts/analyze_runs_comparison.py`, results in `results/amchi_analysis/`):
+  - Overfitting: all 115M encoder params trained on 511 samples; CTC val_loss 1.86× worse by epoch 49
+  - Speaker imbalance: dipti had only 3 train samples but 35 test samples → WER 60.3%
+  - RNNT does NOT corrupt the encoder (training_step is CTC-only monkey-patched)
+  - Pilot 35.1% was on val=test same file (selection bias) + single speaker
+- **Two experiments designed** — see `AMCHI_KONKANI_NEXT_EXPERIMENTS.md`
+
+**Key environment note:** Fresh pods have PyTorch cu128 — after `pip install nemo_toolkit[asr]`, run:
 ```bash
 pip install --force-reinstall torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128 -q
 ```
@@ -44,9 +58,13 @@ See LEARNINGS.md §6 for full details.
 
 | Doc | Use when |
 |-----|----------|
-| **[AMCHI_KONKANI_TRAINING_GUIDE.md](AMCHI_KONKANI_TRAINING_GUIDE.md)** | **Start here for next session.** Complete agent guide: RunPod setup, data download, training, evaluation, post-processing decision. |
-| `configs/amchi_konkani_50epoch.yaml` | Ready-to-use training config (50 epochs, Marathi base, correct data paths). |
-| **[DATA_SNAPSHOT_AMCHI_KONKANI.md](DATA_SNAPSHOT_AMCHI_KONKANI.md)** | Data split from Jan 2026 pilot (Story 4=dev, Story 5=test — do not swap). |
+| **[AMCHI_KONKANI_NEXT_EXPERIMENTS.md](AMCHI_KONKANI_NEXT_EXPERIMENTS.md)** | **⚡ START HERE.** Step-by-step guide for Run C and Run S. Covers setup, data, training, evaluation, saving results. |
+| **[AMCHI_KONKANI_FINETUNING_TODOS.md](AMCHI_KONKANI_FINETUNING_TODOS.md)** | Broader list of optimisation runs (A–E) with rationale and results tracking table. |
+| `configs/amchi_konkani_run_c.yaml` | Run C: freeze encoder + cosine LR + 100 epochs (story-based split). |
+| `configs/amchi_konkani_run_c_stratified.yaml` | Run S: same as Run C but with speaker-stratified data paths. |
+| `scripts/create_speaker_stratified_split.py` | Generates `data/amchi_stratified/` manifests for Run S. Run before training. |
+| `scripts/analyze_runs_comparison.py` | Statistical comparison of any two runs vs pilot. Run locally after results downloaded. |
+| **[DATA_SNAPSHOT_AMCHI_KONKANI.md](DATA_SNAPSHOT_AMCHI_KONKANI.md)** | Documents the story-based split convention. |
 
 ### 2.2 Deaf speech (done) — inference endpoint
 
