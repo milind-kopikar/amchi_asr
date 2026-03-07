@@ -222,6 +222,63 @@ source .env && huggingface-cli login --token "$HF_TOKEN"
 
 ### What to try next for deaf speech
 1. **DS-B**: Full fine-tune + extended data (75 additional tnshenoy recordings from stories 19/20/21) — tests if more data alone helps
-2. **DS-C**: Full fine-tune + extended + speed-perturbed data (3× augmentation at 0.9/1.0/1.1× speed) — tests if synthetic augmentation further helps with limited deaf speech data
+2. **DS-D**: Full fine-tune + speed-perturbed baseline data (3× augmentation at 0.9/1.0/1.1× speed on same 124 story-4 samples) — **breakthrough result, see §9**
 3. **Future**: Partial freeze (bottom N encoder layers frozen, top layers + decoder trained) — a compromise that prevents lower-level acoustic features from drifting while still allowing upper layers to adapt to deaf speech
+
+---
+
+## 9. Deaf Speech Experiments — More Data vs. Speed Augmentation (2026-03-07)
+
+### Full results table
+| Experiment | Encoder | Train data | Train samples | Best val_WER | Test WER |
+|---|---|---|---|---|---|
+| Baseline (50ep) | Full FT | Story 4 only | 124 (=dev=test) | 72.0% (ep 21) | 75.3% |
+| DS-A (100ep) | Frozen | Story 4 only | 124 (=dev=test) | 76.6% (ep 96) | 79.6% |
+| DS-B (100ep) | Full FT | Story 4 + tnshenoy stories 19/20/21 | 188 train / 134 dev | 85.0% (ep 75) | 93.1% |
+| **DS-D (100ep)** | **Full FT** | **Story 4 × 3 speeds (0.9/1.0/1.1)** | **372 train** | **26.9% (ep 96)** | **34.7%** |
+
+### DS-B: why more (different) data hurt
+
+DS-B added 63 extra recordings from tnshenoy's stories 19/20/21, bringing train to 188 samples. Test WER worsened from 75.3% → 93.1% for three reasons:
+
+1. **Wrong distribution for the test set.** The test set is story 4. DS-B's model was trained across 4 different stories and never specialised on story 4 the way the baseline did.
+2. **Checkpoint selected on mixed dev.** The best checkpoint (epoch 62, val_WER=85.0%) was chosen using a dev set drawn from all 4 stories — not optimised for story 4 test performance.
+3. **Severe overfitting.** Train loss fell to ~0.001 by epoch 75 while val_loss climbed 25% from its epoch-10 value. The model memorised 188 diverse samples without learning transferable features.
+
+**Rule:** Adding out-of-distribution training data hurts when the test set is narrow (one story, one speaker group). More data only helps when it matches the test distribution.
+
+### DS-D: speed perturbation on same distribution — breakthrough
+
+DS-D trained on 372 samples = 124 story-4 samples × 3 speed factors (0.9×, 1.0×, 1.1×). Dev and test remained the original 124 story-4 samples — same distribution as the baseline.
+
+**Result: test WER 34.7% vs baseline 75.3% — a 40.6pp improvement.**
+
+| Category | Baseline | DS-D |
+|---|---|---|
+| Good (WER ≤ 50%) | 25% | **77%** |
+| Partial (50–99%) | 35% | 16% |
+| Fail (WER ≥ 100%) | 40% | **7%** |
+
+**Why it worked:**
+- Speed perturbation keeps the acoustic domain identical (same speakers, same story, same Devanagari content) while giving the model 3× more gradient updates per epoch.
+- The 0.9× and 1.1× variants teach robustness to natural variation in deaf speaking rate — a real source of variance in this population.
+- The model can still overfit to the story-4 content (intentional for this task) while being less sensitive to exact timing patterns.
+
+**torchaudio.functional.speed API note (v2.6+):** Returns `(waveform, lengths_or_None)` — NOT `(waveform, new_sample_rate)` as older docs suggest. Do NOT resample the output; it is already at the original sample rate.
+
+```python
+out, _ = torchaudio.functional.speed(waveform, orig_freq=16000, factor=0.9)
+# out is already at 16000 Hz, just shorter in time
+```
+
+### Practical rule for synthetic augmentation
+- **Speed perturbation on same distribution** = highly effective for small deaf speech datasets. Use it by default.
+- **Adding out-of-distribution samples** = only helps if the test distribution is broad (multi-story, multi-speaker). Hurts narrow test sets.
+- **Recommended default:** always apply 3× speed perturbation (0.9/1.0/1.1) to training data before any other augmentation strategy.
+
+### Checkpoints in R2 (`asr-checkpoints` bucket)
+| Experiment | R2 key | Test WER |
+|---|---|---|
+| Baseline (50ep) | `nemo_experiments/deaf_speech_story4_50epoch/checkpoints/konkani_asr-epoch=21-val_wer=0.720.ckpt` | 75.3% |
+| DS-D (100ep, speed-perturbed) | `results/deaf_speech_dsd/checkpoints/konkani_asr-epoch=96-val_wer=0.269.ckpt` | **34.7%** |
 

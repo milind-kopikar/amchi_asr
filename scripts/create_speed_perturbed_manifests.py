@@ -28,13 +28,14 @@ SAMPLE_RATE = 16000
 
 
 def speed_perturb(waveform: torch.Tensor, orig_sr: int, speed: float) -> torch.Tensor:
-    """Apply speed perturbation using torchaudio, resample back to orig_sr."""
+    """Apply speed perturbation using torchaudio.
+
+    torchaudio.functional.speed (>= 2.0) compresses/stretches the waveform in time
+    while keeping the same sample rate. Returns (waveform, lengths_or_None).
+    """
     if abs(speed - 1.0) < 1e-6:
         return waveform
-    # torchaudio.functional.speed changes sample rate proportionally
-    out, new_sr = torchaudio.functional.speed(waveform, orig_freq=orig_sr, factor=speed)
-    # Resample back to original sample rate so duration is correct
-    out = torchaudio.functional.resample(out, orig_freq=new_sr, new_freq=orig_sr)
+    out, _ = torchaudio.functional.speed(waveform, orig_freq=orig_sr, factor=speed)
     return out
 
 

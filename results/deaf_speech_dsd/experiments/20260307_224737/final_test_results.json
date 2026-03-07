@@ -1,0 +1,753 @@
+{
+  "best_checkpoint": "/workspace/amchi_asr/results/deaf_speech_dsd/checkpoints/konkani_asr-epoch=96-val_wer=0.269.ckpt",
+  "summary": {
+    "total_samples": 124,
+    "mean_wer": 0.34717741935483876
+  },
+  "per_sample": [
+    {
+      "audio": "data/deaf_speech/audio/130.wav",
+      "reference": "दैनंदिन कामे १।",
+      "prediction": "दैनंदन कामे १ ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/131.wav",
+      "reference": "दूध किती आहे?।",
+      "prediction": "दूध किती आहे ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/132.wav",
+      "reference": "एक लिटर दूध द्या.।",
+      "prediction": "एक लिटर दूध द्या ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/133.wav",
+      "reference": "चाळीस रुपयांत काय मिळेल?।",
+      "prediction": "चाळीस रुपयांत काय मिळेल ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/134.wav",
+      "reference": "पेपर कधी येईल?।",
+      "prediction": "पेपर कधी येईल ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/135.wav",
+      "reference": "बस कधी येईल?।",
+      "prediction": "बस कधी येईल ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/136.wav",
+      "reference": "गाडी कोणत्या प्लॅटफॉर्मवर येईल?।",
+      "prediction": "गाडी कोण्या पल पफमवर येरईल ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/137.wav",
+      "reference": "मुलुंडला कुठे उतरायचं?।",
+      "prediction": "ंडलला कुठलाे उंडला कुठेतरालाचं ⁇ ",
+      "wer": 1.3333333333333333
+    },
+    {
+      "audio": "data/deaf_speech/audio/138.wav",
+      "reference": "चालीमूल्य किती?।",
+      "prediction": "चालीमूल्य किती ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/139.wav",
+      "reference": "मला निळे जीन्स दाखवा.।",
+      "prediction": "मला निळे जीन्स दाखवा ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/140.wav",
+      "reference": "हे दूध द्या.।",
+      "prediction": "हे दूध द्या ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/141.wav",
+      "reference": "दोन पॅकेट दूध द्या.।",
+      "prediction": "दोन पकेट दूध द्या ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/142.wav",
+      "reference": "पेपर किती आहे?।",
+      "prediction": "पेपर किती आहे ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/143.wav",
+      "reference": "आजचा पेपर द्या.।",
+      "prediction": "चा पेपर द्या ⁇ ",
+      "wer": 0.3333333333333333
+    },
+    {
+      "audio": "data/deaf_speech/audio/144.wav",
+      "reference": "पुढचा स्टॉप कोणता?।",
+      "prediction": "पुढचा स्टथॉप कोणता ⁇ ",
+      "wer": 0.3333333333333333
+    },
+    {
+      "audio": "data/deaf_speech/audio/145.wav",
+      "reference": "दोन टिकीट द्या.।",
+      "prediction": "दोन टिकीट द्या ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/146.wav",
+      "reference": "हे किती आहे?।",
+      "prediction": "हे किती आहे ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/147.wav",
+      "reference": "किंमत कमी करा.।",
+      "prediction": "किमात कमी करा ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/148.wav",
+      "reference": "पन्नास रुपये देऊ शकतो.।",
+      "prediction": "न्नास रुय द दे शकतो ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/149.wav",
+      "reference": "चहा द्या.।",
+      "prediction": "चह द्या ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/150.wav",
+      "reference": "दोन चहा.।",
+      "prediction": "दोन चह ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/151.wav",
+      "reference": "पाणी द्या.।",
+      "prediction": "पाणी द्या ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/152.wav",
+      "reference": "बिल द्या.।",
+      "prediction": "बिल द्या ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/153.wav",
+      "reference": "किती झालं?।",
+      "prediction": "किती झालं ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/154.wav",
+      "reference": "मला हे हवं.।",
+      "prediction": "मला हे ह ⁇ ",
+      "wer": 0.3333333333333333
+    },
+    {
+      "audio": "data/deaf_speech/audio/155.wav",
+      "reference": "मला ते हवं नाही.।",
+      "prediction": "मला दझ हवं नाही ⁇ ",
+      "wer": 0.25
+    },
+    {
+      "audio": "data/deaf_speech/audio/156.wav",
+      "reference": "ठीक आहे.।",
+      "prediction": "ठी आहे ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/157.wav",
+      "reference": "थोडं वाट बघा.।",
+      "prediction": "थोडं वाट ब ⁇ ",
+      "wer": 0.3333333333333333
+    },
+    {
+      "audio": "data/deaf_speech/audio/158.wav",
+      "reference": "लवकर करा.।",
+      "prediction": "लखरकर करा ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/159.wav",
+      "reference": "बाथरूम कुठे आहे?।",
+      "prediction": "बा दथूम कुठे आहे ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/160.wav",
+      "reference": "स्टेशन इकडेच आहे का?।",
+      "prediction": "जस्ेशन इकडेच आहे का ⁇ ",
+      "wer": 0.25
+    },
+    {
+      "audio": "data/deaf_speech/audio/161.wav",
+      "reference": "विक्रोली किती वाजता पोहोचेल?।",
+      "prediction": "िक्रोली किती व वाजता पोचेळेल ⁇ ",
+      "wer": 0.75
+    },
+    {
+      "audio": "data/deaf_speech/audio/162.wav",
+      "reference": "सीएसटी ला जाणारी बस कोणती?।",
+      "prediction": "ीएसटी काा जाणारी बस कोणती ⁇ ",
+      "wer": 0.4
+    },
+    {
+      "audio": "data/deaf_speech/audio/163.wav",
+      "reference": "ही बस थानेला जाते का?।",
+      "prediction": "ही बस  दथानेलाे का ⁇ ",
+      "wer": 0.4
+    },
+    {
+      "audio": "data/deaf_speech/audio/164.wav",
+      "reference": "गाडी कधी येईल?।",
+      "prediction": "प गाडी कितीईल ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/165.wav",
+      "reference": "प्लॅटफॉर्म बदलला का?।",
+      "prediction": "्ल पफोम बदलला का ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/166.wav",
+      "reference": "ही गाडी दादरला थांबते का?।",
+      "prediction": "ही गाडी दादरला थांबते का ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/167.wav",
+      "reference": "मला छोटा सायझ हवा.।",
+      "prediction": "मला छोटा सझाय हवा ⁇ ",
+      "wer": 0.25
+    },
+    {
+      "audio": "data/deaf_speech/audio/168.wav",
+      "reference": "मला मोठा सायझ हवा.।",
+      "prediction": "मला मोठा सझ हवा ⁇ ",
+      "wer": 0.25
+    },
+    {
+      "audio": "data/deaf_speech/audio/169.wav",
+      "reference": "हे मोजून बघू शकतो का?।",
+      "prediction": "हे मोज बघू शकतो का ⁇ ",
+      "wer": 0.2
+    },
+    {
+      "audio": "data/deaf_speech/audio/170.wav",
+      "reference": "रंग बदलू शकतो का?।",
+      "prediction": "रंग बदलू शकतो का ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/171.wav",
+      "reference": "आकार चेक करा.।",
+      "prediction": "आकार चेक करा ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/172.wav",
+      "reference": "दोन फूट पाईप द्या.।",
+      "prediction": "दोनट पाईप द्या ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/173.wav",
+      "reference": "हे मोजून द्या.।",
+      "prediction": "हे मोजून द्या ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/174.wav",
+      "reference": "स्क्रू द्या.।",
+      "prediction": "क्रू द्या ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/175.wav",
+      "reference": "की द्या.।",
+      "prediction": "की द्या ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/176.wav",
+      "reference": "आयरनिंग कशी करायची सांगा.।",
+      "prediction": "यरिंग किती करायची सगा ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/177.wav",
+      "reference": "उद्या मिळेल का?।",
+      "prediction": "उद्या मिळेल का ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/178.wav",
+      "reference": "हे धुवून द्या.।",
+      "prediction": "हे वून द्या ⁇ ",
+      "wer": 0.3333333333333333
+    },
+    {
+      "audio": "data/deaf_speech/audio/179.wav",
+      "reference": "फोल्ड करून द्या.।",
+      "prediction": "फोल्डून द्या ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/180.wav",
+      "reference": "इकडे जातो का?।",
+      "prediction": "कडेातो का ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/181.wav",
+      "reference": "हे रस्ता बरोबर आहे का?।",
+      "prediction": "हे रस्ता बरोबर आहे का ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/182.wav",
+      "reference": "किती वाजले?।",
+      "prediction": "किती वाजला ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/183.wav",
+      "reference": "उशीर झाला.।",
+      "prediction": "शी उशी झाला ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/184.wav",
+      "reference": "थांबा.।",
+      "prediction": "थांबा ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/185.wav",
+      "reference": "रोख घेतात का?।",
+      "prediction": "रोख घेतात का ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/186.wav",
+      "reference": "कार्ड चालतो का?।",
+      "prediction": "ाडी लतो का ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/187.wav",
+      "reference": "बाकी किती?।",
+      "prediction": "बाकी किती ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/188.wav",
+      "reference": "भाजी किती?।",
+      "prediction": "भाजी किती ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/189.wav",
+      "reference": "आज दूध नाही का?।",
+      "prediction": "ज दूध नाही का ⁇ ",
+      "wer": 0.25
+    },
+    {
+      "audio": "data/deaf_speech/audio/190.wav",
+      "reference": "काळी पिशवी द्या.।",
+      "prediction": "का पिशवी द्या ⁇ ",
+      "wer": 0.3333333333333333
+    },
+    {
+      "audio": "data/deaf_speech/audio/191.wav",
+      "reference": "पांढरी पिशवी द्या.।",
+      "prediction": "ांढरी पलिशवी द्या ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/192.wav",
+      "reference": "उद्या दूध ठेवा.।",
+      "prediction": "उद्या दूध ठेवा ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/193.wav",
+      "reference": "दोन पेपर द्या.।",
+      "prediction": "दोन पेपर द्या ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/194.wav",
+      "reference": "पेपर उशीरा आला का?।",
+      "prediction": "पेपर उशीरालाला का ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/195.wav",
+      "reference": "एक टिकीट.।",
+      "prediction": "एकिकीट ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/196.wav",
+      "reference": "तीन टिकीट द्या.।",
+      "prediction": "ीन टिकट द्या ⁇ ",
+      "wer": 0.3333333333333333
+    },
+    {
+      "audio": "data/deaf_speech/audio/197.wav",
+      "reference": "कुठे उतरायचं थानेला?।",
+      "prediction": "कुठे उयचं दथाला ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/198.wav",
+      "reference": "दादरला कुठे उतरायचं?।",
+      "prediction": "दादरला कुठेतराचं ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/199.wav",
+      "reference": "लोकल कधी येईल?।",
+      "prediction": "रोकल कधी येईल ⁇ ",
+      "wer": 0.3333333333333333
+    },
+    {
+      "audio": "data/deaf_speech/audio/200.wav",
+      "reference": "फास्ट लाईन कोणती?।",
+      "prediction": "फािहईन कोणती ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/201.wav",
+      "reference": "स्टॅंड कुठे आहे?।",
+      "prediction": "स्टॅंड कुठे आहे ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/202.wav",
+      "reference": "ऑटो थांबतो का इथे?।",
+      "prediction": "ऑटो थांबतो का इथे ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/203.wav",
+      "reference": "ऑटो चाली किती?।",
+      "prediction": "ऑटो  झाचेली किती ⁇ ",
+      "wer": 0.3333333333333333
+    },
+    {
+      "audio": "data/deaf_speech/audio/204.wav",
+      "reference": "हॉस्पिटल इकडेच आहे का?।",
+      "prediction": "हॉपिट इकडेडेच आहे का ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/205.wav",
+      "reference": "पोलिस स्टेशन कुठे?।",
+      "prediction": "ो सुेंशन कुठे ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/206.wav",
+      "reference": "फार्मसी कुठे आहे?।",
+      "prediction": "फार्मसी कुठे आहे ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/207.wav",
+      "reference": "टॅब्लेट द्या.।",
+      "prediction": "टॅबलेट द्या ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/208.wav",
+      "reference": "दवा द्या.।",
+      "prediction": "दवा द्या ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/209.wav",
+      "reference": "डॉक्टर कधी मिळेल?।",
+      "prediction": "गोटर कधीती मिळेल ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/210.wav",
+      "reference": "अपॉइंटमेंट आहे.।",
+      "prediction": "इॉइमिट आहेमेट ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/211.wav",
+      "reference": "माझं नाव लिहा.।",
+      "prediction": "झं नाव नाहीहिहा ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/212.wav",
+      "reference": "फोन नंबर काय?।",
+      "prediction": "दोननट्र काय ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/213.wav",
+      "reference": "एड्रेस काय?।",
+      "prediction": "आहे्रेस काय ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/214.wav",
+      "reference": "सिग्नेचर करा.।",
+      "prediction": "दग्नेच करा ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/215.wav",
+      "reference": "हा पैसा बरोबर आहे का?।",
+      "prediction": "हाैसा बरोबर आहे का ⁇ ",
+      "wer": 0.4
+    },
+    {
+      "audio": "data/deaf_speech/audio/216.wav",
+      "reference": "चिल्लर द्या.।",
+      "prediction": "चिल्लल द्या ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/217.wav",
+      "reference": "नोट बदला.।",
+      "prediction": "ोट बदला ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/218.wav",
+      "reference": "या नोटला खोटं आहे का?।",
+      "prediction": "नोूटला खुठट आहे का ⁇ ",
+      "wer": 0.4
+    },
+    {
+      "audio": "data/deaf_speech/audio/219.wav",
+      "reference": "शॉर्टकट कुठे आहे?।",
+      "prediction": "शॉटकट कुठे आहे ⁇ ",
+      "wer": 0.3333333333333333
+    },
+    {
+      "audio": "data/deaf_speech/audio/220.wav",
+      "reference": "हॉटेल इकडेच आहे का?।",
+      "prediction": "हॉटेकडेच आहे का का ⁇ ",
+      "wer": 0.75
+    },
+    {
+      "audio": "data/deaf_speech/audio/221.wav",
+      "reference": "रुम खाली आहे का?।",
+      "prediction": "रुम खाली आहे का ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/222.wav",
+      "reference": "एक रुम द्या.।",
+      "prediction": "एकुम द्या ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/223.wav",
+      "reference": "दोन रात्री रहायचं.।",
+      "prediction": "दोन रात्रीईहायचं ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/224.wav",
+      "reference": "बिल किती झालं?।",
+      "prediction": "बिल किती झालं ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/225.wav",
+      "reference": "चेकआउट किती वाजता?।",
+      "prediction": "कआउट किती वाजता ⁇ ",
+      "wer": 0.3333333333333333
+    },
+    {
+      "audio": "data/deaf_speech/audio/226.wav",
+      "reference": "लगेच येतो.।",
+      "prediction": "गा येतो ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/227.wav",
+      "reference": "आता येतो.।",
+      "prediction": "ता येतो ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/228.wav",
+      "reference": "एक मिनिट थांबा.।",
+      "prediction": "एक मिनट ांबा ⁇ ",
+      "wer": 0.3333333333333333
+    },
+    {
+      "audio": "data/deaf_speech/audio/229.wav",
+      "reference": "बरोबर आहे.।",
+      "prediction": "बरोबर आहे ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/230.wav",
+      "reference": "चुकीचं आहे.।",
+      "prediction": "फल्चं आहे ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/231.wav",
+      "reference": "पुन्हा सांगा.।",
+      "prediction": "पुन्हा स दा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/232.wav",
+      "reference": "समजलं नाही.।",
+      "prediction": "मजलं नाही ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/233.wav",
+      "reference": "मला नीट समजलं नाही.।",
+      "prediction": "मलाट समजलंन नाही ⁇ ",
+      "wer": 0.75
+    },
+    {
+      "audio": "data/deaf_speech/audio/234.wav",
+      "reference": "लिहून द्या.।",
+      "prediction": "िह द्या ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/235.wav",
+      "reference": "पुन्हा लिहा.।",
+      "prediction": "पुन्हा सिा ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/236.wav",
+      "reference": "हे बरोबर लिहलं का?।",
+      "prediction": "हे बरोबलेळेल का ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/237.wav",
+      "reference": "मोबाइलवर दाखवा.।",
+      "prediction": "मोबइलवर दाखवा ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/238.wav",
+      "reference": "नकाशा दाखवा.।",
+      "prediction": "ा दाखवा ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/239.wav",
+      "reference": "या जवळ एटीएम आहे का?।",
+      "prediction": "जवटेम आहे का ⁇ ",
+      "wer": 0.6
+    },
+    {
+      "audio": "data/deaf_speech/audio/240.wav",
+      "reference": "बँक कुठे आहे?।",
+      "prediction": "बँक कुठे आहे ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/241.wav",
+      "reference": "पोस्ट ऑफिस इकडेच आहे का?।",
+      "prediction": "पोॉस्ट ऑसिस इकडे आहे का ⁇ ",
+      "wer": 0.4
+    },
+    {
+      "audio": "data/deaf_speech/audio/242.wav",
+      "reference": "पार्सल पाठवायचं.।",
+      "prediction": "बा्ल पाठवायचं ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/243.wav",
+      "reference": "रेजिस्टर्ड करा.।",
+      "prediction": "रेिस्टर्डड करा ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/244.wav",
+      "reference": "कापसाचे कपडे दाखवा.।",
+      "prediction": "कासाचे क काबपडे दाखवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/245.wav",
+      "reference": "सिल्कचं दाखवा.।",
+      "prediction": "सिल्कचं दारोवा ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/246.wav",
+      "reference": "हे फिट होईल का?।",
+      "prediction": "हे बिट होईलल का ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/247.wav",
+      "reference": "ट्राय करू शकतो का?।",
+      "prediction": "ट करू शकतो का ⁇ ",
+      "wer": 0.25
+    },
+    {
+      "audio": "data/deaf_speech/audio/248.wav",
+      "reference": "रिटर्न मिळेल का?।",
+      "prediction": "रकटन मिळेल का ⁇ ",
+      "wer": 0.3333333333333333
+    },
+    {
+      "audio": "data/deaf_speech/audio/249.wav",
+      "reference": "एक्सचेंज होईल का?।",
+      "prediction": "क्सचेंज होईल का ⁇ ",
+      "wer": 0.3333333333333333
+    },
+    {
+      "audio": "data/deaf_speech/audio/250.wav",
+      "reference": "गिफ्ट रॅप करा.।",
+      "prediction": "गिपट रथप करा ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/251.wav",
+      "reference": "बॅग द्या.।",
+      "prediction": "बॅग द्या ⁇ ",
+      "wer": 0.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/252.wav",
+      "reference": "प्लॅस्टिकची पिशवी द्या.।",
+      "prediction": "्ॅस्टिकची पिशवी द्या ⁇ ",
+      "wer": 0.3333333333333333
+    },
+    {
+      "audio": "data/deaf_speech/audio/253.wav",
+      "reference": "कागदाची पिशवी द्या.।",
+      "prediction": "कागदीची पिशवी द्या ⁇ ",
+      "wer": 0.0
+    }
+  ]
+}
