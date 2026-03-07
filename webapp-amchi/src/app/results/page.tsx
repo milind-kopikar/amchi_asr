@@ -1,327 +1,345 @@
 import Link from "next/link";
-import samplesData from "../../../public/samples.json";
 
-// ─── Types ──────────────────────────────────────────────────────────────────
+// ─── All data from 50-epoch Amchi Konkani run (2026-03-02) ─────────────────
+// Source: results/experiments/20260302_031806/final_test_results.json
+//         results/amchi_analysis/comparison_report.txt
 
-type Sample = (typeof samplesData.samples)[number];
+const SPEAKERS = [
+  {
+    label: "Asha Heble",
+    id: "ashaheble",
+    n: 35,
+    trainN: 156,
+    mean: 0.5169,
+    median: 0.500,
+    std: 0.2042,
+    min: 0.000,
+    max: 1.000,
+    cer: 0.2183,
+    color: "#6366f1",
+    colorLight: "#e0e7ff",
+    colorBorder: "#a5b4fc",
+  },
+  {
+    label: "Dipti Ajgaonkar",
+    id: "dipti",
+    n: 35,
+    trainN: 3,
+    mean: 0.6030,
+    median: 0.625,
+    std: 0.1927,
+    min: 0.143,
+    max: 1.000,
+    cer: 0.2604,
+    color: "#f97316",
+    colorLight: "#ffedd5",
+    colorBorder: "#fdba74",
+  },
+  {
+    label: "Lali Momadi",
+    id: "lalimomadi",
+    n: 34,
+    trainN: 125,
+    mean: 0.5194,
+    median: 0.500,
+    std: 0.1975,
+    min: 0.125,
+    max: 1.000,
+    cer: 0.2231,
+    color: "#10b981",
+    colorLight: "#d1fae5",
+    colorBorder: "#6ee7b7",
+  },
+];
 
-// ─── Histogram helpers ───────────────────────────────────────────────────────
+// Stacked histogram: c = [asha_count, dipti_count, lali_count] per WER bin
+// Bins: [0,10%), [10,20%), ..., [90,100%]  (verified: total = 35+35+34 = 104)
+const HIST = [
+  { label: "0–10%",   c: [1, 0, 0] },
+  { label: "10–20%",  c: [1, 1, 2] },
+  { label: "20–30%",  c: [4, 1, 3] },
+  { label: "30–40%",  c: [2, 2, 4] },
+  { label: "40–50%",  c: [6, 4, 5] },
+  { label: "50–60%",  c: [8, 8, 9] },
+  { label: "60–70%",  c: [6, 10, 5] },
+  { label: "70–80%",  c: [4, 3, 2] },
+  { label: "80–90%",  c: [2, 4, 3] },
+  { label: "90–100%", c: [1, 2, 1] },
+];
 
-/** Splits values into 10 equal bins: 0–10%, 10–20%, …, 90–100% */
-function makeBins(values: number[]): { label: string; count: number }[] {
-  return Array.from({ length: 10 }, (_, i) => {
-    const lo = i * 10;
-    const hi = lo + 10;
-    return {
-      label: `${lo}`,
-      count: values.filter((v) => {
-        const pct = v * 100;
-        return i === 9 ? pct >= lo && pct <= 100 : pct >= lo && pct < hi;
-      }).length,
-    };
-  });
+const OVERALL_WER = 0.5467;
+const OVERALL_STD = 0.2022;
+const PILOT_WER = 0.351;
+
+// ─── SVG Histogram ───────────────────────────────────────────────────────────
+// Layout constants (SVG coordinate units)
+const ML = 34;   // margin left (for y-axis labels)
+const MT = 10;   // margin top
+const MB = 50;   // margin bottom (for x-axis labels)
+const CW = 476;  // chart area width
+const CH = 168;  // chart area height
+const SLOT = CW / HIST.length;        // px per bin = 47.6
+const BAR_W = SLOT - 4;               // bar width with gap
+const YMAX = 28;                      // y-axis max (actual max count = 25)
+const YS = CH / YMAX;                 // px per count unit
+
+function pct(n: number, d = 1) {
+  return (n * 100).toFixed(d) + "%";
 }
 
-function mean(values: number[]) {
-  return values.reduce((a, b) => a + b, 0) / values.length;
-}
-
-// ─── Wilcoxon Signed-Rank Test ───────────────────────────────────────────────
-// Two-tailed, normal approximation with continuity correction + tie handling.
-// Returns: W+ (sum of positive ranks), W- (sum of negative ranks),
-//          n (non-zero pairs), z (test statistic), p (two-tailed), r (effect size).
-
-interface WilcoxonResult {
-  Wplus: number;
-  Wminus: number;
-  n: number;
-  nZeros: number;
-  z: number;
-  p: number;
-  r: number;
-}
-
-function erf(x: number): number {
-  // Abramowitz & Stegun approximation (max error < 1.5e-7)
-  const a = [0.254829592, -0.284496736, 1.421413741, -1.453152027, 1.061405429];
-  const p = 0.3275911;
-  const sign = x < 0 ? -1 : 1;
-  const t = 1 / (1 + p * Math.abs(x));
-  let poly = 0, tp = t;
-  for (const ai of a) { poly += ai * tp; tp *= t; }
-  return sign * (1 - poly * Math.exp(-x * x));
-}
-
-function normalSurv(z: number): number {
-  return 0.5 * (1 - erf(z / Math.sqrt(2)));
-}
-
-function wilcoxonSignedRank(before: number[], after: number[]): WilcoxonResult {
-  const diffs = before.map((b, i) => b - after[i]);
-  const nonZero = diffs.filter((d) => Math.abs(d) > 1e-9);
-  const nZeros = diffs.length - nonZero.length;
-  const n = nonZero.length;
-
-  if (n === 0) return { Wplus: 0, Wminus: 0, n: 0, nZeros, z: 0, p: 1, r: 0 };
-
-  // Sort by |diff|, preserving original index for rank assignment
-  const items = nonZero.map((d, i) => ({ d, abs: Math.abs(d), orig: i }));
-  items.sort((a, b) => a.abs - b.abs);
-
-  const ranks = new Array<number>(n);
-  let i = 0;
-  while (i < n) {
-    let j = i;
-    while (j < n - 1 && Math.abs(items[j + 1].abs - items[j].abs) < 1e-9) j++;
-    const avgRank = (i + j) / 2 + 1; // 1-indexed average rank
-    for (let k = i; k <= j; k++) ranks[items[k].orig] = avgRank;
-    i = j + 1;
-  }
-
-  let Wplus = 0, Wminus = 0;
-  for (let i = 0; i < n; i++) {
-    if (nonZero[i] > 0) Wplus += ranks[i];
-    else Wminus += ranks[i];
-  }
-
-  // Tie correction for variance
-  const tieMap: Record<string, number> = {};
-  for (const it of items) {
-    const key = it.abs.toFixed(8);
-    tieMap[key] = (tieMap[key] ?? 0) + 1;
-  }
-  const tieCorr = Object.values(tieMap).reduce((s, t) => s + (t ** 3 - t), 0) / 48;
-
-  const mu = (n * (n + 1)) / 4;
-  const sigma = Math.sqrt((n * (n + 1) * (2 * n + 1)) / 24 - tieCorr);
-
-  const W = Math.min(Wplus, Wminus);
-  const Wadj = W + (W < mu ? 0.5 : -0.5); // continuity correction
-  const z = (Wadj - mu) / sigma;
-  const p = 2 * normalSurv(Math.abs(z));
-  const r = Math.abs(z) / Math.sqrt(n); // effect size
-
-  return { Wplus, Wminus, n, nZeros, z, p, r };
-}
-
-// ─── SVG Histogram ──────────────────────────────────────────────────────────
-
-interface HistogramProps {
-  values: number[];
-  title: string;
-  subtitle: string;
-  barColor: string;
-  meanColor: string;
-  xAxisLabel: string;
-}
-
-function Histogram({
-  values,
-  title,
-  subtitle,
-  barColor,
-  meanColor,
-  xAxisLabel,
-}: HistogramProps) {
-  const bins = makeBins(values);
-  const maxCount = Math.max(...bins.map((b) => b.count), 1);
-  const avg = mean(values);
-
-  // Canvas dimensions
-  const W = 320,
-    H = 200;
-  const mt = 22,
-    mr = 14,
-    mb = 52,
-    ml = 28;
-  const cw = W - ml - mr;
-  const ch = H - mt - mb;
-  const barW = cw / bins.length;
-
-  // Y-axis tick values
-  const half = Math.round(maxCount / 2);
-  const yTicks = [...new Set([0, half > 0 ? half : undefined, maxCount].filter(Boolean) as number[])];
-
-  // Mean x position (0–1 maps to 0–cw over 10 bins)
-  const meanX = avg * 10 * barW;
+function StackedHistogram() {
+  const svgW = CW + ML + 10;
+  const svgH = CH + MT + MB;
+  const yTicks = [0, 5, 10, 15, 20, 25];
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm flex flex-col gap-1">
-      <p className="text-sm font-semibold text-gray-800">{title}</p>
-      <p className="text-xs text-gray-400">{subtitle}</p>
-      <svg
-        viewBox={`0 0 ${W} ${H}`}
-        className="w-full mt-1"
-        aria-label={title}
-      >
-        <g transform={`translate(${ml},${mt})`}>
-          {/* Y gridlines + labels */}
-          {yTicks.map((v) => {
-            const y = ch - (v / maxCount) * ch;
-            return (
-              <g key={v}>
-                <line
-                  x1={0}
-                  y1={y}
-                  x2={cw}
-                  y2={y}
-                  stroke="#f3f4f6"
-                  strokeWidth={1}
-                />
-                <text
-                  x={-4}
-                  y={y + 3.5}
-                  fontSize={9}
-                  textAnchor="end"
-                  fill="#9ca3af"
-                >
-                  {v}
-                </text>
-              </g>
-            );
-          })}
-
-          {/* Bars */}
-          {bins.map((b, i) => {
-            const barH = (b.count / maxCount) * ch;
-            return (
-              <g key={i}>
-                <rect
-                  x={i * barW + 1.5}
-                  y={ch - barH}
-                  width={barW - 3}
-                  height={Math.max(barH, 0)}
-                  fill={barColor}
-                  rx={2}
-                  opacity={0.82}
-                />
-                {b.count > 0 && (
-                  <text
-                    x={i * barW + barW / 2}
-                    y={ch - barH - 3}
-                    fontSize={9}
-                    textAnchor="middle"
-                    fill="#374151"
-                  >
-                    {b.count}
-                  </text>
-                )}
-              </g>
-            );
-          })}
-
-          {/* X-axis bin labels */}
-          {bins.map((b, i) => (
-            <text
-              key={i}
-              x={i * barW + barW / 2}
-              y={ch + 13}
-              fontSize={8}
-              textAnchor="middle"
-              fill="#9ca3af"
-            >
-              {b.label}%
+    <svg
+      viewBox={`0 0 ${svgW} ${svgH}`}
+      className="w-full"
+      role="img"
+      aria-label="WER distribution histogram for 104 test samples, stacked by speaker"
+    >
+      {/* Gridlines + Y-axis labels */}
+      {yTicks.map((cnt) => {
+        const y = MT + CH - cnt * YS;
+        return (
+          <g key={cnt}>
+            <line
+              x1={ML} y1={y} x2={ML + CW} y2={y}
+              stroke={cnt === 0 ? "#d1d5db" : "#f3f4f6"}
+              strokeWidth="1"
+            />
+            <text x={ML - 4} y={y + 4} textAnchor="end" fontSize="10" fill="#9ca3af">
+              {cnt}
             </text>
-          ))}
+          </g>
+        );
+      })}
 
-          {/* X-axis title */}
-          <text
-            x={cw / 2}
-            y={ch + 32}
-            fontSize={9}
-            textAnchor="middle"
-            fill="#6b7280"
-          >
-            {xAxisLabel} (%)
-          </text>
+      {/* Stacked bars — asha at bottom, dipti in middle, lali on top */}
+      {HIST.map((bin, bi) => {
+        const x = ML + bi * SLOT;
+        let stackY = MT + CH; // start at chart bottom, grow upward
+        const total = bin.c.reduce((a, b) => a + b, 0);
 
-          {/* Y-axis "count" label */}
-          <text
-            x={-(ch / 2)}
-            y={-18}
-            fontSize={9}
-            textAnchor="middle"
-            fill="#6b7280"
-            transform="rotate(-90)"
-          >
-            # samples
-          </text>
+        return (
+          <g key={bi}>
+            {bin.c.map((cnt, ci) => {
+              const h = cnt * YS;
+              stackY -= h;
+              const rectY = stackY;
+              return cnt > 0 ? (
+                <g key={ci}>
+                  <rect
+                    x={x + 2} y={rectY} width={BAR_W} height={h}
+                    fill={SPEAKERS[ci].color}
+                    opacity="0.80"
+                    rx="2"
+                  />
+                  {h > 13 && (
+                    <text
+                      x={x + 2 + BAR_W / 2} y={rectY + h / 2 + 4}
+                      textAnchor="middle" fontSize="9" fill="white" fontWeight="600"
+                    >
+                      {cnt}
+                    </text>
+                  )}
+                </g>
+              ) : null;
+            })}
 
-          {/* Axes */}
-          <line x1={0} y1={ch} x2={cw} y2={ch} stroke="#e5e7eb" strokeWidth={1} />
-          <line x1={0} y1={0} x2={0} y2={ch} stroke="#e5e7eb" strokeWidth={1} />
+            {/* Total count above each bar */}
+            {total > 0 && (
+              <text
+                x={x + 2 + BAR_W / 2} y={MT + CH - total * YS - 3}
+                textAnchor="middle" fontSize="9" fill="#6b7280"
+              >
+                {total}
+              </text>
+            )}
 
-          {/* Mean dashed line */}
-          <line
-            x1={meanX}
-            y1={0}
-            x2={meanX}
-            y2={ch}
-            stroke={meanColor}
-            strokeDasharray="4 3"
-            strokeWidth={1.5}
-          />
-          <text
-            x={Math.min(meanX + 4, cw - 36)}
-            y={10}
-            fontSize={8.5}
-            fill={meanColor}
-          >
-            mean {Math.round(avg * 100)}%
-          </text>
-        </g>
-      </svg>
-    </div>
+            {/* X-axis bin label */}
+            <text
+              x={x + 2 + BAR_W / 2} y={MT + CH + 14}
+              textAnchor="middle" fontSize="9.5" fill="#6b7280"
+            >
+              {bin.label}
+            </text>
+          </g>
+        );
+      })}
+
+      {/* Mean WER vertical dashed line */}
+      {(() => {
+        const meanX = ML + OVERALL_WER * CW;
+        return (
+          <>
+            <line
+              x1={meanX} y1={MT} x2={meanX} y2={MT + CH}
+              stroke="#dc2626" strokeWidth="1.5" strokeDasharray="4,3"
+            />
+            <text x={meanX + 3} y={MT + 12} fontSize="9" fill="#dc2626">
+              Mean {pct(OVERALL_WER)}
+            </text>
+          </>
+        );
+      })()}
+
+      {/* Axis lines */}
+      <line x1={ML} y1={MT} x2={ML} y2={MT + CH} stroke="#e5e7eb" strokeWidth="1" />
+      <line x1={ML} y1={MT + CH} x2={ML + CW} y2={MT + CH} stroke="#e5e7eb" strokeWidth="1" />
+
+      {/* Y-axis title */}
+      <text
+        transform={`rotate(-90) translate(${-(MT + CH / 2)}, 11)`}
+        textAnchor="middle" fontSize="10" fill="#9ca3af"
+      >
+        Samples
+      </text>
+
+      {/* X-axis title */}
+      <text
+        x={ML + CW / 2} y={svgH - 4}
+        textAnchor="middle" fontSize="10" fill="#9ca3af"
+      >
+        Word Error Rate (WER)
+      </text>
+    </svg>
   );
 }
 
-// ─── Stat pill ───────────────────────────────────────────────────────────────
+// ─── Per-speaker horizontal WER bars ─────────────────────────────────────────
+function SpeakerBars() {
+  const labelW = 128;
+  const barAreaW = 330;
+  const rowH = 44;
+  const svgW = labelW + barAreaW + 55;
+  const svgH = SPEAKERS.length * rowH + 30;
 
-function StatPill({
-  label,
-  value,
-  sub,
-  color,
-}: {
-  label: string;
-  value: string;
-  sub: string;
-  color: string;
-}) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-center shadow-sm flex-1">
-      <p className="text-xs text-gray-400 mb-0.5">{label}</p>
-      <p className={`text-2xl font-bold ${color}`}>{value}</p>
-      <p className="text-xs text-gray-400">{sub}</p>
+    <svg
+      viewBox={`0 0 ${svgW} ${svgH}`}
+      className="w-full"
+      role="img"
+      aria-label="Per-speaker mean WER comparison"
+    >
+      {/* Pilot baseline dashed line */}
+      {(() => {
+        const px = labelW + PILOT_WER * barAreaW;
+        return (
+          <>
+            <line x1={px} y1={6} x2={px} y2={svgH - 14} stroke="#9ca3af" strokeWidth="1" strokeDasharray="3,2" />
+            <text x={px - 2} y={14} textAnchor="end" fontSize="9" fill="#9ca3af">Pilot</text>
+            <text x={px - 2} y={23} textAnchor="end" fontSize="9" fill="#9ca3af">35.1%</text>
+          </>
+        );
+      })()}
+
+      {/* Per-speaker rows */}
+      {SPEAKERS.map((sp, i) => {
+        const y = 16 + i * rowH;
+        const meanBarW = sp.mean * barAreaW;
+        const stdL = Math.max(0, sp.mean - sp.std) * barAreaW;
+        const stdR = Math.min(1, sp.mean + sp.std) * barAreaW;
+
+        return (
+          <g key={sp.id}>
+            {/* Track background */}
+            <rect x={labelW} y={y + 10} width={barAreaW} height={18} fill="#f3f4f6" rx="3" />
+            {/* ±1 std shading */}
+            <rect x={labelW + stdL} y={y + 10} width={stdR - stdL} height={18} fill={sp.color} opacity="0.15" />
+            {/* Mean bar */}
+            <rect x={labelW} y={y + 10} width={meanBarW} height={18} fill={sp.color} opacity="0.75" rx="3" />
+            {/* Median tick (white line) */}
+            <line
+              x1={labelW + sp.median * barAreaW} y1={y + 10}
+              x2={labelW + sp.median * barAreaW} y2={y + 28}
+              stroke="white" strokeWidth="2"
+            />
+            {/* Speaker label */}
+            <text x={labelW - 8} y={y + 23} textAnchor="end" fontSize="11" fill="#374151" fontWeight="500">
+              {sp.label}
+            </text>
+            {/* Mean WER value label */}
+            <text x={labelW + meanBarW + 5} y={y + 23} fontSize="10.5" fill={sp.color} fontWeight="600">
+              {pct(sp.mean)}
+            </text>
+          </g>
+        );
+      })}
+
+      {/* X-axis ticks */}
+      {[0, 0.25, 0.5, 0.75, 1.0].map((v) => {
+        const x = labelW + v * barAreaW;
+        return (
+          <g key={v}>
+            <line x1={x} y1={svgH - 16} x2={x} y2={svgH - 10} stroke="#d1d5db" strokeWidth="1" />
+            <text x={x} y={svgH - 2} textAnchor="middle" fontSize="9" fill="#9ca3af">
+              {Math.round(v * 100)}%
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+// ─── Error type horizontal stacked bar ───────────────────────────────────────
+function ErrorTypeBar() {
+  const segments = [
+    { label: "Correct (59.3%)",       frac: 0.5929, color: "#d1fae5", text: "#065f46" },
+    { label: "Substitutions (27.8%)", frac: 0.2782, color: "#fecaca", text: "#991b1b" },
+    { label: "Insertions (9.4%)",     frac: 0.0941, color: "#fed7aa", text: "#92400e" },
+    { label: "Deletions (3.5%)",      frac: 0.0349, color: "#e9d5ff", text: "#6b21a8" },
+  ];
+  const barH = 28;
+  const barW = 460;
+  let xPos = 0;
+
+  return (
+    <div>
+      <svg viewBox={`0 0 ${barW} ${barH}`} className="w-full rounded-lg overflow-hidden" role="img" aria-label="Error type breakdown">
+        {segments.map((seg) => {
+          const w = seg.frac * barW;
+          const rx = xPos;
+          xPos += w;
+          return (
+            <g key={seg.label}>
+              <rect x={rx} y={0} width={w} height={barH} fill={seg.color} />
+              {w > 38 && (
+                <text
+                  x={rx + w / 2} y={barH / 2 + 4}
+                  textAnchor="middle" fontSize="10" fill={seg.text} fontWeight="600"
+                >
+                  {pct(seg.frac, 0)}
+                </text>
+              )}
+            </g>
+          );
+        })}
+      </svg>
+      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">
+        {segments.map((seg) => (
+          <span key={seg.label} className="flex items-center gap-1.5 text-xs text-gray-600">
+            <span
+              className="inline-block w-3 h-3 rounded-sm flex-shrink-0"
+              style={{ background: seg.color, outline: `1px solid ${seg.text}30` }}
+            />
+            {seg.label}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
 
-// ─── Page ────────────────────────────────────────────────────────────────────
-
+// ─── Page ─────────────────────────────────────────────────────────────────────
 export default function ResultsPage() {
-  const samples: Sample[] = samplesData.samples;
-  const n = samples.length;
-
-  const werBefore = samples.map((s) => s.wer_before);
-  const werAfter = samples.map((s) => s.wer_after);
-  const cerBefore = samples.map((s) => s.cer_before);
-  const cerAfter = samples.map((s) => s.cer_after);
-
-  const meanWerBefore = Math.round(mean(werBefore) * 100);
-  const meanWerAfter = Math.round(mean(werAfter) * 100);
-  const meanCerBefore = Math.round(mean(cerBefore) * 100);
-  const meanCerAfter = Math.round(mean(cerAfter) * 100);
-
-  // Wilcoxon tests — computed at build time (server component)
-  const werTest = wilcoxonSignedRank(werBefore, werAfter);
-  const cerTest = wilcoxonSignedRank(cerBefore, cerAfter);
-
   return (
     <main className="min-h-screen bg-gray-50 py-6 px-4">
-      <div className="max-w-3xl mx-auto space-y-6">
+      <div className="max-w-2xl mx-auto space-y-6">
 
-        {/* ── Nav ── */}
+        {/* Nav */}
         <nav className="flex gap-1 border-b border-gray-200 pb-0">
           <Link
             href="/"
@@ -334,201 +352,281 @@ export default function ResultsPage() {
           </span>
         </nav>
 
-        {/* ── Header ── */}
-        <header className="text-center space-y-1">
+        {/* Header */}
+        <header className="space-y-1">
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-            📊 ASR Evaluation Results
+            Amchi Konkani ASR — Results
           </h1>
-          <p className="text-sm text-gray-500">{samplesData.meta.model}</p>
-          <p className="text-xs text-gray-400">
-            {n} test samples — Amchi Konkani (GSB Konkani)
+          <p className="text-sm text-gray-500">
+            50-epoch fine-tune · IndicConformer (AI4Bharat Marathi base) · Story 5 test set · 2026-03-02
           </p>
         </header>
 
-        {/* ── Summary stats ── */}
-        <section>
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
-            Mean metrics across all {n} samples
-          </p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <StatPill
-              label="WER — Fine-Tuned ASR"
-              value={`${meanWerBefore}%`}
-              sub="before post-processing"
-              color="text-gray-700"
-            />
-            <StatPill
-              label="WER — Post-Processed"
-              value={`${meanWerAfter}%`}
-              sub={`${meanWerAfter < meanWerBefore ? "↓ " + (meanWerBefore - meanWerAfter) + "pp improvement" : "no change"}`}
-              color={meanWerAfter < meanWerBefore ? "text-emerald-600" : "text-gray-700"}
-            />
-            <StatPill
-              label="CER — Fine-Tuned ASR"
-              value={`${meanCerBefore}%`}
-              sub="before post-processing"
-              color="text-gray-700"
-            />
-            <StatPill
-              label="CER — Post-Processed"
-              value={`${meanCerAfter}%`}
-              sub={`${meanCerAfter < meanCerBefore ? "↓ " + (meanCerBefore - meanCerAfter) + "pp improvement" : meanCerAfter > meanCerBefore ? "↑ " + (meanCerAfter - meanCerBefore) + "pp (char drift)" : "no change"}`}
-              color={meanCerAfter < meanCerBefore ? "text-emerald-600" : meanCerAfter > meanCerBefore ? "text-amber-600" : "text-gray-700"}
-            />
+        {/* Summary stat cards */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="rounded-xl bg-white border border-gray-200 p-3 shadow-sm text-center">
+            <p className="text-2xl font-bold text-gray-900">{pct(OVERALL_WER)}</p>
+            <p className="text-xs text-gray-500 mt-0.5">Overall WER</p>
+            <p className="text-xs text-gray-400">±{pct(OVERALL_STD)} std</p>
           </div>
+          <div className="rounded-xl bg-white border border-gray-200 p-3 shadow-sm text-center">
+            <p className="text-2xl font-bold text-gray-900">104</p>
+            <p className="text-xs text-gray-500 mt-0.5">Test samples</p>
+            <p className="text-xs text-gray-400">3 speakers, Story 5</p>
+          </div>
+          <div className="rounded-xl bg-white border border-gray-200 p-3 shadow-sm text-center">
+            <p className="text-2xl font-bold text-indigo-600">ep 47</p>
+            <p className="text-xs text-gray-500 mt-0.5">Best checkpoint</p>
+            <p className="text-xs text-gray-400">val WER 53.2%</p>
+          </div>
+        </div>
+
+        {/* Histogram */}
+        <section className="rounded-xl bg-white border border-gray-200 p-4 shadow-sm space-y-3">
+          <div>
+            <h2 className="text-sm font-semibold text-gray-800">WER Distribution — 104 Test Samples</h2>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Stacked by speaker. Red dashed line = mean WER (54.7%). White tick in bars = median.
+            </p>
+          </div>
+
+          <StackedHistogram />
+
+          {/* Legend */}
+          <div className="flex flex-wrap gap-3">
+            {SPEAKERS.map((sp) => (
+              <span key={sp.id} className="flex items-center gap-1.5 text-xs text-gray-600">
+                <span className="inline-block w-3 h-3 rounded-sm flex-shrink-0" style={{ background: sp.color }} />
+                {sp.label}
+              </span>
+            ))}
+          </div>
+
+          <p className="text-xs text-gray-400 leading-relaxed">
+            The distribution peaks in the 50–70% WER range (46 of 104 samples). Only 5 samples achieved
+            WER below 20%; 4 samples exceeded 90%. Dipti Ajgaonkar contributes disproportionately to
+            the 60–70% and 80–90% bins, reflecting her near-zero training representation.
+          </p>
         </section>
 
-        {/* ── WER charts ── */}
-        <section>
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
-            Word Error Rate (WER) distribution
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Histogram
-              values={werBefore}
-              title="Fine-Tuned ASR Output"
-              subtitle="WER distribution before post-processing"
-              barColor="#6366f1"
-              meanColor="#4338ca"
-              xAxisLabel="WER"
-            />
-            <Histogram
-              values={werAfter}
-              title="Post-Processed Output"
-              subtitle="WER distribution after post-processing"
-              barColor="#10b981"
-              meanColor="#059669"
-              xAxisLabel="WER"
-            />
+        {/* Per-speaker breakdown */}
+        <section className="rounded-xl bg-white border border-gray-200 p-4 shadow-sm space-y-4">
+          <div>
+            <h2 className="text-sm font-semibold text-gray-800">Per-Speaker Breakdown</h2>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Bar = mean WER. Shading = ±1 std. White tick = median. Dashed = pilot baseline (35.1%).
+            </p>
           </div>
-        </section>
 
-        {/* ── CER charts ── */}
-        <section>
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
-            Character Error Rate (CER) distribution
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Histogram
-              values={cerBefore}
-              title="Fine-Tuned ASR Output"
-              subtitle="CER distribution before post-processing"
-              barColor="#6366f1"
-              meanColor="#4338ca"
-              xAxisLabel="CER"
-            />
-            <Histogram
-              values={cerAfter}
-              title="Post-Processed Output"
-              subtitle="CER distribution after post-processing"
-              barColor="#10b981"
-              meanColor="#059669"
-              xAxisLabel="CER"
-            />
-          </div>
-        </section>
+          <SpeakerBars />
 
-        {/* ── Statistical Analysis ── */}
-        <section className="space-y-4">
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-            Statistical analysis — Wilcoxon Signed-Rank Test
-          </p>
-          <p className="text-xs text-gray-500">
-            Paired non-parametric test comparing each sample before and after
-            post-processing. H₀: no change in median error rate. Two-tailed,
-            normal approximation with continuity correction and tie handling.
-            Effect size r = |z| / √n.
-          </p>
-
-          {/* Results table */}
-          <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-sm">
-            <table className="w-full text-sm bg-white">
+          {/* Stats table */}
+          <div className="overflow-x-auto -mx-1">
+            <table className="w-full text-xs border-collapse">
               <thead>
-                <tr className="border-b border-gray-100 text-xs text-gray-500 uppercase tracking-wide">
-                  <th className="text-left px-4 py-2.5">Metric</th>
-                  <th className="text-right px-3 py-2.5">n pairs</th>
-                  <th className="text-right px-3 py-2.5">W⁺ (↓ better)</th>
-                  <th className="text-right px-3 py-2.5">W⁻ (↑ worse)</th>
-                  <th className="text-right px-3 py-2.5">z</th>
-                  <th className="text-right px-3 py-2.5">p (two-tailed)</th>
-                  <th className="text-right px-3 py-2.5">r</th>
-                  <th className="text-left px-4 py-2.5">Result</th>
+                <tr className="border-b border-gray-100">
+                  {["Speaker", "Test N", "Train N", "Mean WER", "Median", "±Std", "CER"].map((h, i) => (
+                    <th
+                      key={h}
+                      className={`py-1.5 font-medium text-gray-500 ${i === 0 ? "text-left pr-2" : "text-right px-2"}`}
+                    >
+                      {h}
+                    </th>
+                  ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
-                {[
-                  { label: "WER", test: werTest, direction: "WER improved in 3/37 samples" },
-                  { label: "CER", test: cerTest, direction: "CER changed in 10/37 samples" },
-                ].map(({ label, test, direction }) => {
-                  const sig = test.p < 0.05;
-                  const improved = test.Wplus > test.Wminus; // more rank weight on improvements
-                  return (
-                    <tr key={label} className="text-gray-700">
-                      <td className="px-4 py-3 font-semibold">{label}</td>
-                      <td className="text-right px-3 py-3 text-gray-500">
-                        {test.n}
-                        {test.nZeros > 0 && (
-                          <span className="text-gray-400"> (+{test.nZeros} tied)</span>
-                        )}
-                      </td>
-                      <td className="text-right px-3 py-3">{test.Wplus.toFixed(1)}</td>
-                      <td className="text-right px-3 py-3">{test.Wminus.toFixed(1)}</td>
-                      <td className="text-right px-3 py-3">{test.z.toFixed(2)}</td>
-                      <td className="text-right px-3 py-3 font-mono">
-                        <span className={sig ? (improved ? "text-emerald-700 font-semibold" : "text-amber-700 font-semibold") : "text-gray-500"}>
-                          {test.p < 0.001 ? "< 0.001" : test.p.toFixed(3)}
-                        </span>
-                      </td>
-                      <td className="text-right px-3 py-3 text-gray-500">{test.r.toFixed(2)}</td>
-                      <td className="px-4 py-3">
-                        {!sig ? (
-                          <span className="inline-flex items-center gap-1 text-xs text-gray-500 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded-full">
-                            Not significant
-                          </span>
-                        ) : improved ? (
-                          <span className="inline-flex items-center gap-1 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                            ✓ Significant improvement
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-xs text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
-                            ⚠ Significant degradation
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
+              <tbody>
+                {SPEAKERS.map((sp) => (
+                  <tr key={sp.id} className="border-b border-gray-50">
+                    <td className="py-2 pr-2">
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: sp.color }} />
+                        <span className="font-medium text-gray-800">{sp.label}</span>
+                      </span>
+                    </td>
+                    <td className="py-2 px-2 text-right text-gray-600">{sp.n}</td>
+                    <td className="py-2 px-2 text-right">
+                      <span className={sp.trainN <= 10 ? "font-semibold text-red-600" : "text-gray-600"}>
+                        {sp.trainN}{sp.trainN <= 10 ? " ⚠" : ""}
+                      </span>
+                    </td>
+                    <td className="py-2 px-2 text-right font-semibold" style={{ color: sp.color }}>
+                      {pct(sp.mean)}
+                    </td>
+                    <td className="py-2 px-2 text-right text-gray-600">{pct(sp.median, 0)}</td>
+                    <td className="py-2 px-2 text-right text-gray-500">{pct(sp.std)}</td>
+                    <td className="py-2 pl-2 text-right text-gray-500">{pct(sp.cer)}</td>
+                  </tr>
+                ))}
+                <tr className="bg-gray-50 font-medium">
+                  <td className="py-2 pr-2 text-gray-700">Overall</td>
+                  <td className="py-2 px-2 text-right text-gray-700">104</td>
+                  <td className="py-2 px-2 text-right text-gray-500">511</td>
+                  <td className="py-2 px-2 text-right font-bold text-gray-900">{pct(OVERALL_WER)}</td>
+                  <td className="py-2 px-2 text-right text-gray-500">—</td>
+                  <td className="py-2 px-2 text-right text-gray-500">{pct(OVERALL_STD)}</td>
+                  <td className="py-2 pl-2 text-right text-gray-500">23.4%</td>
+                </tr>
               </tbody>
             </table>
           </div>
 
-          {/* Interpretation callout */}
-          <div className="rounded-xl border border-indigo-100 bg-indigo-50 p-4 space-y-2 text-sm">
-            <p className="font-semibold text-indigo-800">Interpretation</p>
-            <ul className="space-y-1.5 text-indigo-700 text-xs leading-relaxed list-none">
-              <li>
-                <span className="font-medium">WER (p = {werTest.p.toFixed(3)}, not significant):</span>{" "}
-                The safety valve reverted {werTest.nZeros}/{n} samples where Gemini would have
-                worsened WER, leaving only {werTest.n} samples with any WER change. With n = {werTest.n}
-                effective pairs, the test is underpowered — a minimum of ~6 pairs is needed to
-                reach p &lt; 0.05. The safety valve successfully prevented WER regression but
-                also limits detectable improvement.
-              </li>
-              <li>
-                <span className="font-medium">CER (p = {cerTest.p.toFixed(3)}, significant):</span>{" "}
-                W⁻ ({cerTest.Wminus.toFixed(0)}) ≫ W⁺ ({cerTest.Wplus.toFixed(0)}) — when
-                post-processing does change text, it introduces character-level drift
-                (substitutions and insertions) even when the overall word-level output is
-                preserved by the safety valve. This is a known limitation of LLM-based
-                correction on low-resource scripts.
-              </li>
-            </ul>
+          <div className="rounded-lg bg-amber-50 border border-amber-100 px-3 py-2 text-xs text-gray-600">
+            <span className="font-medium text-amber-700">Dipti Ajgaonkar — 3 training samples, 35 test samples.</span>
+            {" "}She joined the project after Stories 1–4 were recorded and only contributed Story 5 content.
+            The story-based train/test split (train = Stories 1, 2, 3, 7; test = Story 5) left her with
+            near-zero training representation, explaining her higher WER.
           </div>
         </section>
 
-        {/* ── Footer ── */}
-        <footer className="text-center text-xs text-gray-400 pt-4 pb-2 border-t border-gray-100">
-          <p>{samplesData.meta.postprocessing}</p>
+        {/* Statistical analysis */}
+        <section className="rounded-xl bg-white border border-gray-200 p-4 shadow-sm space-y-3">
+          <h2 className="text-sm font-semibold text-gray-800">Statistical Analysis</h2>
+
+          <div className="space-y-2">
+            {/* Kruskal-Wallis */}
+            <div className="rounded-lg bg-gray-50 border border-gray-100 p-3 text-xs space-y-1">
+              <p className="font-semibold text-gray-700">Inter-speaker difference — Kruskal-Wallis test</p>
+              <p className="text-gray-500">
+                H = 3.94 &nbsp;|&nbsp; <span className="font-mono">p = 0.139</span> &nbsp;—&nbsp; not significant
+              </p>
+              <p className="text-gray-400">
+                The 8.6 pp gap between Asha (51.7%) and Dipti (60.3%) does not reach statistical
+                significance at n = 34–35 per speaker. Pairwise Mann-Whitney U tests also show no
+                significant difference between any speaker pair (all p &gt; 0.07).
+              </p>
+            </div>
+
+            {/* Wilcoxon vs pilot */}
+            <div className="rounded-lg bg-red-50 border border-red-100 p-3 text-xs space-y-1">
+              <p className="font-semibold text-red-800">Regression vs pilot — Wilcoxon signed-rank test</p>
+              <p className="text-gray-700">
+                38 audio IDs matched between the pilot run (35.1% WER) and this run (same speaker, Asha Heble).
+                Mean WER change:{" "}
+                <span className="font-semibold text-red-700">+14.4 pp</span> (35.1% → 49.5%).
+                25/38 samples regressed, 7 improved, 6 unchanged.
+              </p>
+              <p className="text-gray-700">
+                Wilcoxon W = 76.0 &nbsp;|&nbsp;{" "}
+                <span className="font-mono font-semibold text-red-700">p = 0.000434</span>{" "}
+                <span className="text-red-600">***</span>
+              </p>
+              <p className="text-gray-400">
+                Even for Asha — the dominant training speaker — performance regressed significantly.
+                This rules out test-set difficulty as the sole cause and confirms overfitting.
+              </p>
+            </div>
+
+            {/* Sentence length */}
+            <div className="rounded-lg bg-gray-50 border border-gray-100 p-3 text-xs space-y-1">
+              <p className="font-semibold text-gray-700">Sentence length vs WER — Pearson correlation</p>
+              <p className="text-gray-500">
+                r = −0.069 &nbsp;|&nbsp; <span className="font-mono">p = 0.487</span> &nbsp;—&nbsp; not significant
+              </p>
+              <p className="text-gray-400">Sentence length has no meaningful effect on error rate.</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Error type breakdown */}
+        <section className="rounded-xl bg-white border border-gray-200 p-4 shadow-sm space-y-3">
+          <div>
+            <h2 className="text-sm font-semibold text-gray-800">Error Type Breakdown</h2>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Fraction of all reference words across 104 test samples.
+            </p>
+          </div>
+          <ErrorTypeBar />
+          <p className="text-xs text-gray-400 leading-relaxed">
+            Substitutions dominate (27.8%) — the model produces plausible Konkani phonemes but wrong
+            tokens, typical of a Marathi base model adapting to a related dialect. Insertions (9.4%)
+            reflect repeated or hallucinated tokens common in CTC decoding when the encoder overfits.
+            Deletions are rare (3.5%).
+          </p>
+        </section>
+
+        {/* Root cause + training context */}
+        <section className="rounded-xl bg-white border border-gray-200 p-4 shadow-sm space-y-4">
+          <h2 className="text-sm font-semibold text-gray-800">Root Cause Analysis</h2>
+
+          <div className="space-y-3 text-xs">
+            {[
+              {
+                n: "1",
+                color: "bg-red-100 text-red-700",
+                title: "Overfitting — 115M encoder params trained on 511 samples",
+                body: "Val loss doubled from 49.5 (epoch 6) to 91.9 (epoch 49), a 1.86× increase. Train loss collapsed to 0.18. The encoder memorised training voices rather than learning generalisable Konkani acoustics. Wilcoxon confirms regression even for the dominant training speaker.",
+              },
+              {
+                n: "2",
+                color: "bg-orange-100 text-orange-700",
+                title: "Speaker imbalance — Dipti had 3 train / 35 test samples",
+                body: "The story-based split structurally excluded Dipti from training because she only recorded Story 5 content (the test set). The model was almost never trained on her voice.",
+              },
+              {
+                n: "3",
+                color: "bg-blue-100 text-blue-700",
+                title: "Pilot comparison is not apples-to-apples",
+                body: "The 35.1% pilot used the same file for validation and test (selection bias), evaluated only 1 speaker, and stopped at epoch 20 before significant overfitting. The 50-epoch run uses a proper held-out 3-speaker test set — a harder and fairer evaluation.",
+              },
+            ].map(({ n, color, title, body }) => (
+              <div key={n} className="flex gap-2.5">
+                <span className={`mt-0.5 w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold ${color}`}>
+                  {n}
+                </span>
+                <div>
+                  <p className="font-medium text-gray-800">{title}</p>
+                  <p className="text-gray-500 mt-0.5 leading-relaxed">{body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Training curve summary */}
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            {[
+              { label: "Val loss (epoch 6 → 49)", value: "49.5 → 91.9  (+1.86×)" },
+              { label: "Train loss (epoch 49)", value: "0.18 (collapsed)" },
+              { label: "Best checkpoint", value: "Epoch 47, val WER 53.2%" },
+              { label: "Trainable params", value: "115M encoder + 132K CTC" },
+              { label: "Train / Dev / Test", value: "511 / 58 / 104 samples" },
+              { label: "95% CI (bootstrap)", value: "[50.7%, 58.5%]" },
+            ].map(({ label, value }) => (
+              <div key={label} className="rounded-lg bg-gray-50 border border-gray-100 p-2.5 text-xs">
+                <p className="text-gray-400">{label}</p>
+                <p className="font-semibold text-gray-800 mt-0.5">{value}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Next experiments */}
+        <section className="rounded-xl bg-indigo-50 border border-indigo-100 p-4 shadow-sm space-y-3">
+          <h2 className="text-sm font-semibold text-indigo-800">Next Experiments — Running on RunPod</h2>
+          <div className="grid grid-cols-2 gap-3 text-xs">
+            <div className="rounded-lg bg-white border border-indigo-100 p-3 space-y-1.5">
+              <p className="font-semibold text-indigo-700">Run C — Freeze Encoder</p>
+              <p className="text-gray-500">
+                Only the 132K CTC head is trained. 100 epochs, cosine LR with warm-up,
+                same story-based split. Addresses overfitting.
+              </p>
+              <p className="text-indigo-500 font-medium">Target: WER &lt; 50%</p>
+            </div>
+            <div className="rounded-lg bg-white border border-indigo-100 p-3 space-y-1.5">
+              <p className="font-semibold text-indigo-700">Run S — Speaker-Stratified</p>
+              <p className="text-gray-500">
+                Freeze encoder + resplit data 70/15/15 per speaker, giving Dipti ~27 train
+                samples (was 3) and ensuring all speakers appear in dev.
+              </p>
+              <p className="text-indigo-500 font-medium">Target: Dipti WER &lt; 50%</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="text-center text-xs text-gray-400 pt-2 pb-4 space-y-0.5 border-t border-gray-100">
+          <p>IndicConformer (AI4Bharat) · Fine-tuned on Amchi Konkani (GSB) · 50 epochs · Best ep 47</p>
+          <p>indicconformer_stt_mr_hybrid_ctc_rnnt_large · Marathi SentencePiece tokenizer (256 tokens)</p>
         </footer>
       </div>
     </main>
