@@ -1,0 +1,753 @@
+{
+  "best_checkpoint": "/workspace/amchi_asr/results/deaf_speech_dsb/checkpoints/konkani_asr-epoch=62-val_wer=0.898.ckpt",
+  "summary": {
+    "total_samples": 124,
+    "mean_wer": 0.9309139784946234
+  },
+  "per_sample": [
+    {
+      "audio": "data/deaf_speech/audio/130.wav",
+      "reference": "दैनंदिन कामे १।",
+      "prediction": "ोनसप कक ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/131.wav",
+      "reference": "दूध किती आहे?।",
+      "prediction": "ॉन द्या ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/132.wav",
+      "reference": "एक लिटर दूध द्या.।",
+      "prediction": "हेॉचाटुक्या ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/133.wav",
+      "reference": "चाळीस रुपयांत काय मिळेल?।",
+      "prediction": "पोनळे कसच आहेल ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/134.wav",
+      "reference": "पेपर कधी येईल?।",
+      "prediction": "पॉनटुठतीठ ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/135.wav",
+      "reference": "बस कधी येईल?।",
+      "prediction": "पॉ कील ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/136.wav",
+      "reference": "गाडी कोणत्या प्लॅटफॉर्मवर येईल?।",
+      "prediction": "हेोट धती ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/137.wav",
+      "reference": "मुलुंडला कुठे उतरायचं?।",
+      "prediction": "ोड कतच ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/138.wav",
+      "reference": "चालीमूल्य किती?।",
+      "prediction": "िन्टूधतीा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/139.wav",
+      "reference": "मला निळे जीन्स दाखवा.।",
+      "prediction": "पोट  इरकचकवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/140.wav",
+      "reference": "हे दूध द्या.।",
+      "prediction": "हेिचाू द्या ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/141.wav",
+      "reference": "दोन पॅकेट दूध द्या.।",
+      "prediction": "होनट कक आहे ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/142.wav",
+      "reference": "पेपर किती आहे?।",
+      "prediction": "पॉडजूुतीे आहे ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/143.wav",
+      "reference": "आजचा पेपर द्या.।",
+      "prediction": "हेोडज द्या ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/144.wav",
+      "reference": "पुढचा स्टॉप कोणता?।",
+      "prediction": "ॉनपूुपेत का ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/145.wav",
+      "reference": "दोन टिकीट द्या.।",
+      "prediction": "ॉनधी्या ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/146.wav",
+      "reference": "हे किती आहे?।",
+      "prediction": "हे लल्िध द्या ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/147.wav",
+      "reference": "किंमत कमी करा.।",
+      "prediction": "पिनज कठे ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/148.wav",
+      "reference": "पन्नास रुपये देऊ शकतो.।",
+      "prediction": "ोट क शकजको आहे ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/149.wav",
+      "reference": "चहा द्या.।",
+      "prediction": "हे द्या ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/150.wav",
+      "reference": "दोन चहा.।",
+      "prediction": "दन करा ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/151.wav",
+      "reference": "पाणी द्या.।",
+      "prediction": "पाणी दल ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/152.wav",
+      "reference": "बिल द्या.।",
+      "prediction": "हेणीसी द्या ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/153.wav",
+      "reference": "किती झालं?।",
+      "prediction": "हेिजि दती्या ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/154.wav",
+      "reference": "मला हे हवं.।",
+      "prediction": "हेॉस करथ दा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/155.wav",
+      "reference": "मला ते हवं नाही.।",
+      "prediction": "हजाजा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/156.wav",
+      "reference": "ठीक आहे.।",
+      "prediction": "हेणीड दती आहे ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/157.wav",
+      "reference": "थोडं वाट बघा.।",
+      "prediction": "ोट कुक आहे ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/158.wav",
+      "reference": "लवकर करा.।",
+      "prediction": "हेॉरिा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/159.wav",
+      "reference": "बाथरूम कुठे आहे?।",
+      "prediction": "पॉीसूुठवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/160.wav",
+      "reference": "स्टेशन इकडेच आहे का?।",
+      "prediction": "सगलाट जकवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/161.wav",
+      "reference": "विक्रोली किती वाजता पोहोचेल?।",
+      "prediction": "होाट घ कको ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/162.wav",
+      "reference": "सीएसटी ला जाणारी बस कोणती?।",
+      "prediction": "आजेपक कुती ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/163.wav",
+      "reference": "ही बस थानेला जाते का?।",
+      "prediction": "हेोटकुके का ⁇ ",
+      "wer": 0.8
+    },
+    {
+      "audio": "data/deaf_speech/audio/164.wav",
+      "reference": "गाडी कधी येईल?।",
+      "prediction": "सडटफ सुपतीा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/165.wav",
+      "reference": "प्लॅटफॉर्म बदलला का?।",
+      "prediction": "सेोप का ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/166.wav",
+      "reference": "ही गाडी दादरला थांबते का?।",
+      "prediction": "ोलाट क ब का ⁇ ",
+      "wer": 0.8
+    },
+    {
+      "audio": "data/deaf_speech/audio/167.wav",
+      "reference": "मला छोटा सायझ हवा.।",
+      "prediction": "होट  करायवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/168.wav",
+      "reference": "मला मोठा सायझ हवा.।",
+      "prediction": "मोट पजडेवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/169.wav",
+      "reference": "हे मोजून बघू शकतो का?।",
+      "prediction": "हेॉब ून शकतक आहे ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/170.wav",
+      "reference": "रंग बदलू शकतो का?।",
+      "prediction": "हेिटज कपकतो ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/171.wav",
+      "reference": "आकार चेक करा.।",
+      "prediction": "होन करा ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/172.wav",
+      "reference": "दोन फूट पाईप द्या.।",
+      "prediction": "होटू कक आहे ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/173.wav",
+      "reference": "हे मोजून द्या.।",
+      "prediction": "हेिज द्या ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/174.wav",
+      "reference": "स्क्रू द्या.।",
+      "prediction": "हेजन द्या ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/175.wav",
+      "reference": "की द्या.।",
+      "prediction": "हेिज द्या ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/176.wav",
+      "reference": "आयरनिंग कशी करायची सांगा.।",
+      "prediction": "होन  क इ करथवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/177.wav",
+      "reference": "उद्या मिळेल का?।",
+      "prediction": "लिजून दवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/178.wav",
+      "reference": "हे धुवून द्या.।",
+      "prediction": "हेोल्जफ द्या ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/179.wav",
+      "reference": "फोल्ड करून द्या.।",
+      "prediction": "पेचाड करेतवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/180.wav",
+      "reference": "इकडे जातो का?।",
+      "prediction": "हे्रजडथिे का ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/181.wav",
+      "reference": "हे रस्ता बरोबर आहे का?।",
+      "prediction": "हेोटथण का ⁇ ",
+      "wer": 0.8
+    },
+    {
+      "audio": "data/deaf_speech/audio/182.wav",
+      "reference": "किती वाजले?।",
+      "prediction": "किजथुतीवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/183.wav",
+      "reference": "उशीर झाला.।",
+      "prediction": "हेिजड दती ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/184.wav",
+      "reference": "थांबा.।",
+      "prediction": "द्या ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/185.wav",
+      "reference": "रोख घेतात का?।",
+      "prediction": "हेचाडिेवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/186.wav",
+      "reference": "कार्ड चालतो का?।",
+      "prediction": "हेलाजूनथ दवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/187.wav",
+      "reference": "बाकी किती?।",
+      "prediction": "हेि दती्या ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/188.wav",
+      "reference": "भाजी किती?।",
+      "prediction": "कािध द्या ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/189.wav",
+      "reference": "आज दूध नाही का?।",
+      "prediction": "हेजडिे का ⁇ ",
+      "wer": 0.75
+    },
+    {
+      "audio": "data/deaf_speech/audio/190.wav",
+      "reference": "काळी पिशवी द्या.।",
+      "prediction": "हेऑनप द्यावा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/191.wav",
+      "reference": "पांढरी पिशवी द्या.।",
+      "prediction": "हेिनज द्या ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/192.wav",
+      "reference": "उद्या दूध ठेवा.।",
+      "prediction": "ॉनज द्यावा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/193.wav",
+      "reference": "दोन पेपर द्या.।",
+      "prediction": "हेचानज द्या ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/194.wav",
+      "reference": "पेपर उशीरा आला का?।",
+      "prediction": "हो इ  इ करकडेतवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/195.wav",
+      "reference": "एक टिकीट.।",
+      "prediction": "हेॉधील ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/196.wav",
+      "reference": "तीन टिकीट द्या.।",
+      "prediction": "पॉन की क द्यावा ⁇ ",
+      "wer": 1.3333333333333333
+    },
+    {
+      "audio": "data/deaf_speech/audio/197.wav",
+      "reference": "कुठे उतरायचं थानेला?।",
+      "prediction": "होट थवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/198.wav",
+      "reference": "दादरला कुठे उतरायचं?।",
+      "prediction": "ॉट कुठणवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/199.wav",
+      "reference": "लोकल कधी येईल?।",
+      "prediction": "हेॉट कठकवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/200.wav",
+      "reference": "फास्ट लाईन कोणती?।",
+      "prediction": "पिनलट कणती ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/201.wav",
+      "reference": "स्टॅंड कुठे आहे?।",
+      "prediction": "पॉाू कीठे आहे ⁇ ",
+      "wer": 0.3333333333333333
+    },
+    {
+      "audio": "data/deaf_speech/audio/202.wav",
+      "reference": "ऑटो थांबतो का इथे?।",
+      "prediction": "होला धतवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/203.wav",
+      "reference": "ऑटो चाली किती?।",
+      "prediction": "ऑचाजधतीवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/204.wav",
+      "reference": "हॉस्पिटल इकडेच आहे का?।",
+      "prediction": "हॉा प प करथ का ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/205.wav",
+      "reference": "पोलिस स्टेशन कुठे?।",
+      "prediction": "पोल कल ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/206.wav",
+      "reference": "फार्मसी कुठे आहे?।",
+      "prediction": "ॉनटुठवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/207.wav",
+      "reference": "टॅब्लेट द्या.।",
+      "prediction": "ॉडटिुती्या ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/208.wav",
+      "reference": "दवा द्या.।",
+      "prediction": "हेज द्या ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/209.wav",
+      "reference": "डॉक्टर कधी मिळेल?।",
+      "prediction": "पॉीट कल ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/210.wav",
+      "reference": "अपॉइंटमेंट आहे.।",
+      "prediction": "ोट कण ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/211.wav",
+      "reference": "माझं नाव लिहा.।",
+      "prediction": "पऑासी दवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/212.wav",
+      "reference": "फोन नंबर काय?।",
+      "prediction": "पॉसील आहे ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/213.wav",
+      "reference": "एड्रेस काय?।",
+      "prediction": "पकीठतील ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/214.wav",
+      "reference": "सिग्नेचर करा.।",
+      "prediction": "ॉन क कराखल ⁇ ",
+      "wer": 1.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/215.wav",
+      "reference": "हा पैसा बरोबर आहे का?।",
+      "prediction": "हटनसक आहे ⁇ ",
+      "wer": 0.8
+    },
+    {
+      "audio": "data/deaf_speech/audio/216.wav",
+      "reference": "चिल्लर द्या.।",
+      "prediction": "हेिडिीती्या ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/217.wav",
+      "reference": "नोट बदला.।",
+      "prediction": "पनस कल ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/218.wav",
+      "reference": "या नोटला खोटं आहे का?।",
+      "prediction": "हाट क बक आहे ⁇ ",
+      "wer": 0.8
+    },
+    {
+      "audio": "data/deaf_speech/audio/219.wav",
+      "reference": "शॉर्टकट कुठे आहे?।",
+      "prediction": "पाटुठ आहे ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/220.wav",
+      "reference": "हॉटेल इकडेच आहे का?।",
+      "prediction": "ॉडस कय ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/221.wav",
+      "reference": "रुम खाली आहे का?।",
+      "prediction": "हेडटसुे आहे ⁇ ",
+      "wer": 0.75
+    },
+    {
+      "audio": "data/deaf_speech/audio/222.wav",
+      "reference": "एक रुम द्या.।",
+      "prediction": "हेॉजधठती आहे ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/223.wav",
+      "reference": "दोन रात्री रहायचं.।",
+      "prediction": "ोनू कतीे आहे ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/224.wav",
+      "reference": "बिल किती झालं?।",
+      "prediction": "पडनर कील ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/225.wav",
+      "reference": "चेकआउट किती वाजता?।",
+      "prediction": "होनट कबकल ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/226.wav",
+      "reference": "लगेच येतो.।",
+      "prediction": "पॉनजधीतील ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/227.wav",
+      "reference": "आता येतो.।",
+      "prediction": "पोनधि दा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/228.wav",
+      "reference": "एक मिनिट थांबा.।",
+      "prediction": "ोटपठवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/229.wav",
+      "reference": "बरोबर आहे.।",
+      "prediction": "हेिनीितीा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/230.wav",
+      "reference": "चुकीचं आहे.।",
+      "prediction": "हेॉसी्या ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/231.wav",
+      "reference": "पुन्हा सांगा.।",
+      "prediction": "हेॉनधीावा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/232.wav",
+      "reference": "समजलं नाही.।",
+      "prediction": "हेॉनजितीखवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/233.wav",
+      "reference": "मला नीट समजलं नाही.।",
+      "prediction": "पोनट करडेतडेवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/234.wav",
+      "reference": "लिहून द्या.।",
+      "prediction": "हे दक दती्या ⁇ ",
+      "wer": 1.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/235.wav",
+      "reference": "पुन्हा लिहा.।",
+      "prediction": "हे दना दा ⁇ ",
+      "wer": 1.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/236.wav",
+      "reference": "हे बरोबर लिहलं का?।",
+      "prediction": "पोनस क शणवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/237.wav",
+      "reference": "मोबाइलवर दाखवा.।",
+      "prediction": "ॉसून कातवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/238.wav",
+      "reference": "नकाशा दाखवा.।",
+      "prediction": "हेॉन रितीवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/239.wav",
+      "reference": "या जवळ एटीएम आहे का?।",
+      "prediction": "होट कक आहे ⁇ ",
+      "wer": 0.8
+    },
+    {
+      "audio": "data/deaf_speech/audio/240.wav",
+      "reference": "बँक कुठे आहे?।",
+      "prediction": "पॉनटीठतील ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/241.wav",
+      "reference": "पोस्ट ऑफिस इकडेच आहे का?।",
+      "prediction": "पोनट कबथतवा का ⁇ ",
+      "wer": 0.8
+    },
+    {
+      "audio": "data/deaf_speech/audio/242.wav",
+      "reference": "पार्सल पाठवायचं.।",
+      "prediction": "ॉड कीा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/243.wav",
+      "reference": "रेजिस्टर्ड करा.।",
+      "prediction": "हेि र करि करठवा ⁇ ",
+      "wer": 1.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/244.wav",
+      "reference": "कापसाचे कपडे दाखवा.।",
+      "prediction": "हेोटस कपथख ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/245.wav",
+      "reference": "सिल्कचं दाखवा.।",
+      "prediction": "सडपवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/246.wav",
+      "reference": "हे फिट होईल का?।",
+      "prediction": "हेटजकवा आहे ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/247.wav",
+      "reference": "ट्राय करू शकतो का?।",
+      "prediction": "पोनस शथक आहे ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/248.wav",
+      "reference": "रिटर्न मिळेल का?।",
+      "prediction": "हिनजप क करवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/249.wav",
+      "reference": "एक्सचेंज होईल का?।",
+      "prediction": "पॉनू कती ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/250.wav",
+      "reference": "गिफ्ट रॅप करा.।",
+      "prediction": "पॉचाट स कठवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/251.wav",
+      "reference": "बॅग द्या.।",
+      "prediction": "हेिज द्या ⁇ ",
+      "wer": 0.5
+    },
+    {
+      "audio": "data/deaf_speech/audio/252.wav",
+      "reference": "प्लॅस्टिकची पिशवी द्या.।",
+      "prediction": "होनट प ककवा ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/253.wav",
+      "reference": "कागदाची पिशवी द्या.।",
+      "prediction": "पोनटजुकवा कावा ⁇ ",
+      "wer": 1.0
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "best_checkpoint": "nemo_experiments/deaf_speech_story4_50epoch/checkpoints/konkani_asr-epoch=21-val_wer=0.720.ckpt",
+  "summary": {
+    "total_samples": 124,
+    "mean_wer": 0.753
+  },
+  "per_sample": [
+    {
+      "audio": "data/deaf_speech/audio/130.wav",
+      "reference": "दैनंदिन कामे १।",
+      "prediction": "दन ⁇ ",
+      "wer": 1.0
+    },
+    {
+      "audio": "data/deaf_speech/audio/131.wav",
+      "reference": "दूध किती आहे?।",
+      "prediction": "कती ⁇ ",
+      "wer": 0.6666666666666666
+    },
+    {
+      "audio": "data/deaf_speech/audio/132.wav",
+      "reference": "एक लिटर दूध द्या.।",
+      "prediction": "एक एकड दध द्या ⁇ ",
+      "wer": 0.25
+    }
+  ]
+}

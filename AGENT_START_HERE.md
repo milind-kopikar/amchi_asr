@@ -62,7 +62,7 @@ R2 bucket: `asr-checkpoints` | Account ID: `c90f9011c5a59d5bf40c808f40e3e34b`
 
 ## 4. Module guide — "I need to do X, read Y"
 
-This project is organised into five modules. Each has a self-contained doc in `docs/`.
+This project is organised into six modules. Each has a self-contained doc in `docs/`.
 
 ### 4.1 Training a model
 **→ [`docs/MODULE_TRAINING.md`](docs/MODULE_TRAINING.md)**
@@ -103,6 +103,23 @@ Key files: `runpod/handler_deaf.py`, `runpod/Dockerfile.deaf`
 
 Covers: every experiment's best checkpoint with local path, R2 key, and public URL.
 Also covers the base model location and how to upload new checkpoints.
+
+### 4.6 Demo webapp — Deaf Speech
+**→ [`docs/MODULE_WEBAPP_DEAF.md`](docs/MODULE_WEBAPP_DEAF.md)**
+
+Covers: running the Next.js demo app (`webapp-deaf/`), URL structure, how the interactive
+demo works (sample selector → audio → Transcribe → raw ASR + Gemini post-processing → TTS),
+API routes, static data files, environment variables, Railway deployment.
+
+**Directory:** `webapp-deaf/` | **Run:** `cd webapp-deaf && npm run dev`
+
+Experiments shown (worst → best):
+| ID   | Name                          | Test WER |
+|------|-------------------------------|----------|
+| DS-B | Extended Data (Multi-Speaker) | 93.1%    |
+| DS-A | Frozen Encoder                | 79.6%    |
+| DS-C | Baseline                      | 75.3%    |
+| DS-D | Speed Perturbation            | 34.7% ⭐ |
 
 ---
 
@@ -178,6 +195,7 @@ git push origin master
 | **`docs/MODULE_TRAINING.md`** | How to train / retrain — environment, configs, scripts |
 | **`docs/MODULE_INFERENCE.md`** | How to load a checkpoint and transcribe audio |
 | **`docs/MODULE_SERVERLESS.md`** | How to build Docker image and deploy to RunPod |
+| **`docs/MODULE_WEBAPP_DEAF.md`** | Deaf speech demo webapp — how to run, deploy, extend |
 | **`ENHANCED_POSTPROCESSING_METHOD.md`** | Post-processing ASR output — word classification, RECONSTRUCT/FILL/PASSTHROUGH modes |
 | **`LEARNINGS.md`** | Hard-won lessons from every session (read before starting) |
 | **`AGENT_HANDOFF.md`** | Session-by-session build history and rationale |
@@ -214,9 +232,16 @@ and other pre-2026 docs in the repo root.
 1. Read **`docs/MODULE_INFERENCE.md`**
 2. Run `scripts/deaf_speech_inference.py` with a WAV file path
 
+### Run the demo webapp
+1. Read **`docs/MODULE_WEBAPP_DEAF.md`**
+2. `cd webapp-deaf && npm install && npm run dev`
+3. Add `GEMINI_API_KEY` and `GOOGLE_TTS_API_KEY` to `webapp-deaf/.env.local`
+4. Open http://localhost:3000 — homepage shows all 4 experiments worst → best
+
 ### Train a new experiment
 1. Read **`docs/MODULE_TRAINING.md`**
 2. Copy an existing config from `configs/`, edit it, run `fine_tune.py`
 3. Upload best checkpoint with `scripts/upload_checkpoint_to_r2.py`
 4. Add the R2 URL to `docs/CHECKPOINTS_REGISTRY.md`
 5. Update the results table in this file (Section 2)
+6. Add the new experiment to the webapp — see "Adding a new experiment" in `docs/MODULE_WEBAPP_DEAF.md`
