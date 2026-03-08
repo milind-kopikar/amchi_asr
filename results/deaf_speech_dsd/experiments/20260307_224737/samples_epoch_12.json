@@ -1,0 +1,412 @@
+{
+  "summary": {
+    "epoch": 12,
+    "global_step": 1209,
+    "model_name": "EncDecHybridRNNTCTCBPEModel",
+    "param_count": 119592962,
+    "overall_wer": 0.505,
+    "date": "2026-03-07T22:54:45.675137"
+  },
+  "samples": [
+    {
+      "index": 0,
+      "audio": "data/deaf_speech/audio/130.wav",
+      "ref": "दैनंदिन कामे १।",
+      "pred": "दनन काम१ ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 1.0,
+      "cer": 0.2222222222222222
+    },
+    {
+      "index": 1,
+      "audio": "data/deaf_speech/audio/131.wav",
+      "ref": "दूध किती आहे?।",
+      "pred": "आ दू किती आहे ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.6666666666666666,
+      "cer": 0.375
+    },
+    {
+      "index": 2,
+      "audio": "data/deaf_speech/audio/132.wav",
+      "ref": "एक लिटर दूध द्या.।",
+      "pred": "एकस्टर दूध द्या ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.5,
+      "cer": 0.16666666666666666
+    },
+    {
+      "index": 3,
+      "audio": "data/deaf_speech/audio/133.wav",
+      "ref": "चाळीस रुपयांत काय मिळेल?।",
+      "pred": "चाोस रुया काय मिळेल ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.5,
+      "cer": 0.2
+    },
+    {
+      "index": 4,
+      "audio": "data/deaf_speech/audio/134.wav",
+      "ref": "पेपर कधी येईल?।",
+      "pred": "पेर कधी येईल ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.3333333333333333,
+      "cer": 0.1
+    },
+    {
+      "index": 5,
+      "audio": "data/deaf_speech/audio/135.wav",
+      "ref": "बस कधी येईल?।",
+      "pred": "बस कधी येईल ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.0,
+      "cer": 0.0
+    },
+    {
+      "index": 6,
+      "audio": "data/deaf_speech/audio/136.wav",
+      "ref": "गाडी कोणत्या प्लॅटफॉर्मवर येईल?।",
+      "pred": "ाडी कोण पॅफमवर येईल ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.75,
+      "cer": 0.3
+    },
+    {
+      "index": 7,
+      "audio": "data/deaf_speech/audio/137.wav",
+      "ref": "मुलुंडला कुठे उतरायचं?।",
+      "pred": "मि कुठेरा कुठलतला कुठेरा ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 1.3333333333333333,
+      "cer": 0.8461538461538461
+    },
+    {
+      "index": 8,
+      "audio": "data/deaf_speech/audio/138.wav",
+      "ref": "चालीमूल्य किती?।",
+      "pred": "पचालीमू्य किती ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.5,
+      "cer": 0.25
+    },
+    {
+      "index": 9,
+      "audio": "data/deaf_speech/audio/139.wav",
+      "ref": "मला निळे जीन्स दाखवा.।",
+      "pred": "मलाळे जीननस दाखवा ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.75,
+      "cer": 0.23076923076923078
+    },
+    {
+      "index": 10,
+      "audio": "data/deaf_speech/audio/140.wav",
+      "ref": "हे दूध द्या.।",
+      "pred": "हे दूध द्या ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.0,
+      "cer": 0.0
+    },
+    {
+      "index": 11,
+      "audio": "data/deaf_speech/audio/141.wav",
+      "ref": "दोन पॅकेट दूध द्या.।",
+      "pred": "दोन पकेट दूध द्या ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.0,
+      "cer": 0.0
+    },
+    {
+      "index": 12,
+      "audio": "data/deaf_speech/audio/142.wav",
+      "ref": "पेपर किती आहे?।",
+      "pred": "ेपर किती आहे ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.3333333333333333,
+      "cer": 0.1111111111111111
+    },
+    {
+      "index": 13,
+      "audio": "data/deaf_speech/audio/143.wav",
+      "ref": "आजचा पेपर द्या.।",
+      "pred": "पचा स पेपर द्या ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.6666666666666666,
+      "cer": 0.4
+    },
+    {
+      "index": 14,
+      "audio": "data/deaf_speech/audio/144.wav",
+      "ref": "पुढचा स्टॉप कोणता?।",
+      "pred": "पुढ उचा स्टोॉ कोणता ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 1.0,
+      "cer": 0.2727272727272727
+    },
+    {
+      "index": 15,
+      "audio": "data/deaf_speech/audio/145.wav",
+      "ref": "दोन टिकीट द्या.।",
+      "pred": "दोन टिकट द्या ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.0,
+      "cer": 0.0
+    },
+    {
+      "index": 16,
+      "audio": "data/deaf_speech/audio/146.wav",
+      "ref": "हे किती आहे?।",
+      "pred": "हे किती आहे ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.0,
+      "cer": 0.0
+    },
+    {
+      "index": 17,
+      "audio": "data/deaf_speech/audio/147.wav",
+      "ref": "किंमत कमी करा.।",
+      "pred": "कि कमी करा ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.3333333333333333,
+      "cer": 0.2222222222222222
+    },
+    {
+      "index": 18,
+      "audio": "data/deaf_speech/audio/148.wav",
+      "ref": "पन्नास रुपये देऊ शकतो.।",
+      "pred": "प पन्नास रुय द देू शकतो ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 1.0,
+      "cer": 0.3333333333333333
+    },
+    {
+      "index": 19,
+      "audio": "data/deaf_speech/audio/149.wav",
+      "ref": "चहा द्या.।",
+      "pred": "चहा द्या ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.0,
+      "cer": 0.0
+    },
+    {
+      "index": 20,
+      "audio": "data/deaf_speech/audio/150.wav",
+      "ref": "दोन चहा.।",
+      "pred": "दोन चह ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.0,
+      "cer": 0.0
+    },
+    {
+      "index": 21,
+      "audio": "data/deaf_speech/audio/151.wav",
+      "ref": "पाणी द्या.।",
+      "pred": "पाणी द्या ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.0,
+      "cer": 0.0
+    },
+    {
+      "index": 22,
+      "audio": "data/deaf_speech/audio/152.wav",
+      "ref": "बिल द्या.।",
+      "pred": "ब द्या ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.5,
+      "cer": 0.2
+    },
+    {
+      "index": 23,
+      "audio": "data/deaf_speech/audio/153.wav",
+      "ref": "किती झालं?।",
+      "pred": "किती झा लं ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 1.0,
+      "cer": 0.2
+    },
+    {
+      "index": 24,
+      "audio": "data/deaf_speech/audio/154.wav",
+      "ref": "मला हे हवं.।",
+      "pred": "मला ह ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.3333333333333333,
+      "cer": 0.42857142857142855
+    },
+    {
+      "index": 25,
+      "audio": "data/deaf_speech/audio/155.wav",
+      "ref": "मला ते हवं नाही.।",
+      "pred": "मला आहेव नाही ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.5,
+      "cer": 0.2
+    },
+    {
+      "index": 26,
+      "audio": "data/deaf_speech/audio/156.wav",
+      "ref": "ठीक आहे.।",
+      "pred": "म आहे ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.5,
+      "cer": 0.4
+    },
+    {
+      "index": 27,
+      "audio": "data/deaf_speech/audio/157.wav",
+      "ref": "थोडं वाट बघा.।",
+      "pred": "दथोट काट ब ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 1.0,
+      "cer": 0.5
+    },
+    {
+      "index": 28,
+      "audio": "data/deaf_speech/audio/158.wav",
+      "ref": "लवकर करा.।",
+      "pred": "टर करा ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.5,
+      "cer": 0.42857142857142855
+    },
+    {
+      "index": 29,
+      "audio": "data/deaf_speech/audio/159.wav",
+      "ref": "बाथरूम कुठे आहे?।",
+      "pred": "पदथूम कुठे आहे ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.3333333333333333,
+      "cer": 0.3
+    },
+    {
+      "index": 30,
+      "audio": "data/deaf_speech/audio/160.wav",
+      "ref": "स्टेशन इकडेच आहे का?।",
+      "pred": "नटक इटडेच आहे का ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.5,
+      "cer": 0.2857142857142857
+    },
+    {
+      "index": 31,
+      "audio": "data/deaf_speech/audio/161.wav",
+      "ref": "विक्रोली किती वाजता पोहोचेल?।",
+      "pred": "लो्रोली किती वाज वाजता पोचे ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.75,
+      "cer": 0.4375
+    },
+    {
+      "index": 32,
+      "audio": "data/deaf_speech/audio/162.wav",
+      "ref": "सीएसटी ला जाणारी बस कोणती?।",
+      "pred": "ी बसी का दाा जाी बस कोणती ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.8,
+      "cer": 0.4117647058823529
+    },
+    {
+      "index": 33,
+      "audio": "data/deaf_speech/audio/163.wav",
+      "ref": "ही बस थानेला जाते का?।",
+      "pred": "ही बसंथानेलाती का ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.6,
+      "cer": 0.23076923076923078
+    },
+    {
+      "index": 34,
+      "audio": "data/deaf_speech/audio/164.wav",
+      "ref": "गाडी कधी येईल?।",
+      "pred": "प गाडी कितीईल ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 1.0,
+      "cer": 0.5555555555555556
+    },
+    {
+      "index": 35,
+      "audio": "data/deaf_speech/audio/165.wav",
+      "ref": "प्लॅटफॉर्म बदलला का?।",
+      "pred": "पॅट पदशमदला का ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.6666666666666666,
+      "cer": 0.5384615384615384
+    },
+    {
+      "index": 36,
+      "audio": "data/deaf_speech/audio/166.wav",
+      "ref": "ही गाडी दादरला थांबते का?।",
+      "pred": "ही गाडी दाददला थांबो का ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.4,
+      "cer": 0.13333333333333333
+    },
+    {
+      "index": 37,
+      "audio": "data/deaf_speech/audio/167.wav",
+      "ref": "मला छोटा सायझ हवा.।",
+      "pred": "मला छोटाायय हवा ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.5,
+      "cer": 0.25
+    },
+    {
+      "index": 38,
+      "audio": "data/deaf_speech/audio/168.wav",
+      "ref": "मला मोठा सायझ हवा.।",
+      "pred": "मला मोठा सझचझ हवा ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.25,
+      "cer": 0.16666666666666666
+    },
+    {
+      "index": 39,
+      "audio": "data/deaf_speech/audio/169.wav",
+      "ref": "हे मोजून बघू शकतो का?।",
+      "pred": "हे मोूनजूनघू शकतो का ⁇ ",
+      "deva_ok": true,
+      "pred_latency_s": 0.02986975908279419,
+      "wer": 0.4,
+      "cer": 0.21428571428571427
+    }
+  ]
+}
