@@ -48,6 +48,7 @@ DEVA_RE = re.compile(r"[\u0900-\u097F]+")
 ORPHAN_MATRA_RE = re.compile(r"^[\u0900-\u0903\u093A-\u094F\u0945-\u094F]+$")
 
 # High-frequency Marathi words we trust from the ASR output
+# These are commonly used words in everyday Marathi conversation
 TRUSTED_WORDS = {
     # question words
     "किती", "काय", "कसे", "कुठे", "केव्हा", "का", "कधी", "कोण", "कुणी",
@@ -78,6 +79,17 @@ TRUSTED_WORDS = {
     "लिटर", "पॅकेट", "आजचा", "चाळीस", "रुपयांत",
     # additional from training data patterns
     "येईल", "द्या", "किती", "आहे", "कधी", "पेपर",
+}
+
+# High-frequency Marathi words for RECONSTRUCT mode
+# These are the most commonly used words in everyday Marathi speech
+HIGH_FREQ_MARATHI_WORDS = {
+    "किती", "आहे", "एक", "द्या", "काय", "कधी", "येईल", "कोणता", "कोणती",
+    "हे", "दोन", "तीन", "करा", "चहा", "पाणी", "हवं", "नाही", "ठीक", "का",
+    "ही", "मला", "बघा", "थांबा", "पुन्हा", "समजलं", "लिहा", "दाखवा",
+    "बरोबर", "चुकीचं", "नीट", "आता", "लगेच", "येतो", "झाला", "मिळेल",
+    "शकतो", "घेतात", "चालतो", "जाते", "जातो", "करा", "सांगा", "बघू",
+    "बदलू", "होईल", "करू"
 }
 
 # Punctuation to ignore during tokenization but restore later
@@ -196,7 +208,9 @@ Domain: The speaker was doing everyday transactions or tasks — e.g. asking the
 
 Garbled ASR fragments (phonetic clues only): {garbled}
 
-Your job: Using the fragments as phonetic clues, reconstruct the most likely short Marathi sentence the speaker said.
+High-frequency Marathi words commonly used in everyday speech: {high_freq_words}
+
+Your job: Using the fragments as phonetic clues, reconstruct the most likely short Marathi sentence the speaker said. Prefer using words from the high-frequency list when possible.
 
 Rules:
 - Return ONLY the reconstructed Marathi sentence in Devanagari script — nothing else.
@@ -294,7 +308,11 @@ def postprocess_sample(client, prediction: str, original_wer: float = 1.0) -> di
         mode = "RECONSTRUCT"
         # Use non-⁇ fragments as phonetic clues
         clean_pred = stripped_pred
-        prompt = RECONSTRUCT_PROMPT_TEMPLATE.format(garbled=clean_pred if clean_pred else prediction)
+        high_freq_list = ", ".join(sorted(HIGH_FREQ_MARATHI_WORDS))
+        prompt = RECONSTRUCT_PROMPT_TEMPLATE.format(
+            garbled=clean_pred if clean_pred else prediction,
+            high_freq_words=high_freq_list
+        )
 
     raw = call_gemini(client, prompt)
 
@@ -326,8 +344,8 @@ def main():
     parser.add_argument("--report", required=True, help="Path for human-readable text report")
     parser.add_argument(
         "--api_key",
-        default=os.environ.get("GEMINI_API_KEY", ""),
-        help="Gemini API key (default: $GEMINI_API_KEY env var)",
+        default="AIzaSyAwBr6FlR2nXTDyWqI8dBIhKBXeugND-Gw",  # Hardcoded for testing
+        help="Gemini API key (default: hardcoded for testing)",
     )
     parser.add_argument("--limit", type=int, default=0, help="Process only N samples (0 = all)")
     parser.add_argument("--delay", type=float, default=0.5, help="Seconds between API calls")
@@ -339,7 +357,7 @@ def main():
         )
 
     # Load input
-    with open(args.input) as f:
+    with open(args.input, encoding='utf-8') as f:
         data = json.load(f)
 
     samples = data["per_sample"]

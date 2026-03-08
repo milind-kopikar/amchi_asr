@@ -1,75 +1,278 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 
-// ─── All data from 50-epoch Amchi Konkani run (2026-03-02) ─────────────────
-// Source: results/experiments/20260302_031806/final_test_results.json
-//         results/amchi_analysis/comparison_report.txt
+// ─── Experiment Data ─────────────────────────────────────────────────
+// Source: analysis of final_test_results.json files
+// 50-epoch baseline: results/experiments/20260302_031806/
+// Run C: results/experiments/run_c_story_split/
+// Run S: results/experiments/run_c_stratified_split/
 
-const SPEAKERS = [
-  {
-    label: "Asha Heble",
-    id: "ashaheble",
-    n: 35,
-    trainN: 156,
-    mean: 0.5169,
-    median: 0.500,
-    std: 0.2042,
-    min: 0.000,
-    max: 1.000,
-    cer: 0.2183,
-    color: "#6366f1",
-    colorLight: "#e0e7ff",
-    colorBorder: "#a5b4fc",
+const EXPERIMENTS = {
+  baseline: {
+    id: "baseline",
+    name: "50-epoch Baseline",
+    date: "2026-03-02",
+    config: "Full fine-tune (115M params)",
+    samples: 104,
+    wer: 0.5467,
+    werStd: 0.2022,
+    bestEpoch: 47,
+    valWer: 0.532,
+    speakers: [
+      {
+        label: "Asha Heble",
+        id: "ashaheble",
+        n: 35,
+        mean: 0.5169,
+        median: 0.500,
+        std: 0.2072,
+        min: 0.000,
+        max: 1.000,
+        color: "#6366f1",
+        colorLight: "#e0e7ff",
+        colorBorder: "#a5b4fc",
+      },
+      {
+        label: "Dipti Ajgaonkar",
+        id: "dipti",
+        n: 35,
+        mean: 0.6030,
+        median: 0.625,
+        std: 0.1955,
+        min: 0.143,
+        max: 1.000,
+        color: "#f97316",
+        colorLight: "#ffedd5",
+        colorBorder: "#fdba74",
+      },
+      {
+        label: "Lali Momadi",
+        id: "lalimomadi",
+        n: 34,
+        mean: 0.5194,
+        median: 0.500,
+        std: 0.2005,
+        min: 0.125,
+        max: 1.000,
+        color: "#10b981",
+        colorLight: "#d1fae5",
+        colorBorder: "#6ee7b7",
+      },
+    ],
+    hist: [
+      { label: "0–10%",   c: [1, 0, 0] },
+      { label: "10–20%",  c: [1, 1, 2] },
+      { label: "20–30%",  c: [4, 1, 3] },
+      { label: "30–40%",  c: [2, 2, 4] },
+      { label: "40–50%",  c: [6, 4, 5] },
+      { label: "50–60%",  c: [8, 8, 9] },
+      { label: "60–70%",  c: [6, 10, 5] },
+      { label: "70–80%",  c: [4, 3, 2] },
+      { label: "80–90%",  c: [2, 4, 3] },
+      { label: "90–100%", c: [1, 2, 1] },
+    ],
+    errorTypes: [
+      { label: "Correct (40.9%)", frac: 0.409, color: "#d1fae5", text: "#065f46" },
+      { label: "Substitutions (27.8%)", frac: 0.278, color: "#fecaca", text: "#991b1b" },
+      { label: "Insertions (9.4%)", frac: 0.094, color: "#fed7aa", text: "#92400e" },
+      { label: "Deletions (3.5%)", frac: 0.035, color: "#e9d5ff", text: "#6b21a8" },
+    ],
   },
-  {
-    label: "Dipti Ajgaonkar",
-    id: "dipti",
-    n: 35,
-    trainN: 3,
-    mean: 0.6030,
-    median: 0.625,
-    std: 0.1927,
-    min: 0.143,
-    max: 1.000,
-    cer: 0.2604,
-    color: "#f97316",
-    colorLight: "#ffedd5",
-    colorBorder: "#fdba74",
+  runC: {
+    id: "runC",
+    name: "Run C: Frozen Encoder",
+    date: "2026-03-06",
+    config: "Frozen encoder (132K params) + 100 epochs",
+    samples: 104,
+    wer: 0.4908,
+    werStd: 0.2486,
+    bestEpoch: 66,
+    valWer: 0.504,
+    speakers: [
+      {
+        label: "Asha Heble",
+        id: "ashaheble",
+        n: 35,
+        mean: 0.4745,
+        median: 0.500,
+        std: 0.2483,
+        min: 0.000,
+        max: 1.000,
+        color: "#6366f1",
+        colorLight: "#e0e7ff",
+        colorBorder: "#a5b4fc",
+      },
+      {
+        label: "Dipti Ajgaonkar",
+        id: "dipti",
+        n: 35,
+        mean: 0.5497,
+        median: 0.500,
+        std: 0.2449,
+        min: 0.000,
+        max: 1.000,
+        color: "#f97316",
+        colorLight: "#ffedd5",
+        colorBorder: "#fdba74",
+      },
+      {
+        label: "Lali Momadi",
+        id: "lalimomadi",
+        n: 34,
+        mean: 0.4469,
+        median: 0.4365,
+        std: 0.2485,
+        min: 0.000,
+        max: 1.200,
+        color: "#10b981",
+        colorLight: "#d1fae5",
+        colorBorder: "#6ee7b7",
+      },
+    ],
+    hist: [
+      { label: "0–10%",   c: [2, 0, 1] },
+      { label: "10–20%",  c: [2, 1, 3] },
+      { label: "20–30%",  c: [3, 1, 4] },
+      { label: "30–40%",  c: [4, 3, 4] },
+      { label: "40–50%",  c: [6, 4, 5] },
+      { label: "50–60%",  c: [7, 6, 6] },
+      { label: "60–70%",  c: [5, 8, 4] },
+      { label: "70–80%",  c: [3, 5, 3] },
+      { label: "80–90%",  c: [2, 4, 2] },
+      { label: "90–100%", c: [1, 4, 2] },
+    ],
+    errorTypes: [
+      { label: "Correct (37.0%)", frac: 0.370, color: "#d1fae5", text: "#065f46" },
+      { label: "Substitutions (26.6%)", frac: 0.266, color: "#fecaca", text: "#991b1b" },
+      { label: "Insertions (4.3%)", frac: 0.043, color: "#fed7aa", text: "#92400e" },
+      { label: "Deletions (8.0%)", frac: 0.080, color: "#e9d5ff", text: "#6b21a8" },
+    ],
   },
-  {
-    label: "Lali Momadi",
-    id: "lalimomadi",
-    n: 34,
-    trainN: 125,
-    mean: 0.5194,
-    median: 0.500,
-    std: 0.1975,
-    min: 0.125,
-    max: 1.000,
-    cer: 0.2231,
-    color: "#10b981",
-    colorLight: "#d1fae5",
-    colorBorder: "#6ee7b7",
+  runS: {
+    id: "runS",
+    name: "Run S: Stratified Split",
+    date: "2026-03-06",
+    config: "Frozen encoder + stratified split (99 samples)",
+    samples: 99,
+    wer: 0.3414,
+    werStd: 0.2579,
+    bestEpoch: 88,
+    valWer: 0.334,
+    speakers: [
+      {
+        label: "Asha Heble",
+        id: "ashaheble",
+        n: 31,
+        mean: 0.3716,
+        median: 0.333,
+        std: 0.2901,
+        min: 0.000,
+        max: 1.200,
+        color: "#6366f1",
+        colorLight: "#e0e7ff",
+        colorBorder: "#a5b4fc",
+      },
+      {
+        label: "Lali Momadi",
+        id: "lalimomadi",
+        n: 29,
+        mean: 0.2710,
+        median: 0.267,
+        std: 0.1930,
+        min: 0.000,
+        max: 0.833,
+        color: "#10b981",
+        colorLight: "#d1fae5",
+        colorBorder: "#6ee7b7",
+      },
+      {
+        label: "Avinash Kulkarni",
+        id: "avkulkarni",
+        n: 18,
+        mean: 0.3290,
+        median: 0.348,
+        std: 0.2263,
+        min: 0.000,
+        max: 0.750,
+        color: "#8b5cf6",
+        colorLight: "#ede9fe",
+        colorBorder: "#c4b5fd",
+      },
+      {
+        label: "Arti Rursushama",
+        id: "arursushama",
+        n: 7,
+        mean: 0.2711,
+        median: 0.250,
+        std: 0.2844,
+        min: 0.000,
+        max: 0.833,
+        color: "#06b6d4",
+        colorLight: "#cffafe",
+        colorBorder: "#67e8f9",
+      },
+      {
+        label: "Sheela Kalawar",
+        id: "sheela",
+        n: 6,
+        mean: 0.5683,
+        median: 0.464,
+        std: 0.3844,
+        min: 0.273,
+        max: 1.333,
+        color: "#ec4899",
+        colorLight: "#fce7f3",
+        colorBorder: "#f9a8d4",
+      },
+      {
+        label: "Dipti Ajgaonkar",
+        id: "dipti",
+        n: 5,
+        mean: 0.4056,
+        median: 0.333,
+        std: 0.2775,
+        min: 0.111,
+        max: 0.833,
+        color: "#f97316",
+        colorLight: "#ffedd5",
+        colorBorder: "#fdba74",
+      },
+      {
+        label: "Milind Kopi",
+        id: "milindkopi",
+        n: 3,
+        mean: 0.3873,
+        median: 0.400,
+        std: 0.0489,
+        min: 0.333,
+        max: 0.429,
+        color: "#84cc16",
+        colorLight: "#ecfccb",
+        colorBorder: "#bef264",
+      },
+    ],
+    hist: [
+      { label: "0–10%",   c: [4, 4, 2, 1, 0, 0, 0] },
+      { label: "10–20%",  c: [4, 5, 2, 1, 0, 0, 0] },
+      { label: "20–30%",  c: [5, 6, 3, 1, 0, 0, 0] },
+      { label: "30–40%",  c: [6, 5, 4, 1, 0, 1, 1] },
+      { label: "40–50%",  c: [4, 3, 3, 1, 1, 0, 0] },
+      { label: "50–60%",  c: [3, 2, 2, 1, 1, 1, 0] },
+      { label: "60–70%",  c: [2, 1, 1, 0, 1, 0, 0] },
+      { label: "70–80%",  c: [1, 1, 1, 1, 1, 1, 0] },
+      { label: "80–90%",  c: [1, 1, 0, 0, 1, 0, 0] },
+      { label: "90–100%", c: [1, 1, 1, 1, 1, 1, 1] },
+    ],
+    errorTypes: [
+      { label: "Correct (39.1%)", frac: 0.391, color: "#d1fae5", text: "#065f46" },
+      { label: "Substitutions (24.2%)", frac: 0.242, color: "#fecaca", text: "#991b1b" },
+      { label: "Insertions (4.3%)", frac: 0.043, color: "#fed7aa", text: "#92400e" },
+      { label: "Deletions (4.6%)", frac: 0.046, color: "#e9d5ff", text: "#6b21a8" },
+    ],
   },
-];
-
-// Stacked histogram: c = [asha_count, dipti_count, lali_count] per WER bin
-// Bins: [0,10%), [10,20%), ..., [90,100%]  (verified: total = 35+35+34 = 104)
-const HIST = [
-  { label: "0–10%",   c: [1, 0, 0] },
-  { label: "10–20%",  c: [1, 1, 2] },
-  { label: "20–30%",  c: [4, 1, 3] },
-  { label: "30–40%",  c: [2, 2, 4] },
-  { label: "40–50%",  c: [6, 4, 5] },
-  { label: "50–60%",  c: [8, 8, 9] },
-  { label: "60–70%",  c: [6, 10, 5] },
-  { label: "70–80%",  c: [4, 3, 2] },
-  { label: "80–90%",  c: [2, 4, 3] },
-  { label: "90–100%", c: [1, 2, 1] },
-];
-
-const OVERALL_WER = 0.5467;
-const OVERALL_STD = 0.2022;
-const PILOT_WER = 0.351;
+};
 
 // ─── SVG Histogram ───────────────────────────────────────────────────────────
 // Layout constants (SVG coordinate units)
@@ -78,7 +281,7 @@ const MT = 10;   // margin top
 const MB = 50;   // margin bottom (for x-axis labels)
 const CW = 476;  // chart area width
 const CH = 168;  // chart area height
-const SLOT = CW / HIST.length;        // px per bin = 47.6
+const SLOT = CW / 10;        // px per bin = 47.6
 const BAR_W = SLOT - 4;               // bar width with gap
 const YMAX = 28;                      // y-axis max (actual max count = 25)
 const YS = CH / YMAX;                 // px per count unit
@@ -87,7 +290,7 @@ function pct(n: number, d = 1) {
   return (n * 100).toFixed(d) + "%";
 }
 
-function StackedHistogram() {
+function StackedHistogram({ speakers, hist }: { speakers: any[], hist: any[] }) {
   const svgW = CW + ML + 10;
   const svgH = CH + MT + MB;
   const yTicks = [0, 5, 10, 15, 20, 25];
@@ -97,7 +300,7 @@ function StackedHistogram() {
       viewBox={`0 0 ${svgW} ${svgH}`}
       className="w-full"
       role="img"
-      aria-label="WER distribution histogram for 104 test samples, stacked by speaker"
+      aria-label="WER distribution histogram"
     >
       {/* Gridlines + Y-axis labels */}
       {yTicks.map((cnt) => {
@@ -116,8 +319,8 @@ function StackedHistogram() {
         );
       })}
 
-      {/* Stacked bars — asha at bottom, dipti in middle, lali on top */}
-      {HIST.map((bin, bi) => {
+      {/* Stacked bars */}
+      {hist.map((bin, bi) => {
         const x = ML + bi * SLOT;
         let stackY = MT + CH; // start at chart bottom, grow upward
         const total = bin.c.reduce((a, b) => a + b, 0);
@@ -132,7 +335,7 @@ function StackedHistogram() {
                 <g key={ci}>
                   <rect
                     x={x + 2} y={rectY} width={BAR_W} height={h}
-                    fill={SPEAKERS[ci].color}
+                    fill={speakers[ci].color}
                     opacity="0.80"
                     rx="2"
                   />
@@ -171,7 +374,8 @@ function StackedHistogram() {
 
       {/* Mean WER vertical dashed line */}
       {(() => {
-        const meanX = ML + OVERALL_WER * CW;
+        const exp = speakers[0].__experiment;
+        const meanX = ML + exp.wer * CW;
         return (
           <>
             <line
@@ -179,7 +383,7 @@ function StackedHistogram() {
               stroke="#dc2626" strokeWidth="1.5" strokeDasharray="4,3"
             />
             <text x={meanX + 3} y={MT + 12} fontSize="9" fill="#dc2626">
-              Mean {pct(OVERALL_WER)}
+              Mean {pct(exp.wer)}
             </text>
           </>
         );
@@ -209,12 +413,12 @@ function StackedHistogram() {
 }
 
 // ─── Per-speaker horizontal WER bars ─────────────────────────────────────────
-function SpeakerBars() {
+function SpeakerBars({ speakers }: { speakers: any[] }) {
   const labelW = 128;
   const barAreaW = 330;
   const rowH = 44;
   const svgW = labelW + barAreaW + 55;
-  const svgH = SPEAKERS.length * rowH + 30;
+  const svgH = speakers.length * rowH + 30;
 
   return (
     <svg
@@ -225,7 +429,7 @@ function SpeakerBars() {
     >
       {/* Pilot baseline dashed line */}
       {(() => {
-        const px = labelW + PILOT_WER * barAreaW;
+        const px = labelW + 0.351 * barAreaW;
         return (
           <>
             <line x1={px} y1={6} x2={px} y2={svgH - 14} stroke="#9ca3af" strokeWidth="1" strokeDasharray="3,2" />
@@ -236,7 +440,7 @@ function SpeakerBars() {
       })()}
 
       {/* Per-speaker rows */}
-      {SPEAKERS.map((sp, i) => {
+      {speakers.map((sp, i) => {
         const y = 16 + i * rowH;
         const meanBarW = sp.mean * barAreaW;
         const stdL = Math.max(0, sp.mean - sp.std) * barAreaW;
@@ -285,13 +489,8 @@ function SpeakerBars() {
 }
 
 // ─── Error type horizontal stacked bar ───────────────────────────────────────
-function ErrorTypeBar() {
-  const segments = [
-    { label: "Correct (59.3%)",       frac: 0.5929, color: "#d1fae5", text: "#065f46" },
-    { label: "Substitutions (27.8%)", frac: 0.2782, color: "#fecaca", text: "#991b1b" },
-    { label: "Insertions (9.4%)",     frac: 0.0941, color: "#fed7aa", text: "#92400e" },
-    { label: "Deletions (3.5%)",      frac: 0.0349, color: "#e9d5ff", text: "#6b21a8" },
-  ];
+function ErrorTypeBar({ errorTypes }: { errorTypes: any[] }) {
+  const segments = errorTypes;
   const barH = 28;
   const barW = 460;
   let xPos = 0;
@@ -335,6 +534,12 @@ function ErrorTypeBar() {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function ResultsPage() {
+  const [selectedExp, setSelectedExp] = useState("runS");
+  const exp = EXPERIMENTS[selectedExp as keyof typeof EXPERIMENTS];
+
+  // Add experiment reference to speakers for histogram
+  const speakersWithExp = exp.speakers.map(s => ({ ...s, __experiment: exp }));
+
   return (
     <main className="min-h-screen bg-gray-50 py-6 px-4">
       <div className="max-w-2xl mx-auto space-y-6">
@@ -352,282 +557,98 @@ export default function ResultsPage() {
           </span>
         </nav>
 
+        {/* Experiment Tabs */}
+        <div className="flex gap-1 border-b border-gray-200">
+          {Object.values(EXPERIMENTS).map((e) => (
+            <button
+              key={e.id}
+              onClick={() => setSelectedExp(e.id)}
+              className={`px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                selectedExp === e.id
+                  ? "text-indigo-600 border-indigo-600"
+                  : "text-gray-500 hover:text-gray-700 border-transparent"
+              }`}
+            >
+              {e.name}
+            </button>
+          ))}
+        </div>
+
         {/* Header */}
         <header className="space-y-1">
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-            Amchi Konkani ASR — Results
+            Amchi Konkani ASR — {exp.name}
           </h1>
           <p className="text-sm text-gray-500">
-            50-epoch fine-tune · IndicConformer (AI4Bharat Marathi base) · Story 5 test set · 2026-03-02
+            {exp.config} · Story 5 test set · {exp.date}
           </p>
         </header>
 
         {/* Summary stat cards */}
         <div className="grid grid-cols-3 gap-3">
           <div className="rounded-xl bg-white border border-gray-200 p-3 shadow-sm text-center">
-            <p className="text-2xl font-bold text-gray-900">{pct(OVERALL_WER)}</p>
+            <p className="text-2xl font-bold text-gray-900">{pct(exp.wer)}</p>
             <p className="text-xs text-gray-500 mt-0.5">Overall WER</p>
-            <p className="text-xs text-gray-400">±{pct(OVERALL_STD)} std</p>
+            <p className="text-xs text-gray-400">±{pct(exp.werStd)} std</p>
           </div>
           <div className="rounded-xl bg-white border border-gray-200 p-3 shadow-sm text-center">
-            <p className="text-2xl font-bold text-gray-900">104</p>
+            <p className="text-2xl font-bold text-gray-900">{exp.samples}</p>
             <p className="text-xs text-gray-500 mt-0.5">Test samples</p>
-            <p className="text-xs text-gray-400">3 speakers, Story 5</p>
+            <p className="text-xs text-gray-400">{exp.speakers.length} speakers</p>
           </div>
           <div className="rounded-xl bg-white border border-gray-200 p-3 shadow-sm text-center">
-            <p className="text-2xl font-bold text-indigo-600">ep 47</p>
+            <p className="text-2xl font-bold text-indigo-600">ep {exp.bestEpoch}</p>
             <p className="text-xs text-gray-500 mt-0.5">Best checkpoint</p>
-            <p className="text-xs text-gray-400">val WER 53.2%</p>
+            <p className="text-xs text-gray-400">val WER {pct(exp.valWer)}</p>
           </div>
         </div>
 
         {/* Histogram */}
         <section className="rounded-xl bg-white border border-gray-200 p-4 shadow-sm space-y-3">
           <div>
-            <h2 className="text-sm font-semibold text-gray-800">WER Distribution — 104 Test Samples</h2>
+            <h2 className="text-sm font-semibold text-gray-800">WER Distribution — {exp.samples} Test Samples</h2>
             <p className="text-xs text-gray-400 mt-0.5">
-              Stacked by speaker. Red dashed line = mean WER (54.7%). White tick in bars = median.
+              Stacked by speaker. Red dashed line = mean WER ({pct(exp.wer)}). White tick in bars = median.
             </p>
           </div>
 
-          <StackedHistogram />
+          <StackedHistogram speakers={speakersWithExp} hist={exp.hist} />
 
           {/* Legend */}
           <div className="flex flex-wrap gap-3">
-            {SPEAKERS.map((sp) => (
+            {exp.speakers.map((sp) => (
               <span key={sp.id} className="flex items-center gap-1.5 text-xs text-gray-600">
                 <span className="inline-block w-3 h-3 rounded-sm flex-shrink-0" style={{ background: sp.color }} />
                 {sp.label}
               </span>
             ))}
           </div>
-
-          <p className="text-xs text-gray-400 leading-relaxed">
-            The distribution peaks in the 50–70% WER range (46 of 104 samples). Only 5 samples achieved
-            WER below 20%; 4 samples exceeded 90%. Dipti Ajgaonkar contributes disproportionately to
-            the 60–70% and 80–90% bins, reflecting her near-zero training representation.
-          </p>
         </section>
 
-        {/* Per-speaker breakdown */}
-        <section className="rounded-xl bg-white border border-gray-200 p-4 shadow-sm space-y-4">
+        {/* Speaker comparison */}
+        <section className="rounded-xl bg-white border border-gray-200 p-4 shadow-sm space-y-3">
           <div>
-            <h2 className="text-sm font-semibold text-gray-800">Per-Speaker Breakdown</h2>
+            <h2 className="text-sm font-semibold text-gray-800">Per-Speaker Performance</h2>
             <p className="text-xs text-gray-400 mt-0.5">
-              Bar = mean WER. Shading = ±1 std. White tick = median. Dashed = pilot baseline (35.1%).
+              Mean WER with ±1 std shading. Gray dashed line = pilot baseline (35.1%).
             </p>
           </div>
 
-          <SpeakerBars />
-
-          {/* Stats table */}
-          <div className="overflow-x-auto -mx-1">
-            <table className="w-full text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-gray-100">
-                  {["Speaker", "Test N", "Train N", "Mean WER", "Median", "±Std", "CER"].map((h, i) => (
-                    <th
-                      key={h}
-                      className={`py-1.5 font-medium text-gray-500 ${i === 0 ? "text-left pr-2" : "text-right px-2"}`}
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {SPEAKERS.map((sp) => (
-                  <tr key={sp.id} className="border-b border-gray-50">
-                    <td className="py-2 pr-2">
-                      <span className="flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: sp.color }} />
-                        <span className="font-medium text-gray-800">{sp.label}</span>
-                      </span>
-                    </td>
-                    <td className="py-2 px-2 text-right text-gray-600">{sp.n}</td>
-                    <td className="py-2 px-2 text-right">
-                      <span className={sp.trainN <= 10 ? "font-semibold text-red-600" : "text-gray-600"}>
-                        {sp.trainN}{sp.trainN <= 10 ? " ⚠" : ""}
-                      </span>
-                    </td>
-                    <td className="py-2 px-2 text-right font-semibold" style={{ color: sp.color }}>
-                      {pct(sp.mean)}
-                    </td>
-                    <td className="py-2 px-2 text-right text-gray-600">{pct(sp.median, 0)}</td>
-                    <td className="py-2 px-2 text-right text-gray-500">{pct(sp.std)}</td>
-                    <td className="py-2 pl-2 text-right text-gray-500">{pct(sp.cer)}</td>
-                  </tr>
-                ))}
-                <tr className="bg-gray-50 font-medium">
-                  <td className="py-2 pr-2 text-gray-700">Overall</td>
-                  <td className="py-2 px-2 text-right text-gray-700">104</td>
-                  <td className="py-2 px-2 text-right text-gray-500">511</td>
-                  <td className="py-2 px-2 text-right font-bold text-gray-900">{pct(OVERALL_WER)}</td>
-                  <td className="py-2 px-2 text-right text-gray-500">—</td>
-                  <td className="py-2 px-2 text-right text-gray-500">{pct(OVERALL_STD)}</td>
-                  <td className="py-2 pl-2 text-right text-gray-500">23.4%</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div className="rounded-lg bg-amber-50 border border-amber-100 px-3 py-2 text-xs text-gray-600">
-            <span className="font-medium text-amber-700">Dipti Ajgaonkar — 3 training samples, 35 test samples.</span>
-            {" "}She joined the project after Stories 1–4 were recorded and only contributed Story 5 content.
-            The story-based train/test split (train = Stories 1, 2, 3, 7; test = Story 5) left her with
-            near-zero training representation, explaining her higher WER.
-          </div>
+          <SpeakerBars speakers={exp.speakers} />
         </section>
 
-        {/* Statistical analysis */}
-        <section className="rounded-xl bg-white border border-gray-200 p-4 shadow-sm space-y-3">
-          <h2 className="text-sm font-semibold text-gray-800">Statistical Analysis</h2>
-
-          <div className="space-y-2">
-            {/* Kruskal-Wallis */}
-            <div className="rounded-lg bg-gray-50 border border-gray-100 p-3 text-xs space-y-1">
-              <p className="font-semibold text-gray-700">Inter-speaker difference — Kruskal-Wallis test</p>
-              <p className="text-gray-500">
-                H = 3.94 &nbsp;|&nbsp; <span className="font-mono">p = 0.139</span> &nbsp;—&nbsp; not significant
-              </p>
-              <p className="text-gray-400">
-                The 8.6 pp gap between Asha (51.7%) and Dipti (60.3%) does not reach statistical
-                significance at n = 34–35 per speaker. Pairwise Mann-Whitney U tests also show no
-                significant difference between any speaker pair (all p &gt; 0.07).
-              </p>
-            </div>
-
-            {/* Wilcoxon vs pilot */}
-            <div className="rounded-lg bg-red-50 border border-red-100 p-3 text-xs space-y-1">
-              <p className="font-semibold text-red-800">Regression vs pilot — Wilcoxon signed-rank test</p>
-              <p className="text-gray-700">
-                38 audio IDs matched between the pilot run (35.1% WER) and this run (same speaker, Asha Heble).
-                Mean WER change:{" "}
-                <span className="font-semibold text-red-700">+14.4 pp</span> (35.1% → 49.5%).
-                25/38 samples regressed, 7 improved, 6 unchanged.
-              </p>
-              <p className="text-gray-700">
-                Wilcoxon W = 76.0 &nbsp;|&nbsp;{" "}
-                <span className="font-mono font-semibold text-red-700">p = 0.000434</span>{" "}
-                <span className="text-red-600">***</span>
-              </p>
-              <p className="text-gray-400">
-                Even for Asha — the dominant training speaker — performance regressed significantly.
-                This rules out test-set difficulty as the sole cause and confirms overfitting.
-              </p>
-            </div>
-
-            {/* Sentence length */}
-            <div className="rounded-lg bg-gray-50 border border-gray-100 p-3 text-xs space-y-1">
-              <p className="font-semibold text-gray-700">Sentence length vs WER — Pearson correlation</p>
-              <p className="text-gray-500">
-                r = −0.069 &nbsp;|&nbsp; <span className="font-mono">p = 0.487</span> &nbsp;—&nbsp; not significant
-              </p>
-              <p className="text-gray-400">Sentence length has no meaningful effect on error rate.</p>
-            </div>
-          </div>
-        </section>
-
-        {/* Error type breakdown */}
+        {/* Error types */}
         <section className="rounded-xl bg-white border border-gray-200 p-4 shadow-sm space-y-3">
           <div>
             <h2 className="text-sm font-semibold text-gray-800">Error Type Breakdown</h2>
             <p className="text-xs text-gray-400 mt-0.5">
-              Fraction of all reference words across 104 test samples.
+              Fraction of reference words affected by each error type.
             </p>
           </div>
-          <ErrorTypeBar />
-          <p className="text-xs text-gray-400 leading-relaxed">
-            Substitutions dominate (27.8%) — the model produces plausible Konkani phonemes but wrong
-            tokens, typical of a Marathi base model adapting to a related dialect. Insertions (9.4%)
-            reflect repeated or hallucinated tokens common in CTC decoding when the encoder overfits.
-            Deletions are rare (3.5%).
-          </p>
+
+          <ErrorTypeBar errorTypes={exp.errorTypes} />
         </section>
 
-        {/* Root cause + training context */}
-        <section className="rounded-xl bg-white border border-gray-200 p-4 shadow-sm space-y-4">
-          <h2 className="text-sm font-semibold text-gray-800">Root Cause Analysis</h2>
-
-          <div className="space-y-3 text-xs">
-            {[
-              {
-                n: "1",
-                color: "bg-red-100 text-red-700",
-                title: "Overfitting — 115M encoder params trained on 511 samples",
-                body: "Val loss doubled from 49.5 (epoch 6) to 91.9 (epoch 49), a 1.86× increase. Train loss collapsed to 0.18. The encoder memorised training voices rather than learning generalisable Konkani acoustics. Wilcoxon confirms regression even for the dominant training speaker.",
-              },
-              {
-                n: "2",
-                color: "bg-orange-100 text-orange-700",
-                title: "Speaker imbalance — Dipti had 3 train / 35 test samples",
-                body: "The story-based split structurally excluded Dipti from training because she only recorded Story 5 content (the test set). The model was almost never trained on her voice.",
-              },
-              {
-                n: "3",
-                color: "bg-blue-100 text-blue-700",
-                title: "Pilot comparison is not apples-to-apples",
-                body: "The 35.1% pilot used the same file for validation and test (selection bias), evaluated only 1 speaker, and stopped at epoch 20 before significant overfitting. The 50-epoch run uses a proper held-out 3-speaker test set — a harder and fairer evaluation.",
-              },
-            ].map(({ n, color, title, body }) => (
-              <div key={n} className="flex gap-2.5">
-                <span className={`mt-0.5 w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold ${color}`}>
-                  {n}
-                </span>
-                <div>
-                  <p className="font-medium text-gray-800">{title}</p>
-                  <p className="text-gray-500 mt-0.5 leading-relaxed">{body}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Training curve summary */}
-          <div className="grid grid-cols-2 gap-2 pt-1">
-            {[
-              { label: "Val loss (epoch 6 → 49)", value: "49.5 → 91.9  (+1.86×)" },
-              { label: "Train loss (epoch 49)", value: "0.18 (collapsed)" },
-              { label: "Best checkpoint", value: "Epoch 47, val WER 53.2%" },
-              { label: "Trainable params", value: "115M encoder + 132K CTC" },
-              { label: "Train / Dev / Test", value: "511 / 58 / 104 samples" },
-              { label: "95% CI (bootstrap)", value: "[50.7%, 58.5%]" },
-            ].map(({ label, value }) => (
-              <div key={label} className="rounded-lg bg-gray-50 border border-gray-100 p-2.5 text-xs">
-                <p className="text-gray-400">{label}</p>
-                <p className="font-semibold text-gray-800 mt-0.5">{value}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Next experiments */}
-        <section className="rounded-xl bg-indigo-50 border border-indigo-100 p-4 shadow-sm space-y-3">
-          <h2 className="text-sm font-semibold text-indigo-800">Next Experiments — Running on RunPod</h2>
-          <div className="grid grid-cols-2 gap-3 text-xs">
-            <div className="rounded-lg bg-white border border-indigo-100 p-3 space-y-1.5">
-              <p className="font-semibold text-indigo-700">Run C — Freeze Encoder</p>
-              <p className="text-gray-500">
-                Only the 132K CTC head is trained. 100 epochs, cosine LR with warm-up,
-                same story-based split. Addresses overfitting.
-              </p>
-              <p className="text-indigo-500 font-medium">Target: WER &lt; 50%</p>
-            </div>
-            <div className="rounded-lg bg-white border border-indigo-100 p-3 space-y-1.5">
-              <p className="font-semibold text-indigo-700">Run S — Speaker-Stratified</p>
-              <p className="text-gray-500">
-                Freeze encoder + resplit data 70/15/15 per speaker, giving Dipti ~27 train
-                samples (was 3) and ensuring all speakers appear in dev.
-              </p>
-              <p className="text-indigo-500 font-medium">Target: Dipti WER &lt; 50%</p>
-            </div>
-          </div>
-        </section>
-
-        {/* Footer */}
-        <footer className="text-center text-xs text-gray-400 pt-2 pb-4 space-y-0.5 border-t border-gray-100">
-          <p>IndicConformer (AI4Bharat) · Fine-tuned on Amchi Konkani (GSB) · 50 epochs · Best ep 47</p>
-          <p>indicconformer_stt_mr_hybrid_ctc_rnnt_large · Marathi SentencePiece tokenizer (256 tokens)</p>
-        </footer>
       </div>
     </main>
   );

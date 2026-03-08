@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/Milind Kopikare/Code/amchi_konkani/konkani_asr/**)",
+      "Bash(\"C:/Users/Milind Kopikare/AppData/Local/Programs/Python/Python313/python.exe\" -c \":*)",
+      "Bash(\"C:/Users/Milind Kopikare/AppData/Local/Programs/Python/Python313/python.exe\" -c \"import google.genai; import jiwer; print\\(''google.genai OK''\\); print\\(''jiwer OK''\\)\")",
+      "Bash(\"C:/Users/Milind Kopikare/AppData/Local/Programs/Python/Python313/python.exe\" scripts/amchi_postprocess_asr.py --input \"results/2026-02-13_marathi_amchi_20epoch/experiments/20260213_205208/final_test_results.json\" --output \"results/amchi_postprocessed_results.json\" --report \"results/amchi_postprocess_report.txt\" --dict \"c:/Users/Milind Kopikare/Code/amchi_konkani/konkani_dictionary/konkani_dictionary_full.json\" --api_key \"AIzaSyCAUjQxhmcvrFac3RO2iPmTgXbIHwVV28I\" --delay 0.3)",
+      "Bash(\"C:/Users/Milind Kopikare/AppData/Local/Programs/Python/Python313/python.exe\" scripts/generate_amchi_samples.py --api_key \"AIzaSyCAUjQxhmcvrFac3RO2iPmTgXbIHwVV28I\" --delay 0.2)",
+      "Bash(npm run dev)"
+    ]
+  }
+}

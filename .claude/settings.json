@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/Milind Kopikare/.claude/projects/c--Users-Milind-Kopikare-Code-amchi-konkani-konkani-asr/memory/**)",
+      "Bash(node --version)",
+      "Bash(npm --version)",
+      "Bash(npx create-next-app@latest webapp --typescript --tailwind --app --src-dir --import-alias \"@/*\" --eslint --no-turbopack)",
+      "Bash(printf '\\\\n')",
+      "Bash(npm run build)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\Milind Kopikare\\Code\\amchi_konkani\\konkani_asr\\webapp\\src\\app\\api\\audio",
+      "c:\\Users\\Milind Kopikare\\.claude\\projects\\c--Users-Milind-Kopikare-Code-amchi-konkani-konkani-asr"
+    ]
+  }
+}

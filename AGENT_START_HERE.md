@@ -62,7 +62,7 @@ R2 bucket: `asr-checkpoints` | Account ID: `c90f9011c5a59d5bf40c808f40e3e34b`
 
 ## 4. Module guide — "I need to do X, read Y"
 
-This project is organised into four modules. Each has a self-contained doc in `docs/`.
+This project is organised into five modules. Each has a self-contained doc in `docs/`.
 
 ### 4.1 Training a model
 **→ [`docs/MODULE_TRAINING.md`](docs/MODULE_TRAINING.md)**
@@ -76,11 +76,20 @@ Key script: `scripts/fine_tune.py` | Key configs: `configs/*.yaml`
 **→ [`docs/MODULE_INFERENCE.md`](docs/MODULE_INFERENCE.md)**
 
 Covers: the non-obvious checkpoint loading pattern (manual config patch + strict=False),
-CTC decoding, Gemini post-processing, latency expectations, audio requirements.
+CTC decoding, audio requirements, latency expectations.
 
-Key scripts: `scripts/deaf_speech_inference.py`, `scripts/postprocess_asr.py`
+Key scripts: `scripts/deaf_speech_inference.py`, `scripts/amchi_inference.py`
 
-### 4.3 Building a serverless endpoint (Docker → RunPod)
+### 4.3 Post-processing ASR output
+**→ [`ENHANCED_POSTPROCESSING_METHOD.md`](ENHANCED_POSTPROCESSING_METHOD.md)**
+
+Covers: word classification (GARBLED/TRUSTED/UNCERTAIN), three-mode algorithm (RECONSTRUCT/FILL/PASSTHROUGH),
+high-frequency vocabulary guidance, Gemini API integration, evaluation metrics.
+
+**Deaf Speech (Marathi):** `scripts/postprocess_asr.py` — RECONSTRUCT mode with 45 high-frequency Marathi words
+**Amchi Konkani:** `scripts/amchi_postprocess_asr.py` — Dictionary-based correction with Konkani word validation
+
+### 4.4 Building a serverless endpoint (Docker → RunPod)
 **→ [`docs/MODULE_SERVERLESS.md`](docs/MODULE_SERVERLESS.md)**
 
 Covers: Docker build/push, RunPod endpoint creation, environment variables,
@@ -89,7 +98,7 @@ checkpoint URLs to use, handler input/output format, cold start behaviour.
 
 Key files: `runpod/handler_deaf.py`, `runpod/Dockerfile.deaf`
 
-### 4.4 Checkpoint locations and R2 storage
+### 4.5 Checkpoint locations and R2 storage
 **→ [`docs/CHECKPOINTS_REGISTRY.md`](docs/CHECKPOINTS_REGISTRY.md)**
 
 Covers: every experiment's best checkpoint with local path, R2 key, and public URL.
@@ -169,6 +178,7 @@ git push origin master
 | **`docs/MODULE_TRAINING.md`** | How to train / retrain — environment, configs, scripts |
 | **`docs/MODULE_INFERENCE.md`** | How to load a checkpoint and transcribe audio |
 | **`docs/MODULE_SERVERLESS.md`** | How to build Docker image and deploy to RunPod |
+| **`ENHANCED_POSTPROCESSING_METHOD.md`** | Post-processing ASR output — word classification, RECONSTRUCT/FILL/PASSTHROUGH modes |
 | **`LEARNINGS.md`** | Hard-won lessons from every session (read before starting) |
 | **`AGENT_HANDOFF.md`** | Session-by-session build history and rationale |
 
