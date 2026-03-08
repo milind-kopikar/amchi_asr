@@ -61,7 +61,7 @@ export const EXPERIMENTS: Record<string, Experiment> = {
     valWer: 0.532,
     speakers: [
       {
-        label: "Asha Heble",
+        label: "Speaker 1",
         id: "ashaheble",
         n: 35,
         mean: 0.5169,
@@ -74,7 +74,7 @@ export const EXPERIMENTS: Record<string, Experiment> = {
         colorBorder: "#a5b4fc",
       },
       {
-        label: "Dipti Ajgaonkar",
+        label: "Speaker 2",
         id: "dipti",
         n: 35,
         mean: 0.6030,
@@ -87,7 +87,7 @@ export const EXPERIMENTS: Record<string, Experiment> = {
         colorBorder: "#fdba74",
       },
       {
-        label: "Lali Momadi",
+        label: "Speaker 3",
         id: "lalimomadi",
         n: 34,
         mean: 0.5194,
@@ -131,7 +131,7 @@ export const EXPERIMENTS: Record<string, Experiment> = {
     valWer: 0.504,
     speakers: [
       {
-        label: "Asha Heble",
+        label: "Speaker 1",
         id: "ashaheble",
         n: 35,
         mean: 0.4745,
@@ -144,7 +144,7 @@ export const EXPERIMENTS: Record<string, Experiment> = {
         colorBorder: "#a5b4fc",
       },
       {
-        label: "Dipti Ajgaonkar",
+        label: "Speaker 2",
         id: "dipti",
         n: 35,
         mean: 0.5497,
@@ -157,7 +157,7 @@ export const EXPERIMENTS: Record<string, Experiment> = {
         colorBorder: "#fdba74",
       },
       {
-        label: "Lali Momadi",
+        label: "Speaker 3",
         id: "lalimomadi",
         n: 34,
         mean: 0.4469,
@@ -201,7 +201,7 @@ export const EXPERIMENTS: Record<string, Experiment> = {
     valWer: 0.334,
     speakers: [
       {
-        label: "Asha Heble",
+        label: "Speaker 1",
         id: "ashaheble",
         n: 31,
         mean: 0.3716,
@@ -214,7 +214,7 @@ export const EXPERIMENTS: Record<string, Experiment> = {
         colorBorder: "#a5b4fc",
       },
       {
-        label: "Lali Momadi",
+        label: "Speaker 3",
         id: "lalimomadi",
         n: 29,
         mean: 0.2710,
@@ -227,7 +227,7 @@ export const EXPERIMENTS: Record<string, Experiment> = {
         colorBorder: "#6ee7b7",
       },
       {
-        label: "Avinash Kulkarni",
+        label: "Speaker 4",
         id: "avkulkarni",
         n: 18,
         mean: 0.3290,
@@ -240,7 +240,7 @@ export const EXPERIMENTS: Record<string, Experiment> = {
         colorBorder: "#c4b5fd",
       },
       {
-        label: "Arti Rursushama",
+        label: "Speaker 5",
         id: "arursushama",
         n: 7,
         mean: 0.2711,
@@ -253,7 +253,7 @@ export const EXPERIMENTS: Record<string, Experiment> = {
         colorBorder: "#67e8f9",
       },
       {
-        label: "Sheela Kalawar",
+        label: "Speaker 6",
         id: "sheela",
         n: 6,
         mean: 0.5683,
@@ -266,7 +266,7 @@ export const EXPERIMENTS: Record<string, Experiment> = {
         colorBorder: "#f9a8d4",
       },
       {
-        label: "Dipti Ajgaonkar",
+        label: "Speaker 2",
         id: "dipti",
         n: 5,
         mean: 0.4056,
@@ -279,7 +279,7 @@ export const EXPERIMENTS: Record<string, Experiment> = {
         colorBorder: "#fdba74",
       },
       {
-        label: "Milind Kopi",
+        label: "Speaker 7",
         id: "milindkopi",
         n: 3,
         mean: 0.3873,
