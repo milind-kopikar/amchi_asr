@@ -254,6 +254,9 @@ export default function ExperimentPage() {
   const [isPostProcessing, setIsPostProcessing] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [ttsError, setTtsError] = useState<string | null>(null);
+  const [isSpeakingEnglish, setIsSpeakingEnglish] = useState(false);
+  const [englishText, setEnglishText] = useState<string | null>(null);
+  const [englishTtsError, setEnglishTtsError] = useState<string | null>(null);
   const [aboutExpanded, setAboutExpanded] = useState(false);
 
   // ── Results tab
@@ -297,6 +300,9 @@ export default function ExperimentPage() {
     setIsTranscribing(false);
     setIsSpeaking(false);
     setTtsError(null);
+    setIsSpeakingEnglish(false);
+    setEnglishText(null);
+    setEnglishTtsError(null);
     if (rawTimer.current) clearTimeout(rawTimer.current);
   }
 
@@ -376,6 +382,40 @@ export default function ExperimentPage() {
     } catch (err) {
       setTtsError(err instanceof Error ? err.message : "TTS error");
       setIsSpeaking(false);
+    }
+  }
+
+  async function handleSpeakEnglish() {
+    if (!postProcessedText || isSpeakingEnglish) return;
+    setIsSpeakingEnglish(true);
+    setEnglishTtsError(null);
+    setEnglishText(null);
+
+    const textToTranslate = postProcessedText
+      .replace(/⁇/g, "")
+      .replace(/।/g, "")
+      .trim();
+
+    try {
+      const res = await fetch("/api/tts-english", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: textToTranslate }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? `Error ${res.status}`);
+
+      setEnglishText(json.englishText);
+      const audio = new Audio(`data:audio/mp3;base64,${json.audioContent}`);
+      audio.onended = () => setIsSpeakingEnglish(false);
+      audio.onerror = () => {
+        setIsSpeakingEnglish(false);
+        setEnglishTtsError("Audio playback failed.");
+      };
+      await audio.play();
+    } catch (err) {
+      setEnglishTtsError(err instanceof Error ? err.message : "Translation/TTS error");
+      setIsSpeakingEnglish(false);
     }
   }
 
@@ -644,31 +684,59 @@ export default function ExperimentPage() {
                       </div>
                     </div>
 
-                    {/* TTS — speak post-processed output */}
+                    {/* TTS buttons */}
                     {showPostProcessed && !isPostProcessing && (
                       <div className="space-y-2">
-                        <button
-                          onClick={handleSpeak}
-                          disabled={isSpeaking}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm transition-colors select-none ${
-                            isSpeaking
-                              ? "border-purple-200 bg-purple-50 text-purple-400 cursor-not-allowed"
-                              : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300 cursor-pointer"
-                          }`}
-                        >
-                          {isSpeaking ? (
-                            <>
-                              <Spinner />
-                              Speaking…
-                            </>
-                          ) : (
-                            <>🔊 Speak post-processed output (Marathi TTS)</>
-                          )}
-                        </button>
+                        <div className="flex flex-wrap gap-2">
+                          {/* Marathi TTS */}
+                          <button
+                            onClick={handleSpeak}
+                            disabled={isSpeaking || isSpeakingEnglish}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm transition-colors select-none ${
+                              isSpeaking
+                                ? "border-purple-200 bg-purple-50 text-purple-400 cursor-not-allowed"
+                                : isSpeakingEnglish
+                                  ? "border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed"
+                                  : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-300 cursor-pointer"
+                            }`}
+                          >
+                            {isSpeaking ? (
+                              <><Spinner /> Speaking Marathi…</>
+                            ) : (
+                              <>🔊 Speak in Marathi</>
+                            )}
+                          </button>
 
-                        {ttsError && (
-                          <p className="text-xs text-red-500">{ttsError}</p>
+                          {/* English translation + TTS */}
+                          <button
+                            onClick={handleSpeakEnglish}
+                            disabled={isSpeakingEnglish || isSpeaking}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm transition-colors select-none ${
+                              isSpeakingEnglish
+                                ? "border-amber-200 bg-amber-50 text-amber-400 cursor-not-allowed"
+                                : isSpeaking
+                                  ? "border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed"
+                                  : "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:border-amber-300 cursor-pointer"
+                            }`}
+                          >
+                            {isSpeakingEnglish ? (
+                              <><Spinner /> Translating &amp; Speaking…</>
+                            ) : (
+                              <>🌐 Speak in English</>
+                            )}
+                          </button>
+                        </div>
+
+                        {/* English translation display */}
+                        {englishText && (
+                          <div className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-sm text-amber-900">
+                            <span className="font-medium text-amber-700">English: </span>
+                            {englishText}
+                          </div>
                         )}
+
+                        {ttsError && <p className="text-xs text-red-500">{ttsError}</p>}
+                        {englishTtsError && <p className="text-xs text-red-500">{englishTtsError}</p>}
                       </div>
                     )}
                   </div>
