@@ -223,7 +223,7 @@ export default function FinalPage() {
           )}
 
           {/* Transcript results */}
-          {(stage === "transcribing" || stage === "done") && (
+          {stage === "done" && (
             <div className="space-y-4 pt-2">
               {/* Raw ASR */}
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
