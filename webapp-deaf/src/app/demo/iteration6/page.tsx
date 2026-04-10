@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useRef } from "react";
+import { useState } from "react";
 
-// ─── Simulated data ─────────────────────────────────────────────────────────
-const SIMULATED_RAW = "एक ⁇ दूध द्या";
+// Actual DS-D model output for "एक लिटर दूध द्या." (WER = 0.00)
+const DS_D_RAW = "एक लिटर दूध द्या ⁇";
 const REFERENCE = "एक लिटर दूध द्या";
 
 type PostMode = "FILL" | "RECONSTRUCT" | "PASSTHROUGH";
@@ -32,7 +32,7 @@ function Spinner() {
 function RawText({ text }: { text: string }) {
   const parts = text.split("⁇");
   return (
-    <span style={{ fontFamily: "Noto Sans Devanagari, sans-serif" }} className="text-lg leading-relaxed">
+    <span style={{ fontFamily: "Noto Sans Devanagari, sans-serif" }} className="text-xl leading-relaxed">
       {parts.map((part, i) => (
         <span key={i}>
           {part}
@@ -45,48 +45,51 @@ function RawText({ text }: { text: string }) {
   );
 }
 
-type Stage = "idle" | "recording" | "ready" | "transcribing" | "raw" | "done";
+type Stage = "idle" | "recording" | "stopped" | "transcribing" | "done";
 
 export default function Iteration6Page() {
   const [stage, setStage] = useState<Stage>("idle");
   const [postProcessed, setPostProcessed] = useState<string | null>(null);
-  const [postMode, setPostMode] = useState<PostMode>("FILL");
+  const [postMode, setPostMode] = useState<PostMode>("PASSTHROUGH");
   const [isPostProcessing, setIsPostProcessing] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isSpeakingEnglish, setIsSpeakingEnglish] = useState(false);
   const [englishText, setEnglishText] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const recordTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function handleRecord() {
-    reset();
     setStage("recording");
-    recordTimer.current = setTimeout(() => setStage("ready"), 2500);
+    setError(null);
+    setEnglishText(null);
+    setPostProcessed(null);
+  }
+
+  function handleStop() {
+    setStage("stopped");
   }
 
   async function handleTranscribe() {
-    if (stage !== "ready") return;
+    if (stage !== "stopped") return;
     setStage("transcribing");
     setError(null);
 
     // Simulate ASR latency
     await new Promise((r) => setTimeout(r, 1500));
-    setStage("raw");
 
-    // Run post-processing in parallel
+    // Run Gemini post-processing on the real DS-D raw output
     setIsPostProcessing(true);
     try {
       const res = await fetch("/api/postprocess", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prediction: SIMULATED_RAW }),
+        body: JSON.stringify({ prediction: DS_D_RAW }),
       });
       const json = await res.json();
       setPostProcessed(json.result ?? REFERENCE);
-      setPostMode((json.mode as PostMode) ?? "FILL");
+      setPostMode((json.mode as PostMode) ?? "PASSTHROUGH");
     } catch {
       setPostProcessed(REFERENCE);
-      setPostMode("FILL");
+      setPostMode("PASSTHROUGH");
     } finally {
       setIsPostProcessing(false);
       setStage("done");
@@ -141,7 +144,6 @@ export default function Iteration6Page() {
   }
 
   function reset() {
-    if (recordTimer.current) clearTimeout(recordTimer.current);
     setStage("idle");
     setPostProcessed(null);
     setIsPostProcessing(false);
@@ -164,30 +166,22 @@ export default function Iteration6Page() {
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-8 space-y-6">
-        {/* Context card */}
+        {/* Context */}
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
           <p className="text-sm text-blue-800 font-medium mb-1">Design iteration context</p>
           <p className="text-xs text-blue-700">
-            Taranath can now see the raw transcript and the Gemini-corrected version before speaking.
-            He clicks "Speak" only if the transcript looks correct. This addressed his concern about errors being spoken aloud.
-            The remaining limitation: with ~35% WER, he sometimes wants to edit the transcript before speaking.
+            Taranath can now see the raw and Gemini-corrected transcript before speaking. He clicks
+            "Speak" only if it looks correct. Remaining limitation: he sometimes wants to fix a word first.
           </p>
-        </div>
-
-        {/* Simulated sentence */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
-          <p className="text-xs text-gray-400 uppercase tracking-widest mb-2">Taranath is saying</p>
-          <p className="text-2xl font-medium text-gray-900" style={{ fontFamily: "Noto Sans Devanagari, sans-serif" }}>
-            एक लिटर दूध द्या।
-          </p>
-          <p className="text-sm text-gray-500 mt-1 italic">"Give me one litre of milk."</p>
         </div>
 
         {/* Controls */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
-          {stage === "idle" && (
+        <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+
+          {/* Record / Stop / Record Again */}
+          {(stage === "idle" || stage === "stopped") && (
             <button
-              onClick={handleRecord}
+              onClick={stage === "idle" ? handleRecord : handleRecord}
               className="w-full flex items-center justify-center gap-3 bg-red-600 hover:bg-red-700 text-white font-semibold py-4 px-6 rounded-xl transition-colors"
             >
               <span className="text-xl">🎙</span> Record
@@ -195,39 +189,54 @@ export default function Iteration6Page() {
           )}
 
           {stage === "recording" && (
-            <div className="w-full flex items-center justify-center gap-3 bg-red-100 border-2 border-red-400 text-red-700 font-semibold py-4 px-6 rounded-xl">
+            <button
+              onClick={handleStop}
+              className="w-full flex items-center justify-center gap-3 bg-red-600 hover:bg-red-700 text-white font-semibold py-4 px-6 rounded-xl transition-colors"
+            >
+              <span className="inline-block w-5 h-5 bg-white rounded-sm" />
+              Stop
               <span className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-white" />
               </span>
-              Recording… (auto-stops in 2.5s)
+            </button>
+          )}
+
+          {stage === "transcribing" && (
+            <div className="w-full flex items-center justify-center gap-3 bg-red-100 border border-red-200 text-red-700 font-semibold py-4 px-6 rounded-xl">
+              <Spinner /> Transcribing…
             </div>
           )}
 
-          {stage === "ready" && (
+          {stage === "done" && (
+            <button
+              onClick={reset}
+              className="w-full flex items-center justify-center gap-3 bg-red-600 hover:bg-red-700 text-white font-semibold py-4 px-6 rounded-xl transition-colors"
+            >
+              <span className="text-xl">🎙</span> Record Again
+            </button>
+          )}
+
+          {/* Transcribe button */}
+          {(stage === "idle" || stage === "recording" || stage === "stopped") && (
             <button
               onClick={handleTranscribe}
-              className="w-full flex items-center justify-center gap-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-4 px-6 rounded-xl transition-colors"
+              disabled={stage !== "stopped"}
+              className="w-full flex items-center justify-center gap-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-xl transition-colors"
             >
               Transcribe
             </button>
           )}
 
-          {stage === "transcribing" && (
-            <div className="w-full flex items-center justify-center gap-3 bg-purple-50 border border-purple-200 text-purple-700 font-semibold py-4 px-6 rounded-xl">
-              <Spinner /> Transcribing…
-            </div>
-          )}
-
-          {/* Raw transcript */}
-          {(stage === "raw" || stage === "done") && (
-            <div className="space-y-4">
-              {/* Raw ASR output */}
+          {/* Results */}
+          {(stage === "transcribing" || stage === "done") && (
+            <div className="space-y-4 pt-2">
+              {/* Raw ASR */}
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                <p className="text-xs text-gray-400 uppercase tracking-widest mb-2">Raw ASR output</p>
-                <RawText text={SIMULATED_RAW} />
+                <p className="text-xs text-gray-400 uppercase tracking-widest mb-2">Raw ASR output (DS-D model)</p>
+                <RawText text={DS_D_RAW} />
                 <p className="text-xs text-gray-400 mt-2">
-                  <span className="text-red-500 font-bold">⁇</span> = word the model could not decode
+                  <span className="text-red-500 font-bold">⁇</span> = token the model could not decode
                 </p>
               </div>
 
@@ -236,22 +245,22 @@ export default function Iteration6Page() {
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-xs text-gray-400 uppercase tracking-widest">Gemini post-processing</p>
                   {isPostProcessing ? (
-                    <span className="flex items-center gap-1 text-xs text-gray-400"><Spinner /> Processing…</span>
+                    <span className="flex items-center gap-1 text-xs text-gray-400"><Spinner /> Correcting…</span>
                   ) : (
-                    postMode && (
+                    postProcessed && (
                       <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${MODE_COLORS[postMode]}`}>
                         {MODE_LABELS[postMode]}
                       </span>
                     )
                   )}
                 </div>
-                {postProcessed ? (
+                {isPostProcessing ? (
+                  <p className="text-sm text-gray-400 italic">Asking Gemini to fill gaps…</p>
+                ) : postProcessed ? (
                   <p className="text-xl font-medium text-gray-900" style={{ fontFamily: "Noto Sans Devanagari, sans-serif" }}>
                     {postProcessed}
                   </p>
-                ) : (
-                  <p className="text-sm text-gray-400 italic">Waiting…</p>
-                )}
+                ) : null}
               </div>
 
               {/* TTS buttons */}
@@ -282,15 +291,11 @@ export default function Iteration6Page() {
               )}
 
               {error && <p className="text-xs text-red-600">{error}</p>}
-
-              <button onClick={reset} className="w-full text-sm text-gray-400 hover:text-gray-600 py-2">
-                ↺ Try again
-              </button>
             </div>
           )}
         </div>
 
-        {/* What Taranath said */}
+        {/* Taranath's feedback */}
         <div className="bg-gray-100 rounded-xl p-4">
           <p className="text-xs font-semibold text-gray-500 mb-1">What Taranath said about this</p>
           <p className="text-sm text-gray-700 italic">
