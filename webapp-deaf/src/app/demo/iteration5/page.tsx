@@ -47,7 +47,7 @@ export default function Iteration5Page() {
     setError(null);
 
     // Simulate ASR latency, then immediately call TTS — no transcript shown
-    await new Promise((r) => setTimeout(r, 1500));
+    await new Promise((r) => setTimeout(r, 3000));
     await speakMarathi();
     setStage("done");
   }

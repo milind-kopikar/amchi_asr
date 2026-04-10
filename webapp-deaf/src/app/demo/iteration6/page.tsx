@@ -74,7 +74,7 @@ export default function Iteration6Page() {
     setError(null);
 
     // Simulate ASR latency
-    await new Promise((r) => setTimeout(r, 1500));
+    await new Promise((r) => setTimeout(r, 3000));
 
     // Run Gemini post-processing on the real DS-D raw output
     setIsPostProcessing(true);
