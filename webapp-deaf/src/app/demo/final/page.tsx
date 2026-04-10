@@ -169,15 +169,6 @@ export default function FinalPage() {
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-8 space-y-6">
-        {/* Context */}
-        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
-          <p className="text-sm text-emerald-800 font-medium mb-1">Final product</p>
-          <p className="text-xs text-emerald-700">
-            The transcript is now editable before speaking. Taranath can fix any errors before the app speaks
-            on his behalf. This is the version he uses today.
-          </p>
-        </div>
-
         {/* Controls */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
 
@@ -308,14 +299,6 @@ export default function FinalPage() {
           )}
         </div>
 
-        {/* Sarojini quote */}
-        <div className="bg-gray-100 rounded-xl p-4">
-          <p className="text-xs font-semibold text-gray-500 mb-1">Sarojini Shenoy, Taranath's wife</p>
-          <p className="text-sm text-gray-700 italic">
-            "The goal is not just deaf speech recognition — it is the restoration of dignity. Seeing Taranath
-            hold up his phone and play it out to a vendor instead of being laughed at, is what this project is actually about."
-          </p>
-        </div>
       </main>
     </div>
   );

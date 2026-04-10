@@ -116,15 +116,6 @@ export default function Iteration5Page() {
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-8 space-y-6">
-        {/* Context */}
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-          <p className="text-sm text-amber-800 font-medium mb-1">Design iteration context</p>
-          <p className="text-xs text-amber-700">
-            Audio goes straight to TTS as soon as transcription completes. The user never sees the
-            transcript. Taranath found this uncomfortable — errors were spoken aloud without his approval.
-          </p>
-        </div>
-
         {/* Controls */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
 
@@ -203,13 +194,6 @@ export default function Iteration5Page() {
           )}
         </div>
 
-        {/* Taranath's feedback */}
-        <div className="bg-gray-100 rounded-xl p-4">
-          <p className="text-xs font-semibold text-gray-500 mb-1">What Taranath said about this</p>
-          <p className="text-sm text-gray-700 italic">
-            "I want to see what was transcribed before it speaks. What if it says something wrong to the vendor?"
-          </p>
-        </div>
       </main>
     </div>
   );

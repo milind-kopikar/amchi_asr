@@ -166,15 +166,6 @@ export default function Iteration6Page() {
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-8 space-y-6">
-        {/* Context */}
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-          <p className="text-sm text-blue-800 font-medium mb-1">Design iteration context</p>
-          <p className="text-xs text-blue-700">
-            Taranath can now see the raw and Gemini-corrected transcript before speaking. He clicks
-            "Speak" only if it looks correct. Remaining limitation: he sometimes wants to fix a word first.
-          </p>
-        </div>
-
         {/* Controls */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
 
@@ -295,13 +286,6 @@ export default function Iteration6Page() {
           )}
         </div>
 
-        {/* Taranath's feedback */}
-        <div className="bg-gray-100 rounded-xl p-4">
-          <p className="text-xs font-semibold text-gray-500 mb-1">What Taranath said about this</p>
-          <p className="text-sm text-gray-700 italic">
-            "Good — but sometimes I want to fix a word before speaking. Can I edit it?"
-          </p>
-        </div>
       </main>
     </div>
   );
