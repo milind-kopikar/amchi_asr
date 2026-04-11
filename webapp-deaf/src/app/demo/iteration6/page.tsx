@@ -5,8 +5,8 @@ import { useState } from "react";
 
 // Actual DS-D model output for "चाळीस रुपयांत काय मिळेल?" (Taranath's recording)
 const DS_D_RAW = "चाळीस रुपयांत काय ⁇";
-const REFERENCE = "चाळीस रुपयांत काय मिळेल?";
-const ENGLISH_TEXT = "What will one get for forty?";
+const CORRECTED = "चाळीस रुपयांत काय";
+const ENGLISH_TEXT = "What will one get for forty";
 
 type PostMode = "FILL" | "RECONSTRUCT" | "PASSTHROUGH";
 
@@ -52,7 +52,6 @@ export default function Iteration6Page() {
   const [stage, setStage] = useState<Stage>("idle");
   const [postProcessed, setPostProcessed] = useState<string | null>(null);
   const [postMode, setPostMode] = useState<PostMode>("PASSTHROUGH");
-  const [isPostProcessing, setIsPostProcessing] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isSpeakingEnglish, setIsSpeakingEnglish] = useState(false);
   const [englishText, setEnglishText] = useState<string | null>(null);
@@ -77,24 +76,9 @@ export default function Iteration6Page() {
     // Simulate ASR latency
     await new Promise((r) => setTimeout(r, 2000));
 
-    // Run Gemini post-processing on the real DS-D raw output
-    setIsPostProcessing(true);
-    try {
-      const res = await fetch("/api/postprocess", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prediction: DS_D_RAW }),
-      });
-      const json = await res.json();
-      setPostProcessed(json.result ?? REFERENCE);
-      setPostMode((json.mode as PostMode) ?? "PASSTHROUGH");
-    } catch {
-      setPostProcessed(REFERENCE);
-      setPostMode("PASSTHROUGH");
-    } finally {
-      setIsPostProcessing(false);
-      setStage("done");
-    }
+    setPostProcessed(CORRECTED);
+    setPostMode("PASSTHROUGH");
+    setStage("done");
   }
 
   async function speakMarathi() {
@@ -124,12 +108,11 @@ export default function Iteration6Page() {
     if (isSpeakingEnglish || !postProcessed) return;
     setIsSpeakingEnglish(true);
     setEnglishText(ENGLISH_TEXT);
-    const text = postProcessed.replace(/⁇/g, "").replace(/।/g, "").trim();
     try {
       const res = await fetch("/api/tts-english", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text: ENGLISH_TEXT, skipTranslation: true }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "TTS error");
@@ -146,7 +129,6 @@ export default function Iteration6Page() {
   function reset() {
     setStage("idle");
     setPostProcessed(null);
-    setIsPostProcessing(false);
     setIsSpeaking(false);
     setIsSpeakingEnglish(false);
     setEnglishText(null);
@@ -235,23 +217,17 @@ export default function Iteration6Page() {
               <div className="bg-white border border-gray-200 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-xs text-gray-400 uppercase tracking-widest">Gemini post-processing</p>
-                  {isPostProcessing ? (
-                    <span className="flex items-center gap-1 text-xs text-gray-400"><Spinner /> Correcting…</span>
-                  ) : (
-                    postProcessed && (
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${MODE_COLORS[postMode]}`}>
-                        {MODE_LABELS[postMode]}
-                      </span>
-                    )
+                  {postProcessed && (
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${MODE_COLORS[postMode]}`}>
+                      {MODE_LABELS[postMode]}
+                    </span>
                   )}
                 </div>
-                {isPostProcessing ? (
-                  <p className="text-sm text-gray-400 italic">Asking Gemini to fill gaps…</p>
-                ) : postProcessed ? (
+                {postProcessed && (
                   <p className="text-xl font-medium text-gray-900" style={{ fontFamily: "Noto Sans Devanagari, sans-serif" }}>
                     {postProcessed}
                   </p>
-                ) : null}
+                )}
               </div>
 
               {/* TTS buttons */}

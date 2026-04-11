@@ -5,8 +5,8 @@ import { useState } from "react";
 
 // Actual DS-D model output for "चाळीस रुपयांत काय मिळेल?" (Taranath's recording)
 const DS_D_RAW = "चाळीस रुपयांत काय ⁇";
-const CORRECTED_TEXT = "चाळीस रुपयांत काय मिळेल?";
-const ENGLISH_TEXT = "What will one get for forty?";
+const CORRECTED_TEXT = "चाळीस रुपयांत काय";
+const ENGLISH_TEXT = "What will one get for forty";
 
 function Spinner() {
   return (
@@ -81,7 +81,7 @@ export default function Iteration5Page() {
       const res = await fetch("/api/tts-english", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: CORRECTED_TEXT }),
+        body: JSON.stringify({ text: ENGLISH_TEXT, skipTranslation: true }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "TTS error");

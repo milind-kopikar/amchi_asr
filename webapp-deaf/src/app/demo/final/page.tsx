@@ -5,8 +5,8 @@ import { useState } from "react";
 
 // Actual DS-D model output for "चाळीस रुपयांत काय मिळेल?" (Taranath's recording)
 const DS_D_RAW = "चाळीस रुपयांत काय ⁇";
-const FALLBACK = "चाळीस रुपयांत काय मिळेल?";
-const ENGLISH_TEXT = "What will one get for forty?";
+const CORRECTED = "चाळीस रुपयांत काय";
+const ENGLISH_TEXT = "What will one get for forty";
 
 type PostMode = "FILL" | "RECONSTRUCT" | "PASSTHROUGH";
 
@@ -52,7 +52,6 @@ export default function FinalPage() {
   const [stage, setStage] = useState<Stage>("idle");
   const [postProcessed, setPostProcessed] = useState<string>("");
   const [postMode, setPostMode] = useState<PostMode>("PASSTHROUGH");
-  const [isPostProcessing, setIsPostProcessing] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isSpeakingEnglish, setIsSpeakingEnglish] = useState(false);
   const [englishText, setEnglishText] = useState<string | null>(null);
@@ -76,23 +75,9 @@ export default function FinalPage() {
 
     await new Promise((r) => setTimeout(r, 2000));
 
-    setIsPostProcessing(true);
-    try {
-      const res = await fetch("/api/postprocess", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prediction: DS_D_RAW }),
-      });
-      const json = await res.json();
-      setPostProcessed(json.result ?? FALLBACK);
-      setPostMode((json.mode as PostMode) ?? "PASSTHROUGH");
-    } catch {
-      setPostProcessed(FALLBACK);
-      setPostMode("PASSTHROUGH");
-    } finally {
-      setIsPostProcessing(false);
-      setStage("done");
-    }
+    setPostProcessed(CORRECTED);
+    setPostMode("PASSTHROUGH");
+    setStage("done");
   }
 
   async function speakMarathi() {
@@ -122,12 +107,11 @@ export default function FinalPage() {
     if (isSpeakingEnglish || !postProcessed) return;
     setIsSpeakingEnglish(true);
     setEnglishText(ENGLISH_TEXT);
-    const text = postProcessed.replace(/⁇/g, "").replace(/।/g, "").trim();
     try {
       const res = await fetch("/api/tts-english", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text: ENGLISH_TEXT, skipTranslation: true }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "TTS error");
@@ -144,7 +128,6 @@ export default function FinalPage() {
   function reset() {
     setStage("idle");
     setPostProcessed("");
-    setIsPostProcessing(false);
     setIsSpeaking(false);
     setIsSpeakingEnglish(false);
     setEnglishText(null);
@@ -238,32 +221,22 @@ export default function FinalPage() {
               <div className="bg-white border-2 border-purple-200 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-xs text-gray-400 uppercase tracking-widest">Corrected transcript</p>
-                  {isPostProcessing ? (
-                    <span className="flex items-center gap-1 text-xs text-gray-400"><Spinner /> Correcting…</span>
-                  ) : (
-                    postProcessed && (
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${MODE_COLORS[postMode]}`}>
-                        {MODE_LABELS[postMode]}
-                      </span>
-                    )
+                  {postProcessed && (
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${MODE_COLORS[postMode]}`}>
+                      {MODE_LABELS[postMode]}
+                    </span>
                   )}
                 </div>
-                {isPostProcessing ? (
-                  <p className="text-sm text-gray-400 italic py-1">Asking Gemini to fill gaps…</p>
-                ) : (
-                  <>
-                    <textarea
-                      value={postProcessed}
-                      onChange={(e) => setPostProcessed(e.target.value)}
-                      className="w-full text-xl font-medium text-gray-900 bg-transparent resize-none focus:outline-none focus:ring-2 focus:ring-purple-300 rounded-lg p-1 -ml-1"
-                      style={{ fontFamily: "Noto Sans Devanagari, sans-serif" }}
-                      rows={2}
-                      disabled={stage !== "done"}
-                    />
-                    {stage === "done" && (
-                      <p className="text-xs text-purple-500 mt-1">✎ Edit before speaking if needed</p>
-                    )}
-                  </>
+                <textarea
+                  value={postProcessed}
+                  onChange={(e) => setPostProcessed(e.target.value)}
+                  className="w-full text-xl font-medium text-gray-900 bg-transparent resize-none focus:outline-none focus:ring-2 focus:ring-purple-300 rounded-lg p-1 -ml-1"
+                  style={{ fontFamily: "Noto Sans Devanagari, sans-serif" }}
+                  rows={2}
+                  disabled={stage !== "done"}
+                />
+                {stage === "done" && (
+                  <p className="text-xs text-purple-500 mt-1">✎ Edit before speaking if needed</p>
                 )}
               </div>
 
@@ -272,14 +245,14 @@ export default function FinalPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={speakMarathi}
-                    disabled={isSpeaking || isPostProcessing}
+                    disabled={isSpeaking}
                     className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-medium py-3 px-4 rounded-xl transition-colors text-sm"
                   >
                     {isSpeaking ? <><Spinner /> Speaking…</> : "🔊 Speak in Marathi"}
                   </button>
                   <button
                     onClick={speakEnglish}
-                    disabled={isSpeakingEnglish || isPostProcessing}
+                    disabled={isSpeakingEnglish}
                     className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-medium py-3 px-4 rounded-xl transition-colors text-sm"
                   >
                     {isSpeakingEnglish ? <><Spinner /> Speaking…</> : "🔊 Speak in English"}

@@ -30,15 +30,38 @@ export async function POST(req: NextRequest) {
   }
 
   let text: string;
+  let skipTranslation = false;
   try {
     const body = await req.json();
     text = String(body.text ?? "").trim();
+    skipTranslation = body.skipTranslation === true;
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
   if (!text) {
     return NextResponse.json({ error: "text is required" }, { status: 400 });
+  }
+
+  // If text is already in English, skip Gemini translation
+  if (skipTranslation) {
+    const ttsKey = process.env.GOOGLE_TTS_API_KEY;
+    if (!ttsKey) return NextResponse.json({ error: "TTS not configured" }, { status: 503 });
+    const ttsRes = await fetch(`${GOOGLE_TTS_URL}?key=${ttsKey}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        input: { text },
+        voice: { languageCode: "en-IN", ssmlGender: "FEMALE" },
+        audioConfig: { audioEncoding: "MP3" },
+      }),
+    });
+    if (!ttsRes.ok) {
+      const detail = await ttsRes.text();
+      return NextResponse.json({ error: "TTS upstream error", detail }, { status: ttsRes.status });
+    }
+    const { audioContent } = await ttsRes.json();
+    return NextResponse.json({ audioContent, englishText: text });
   }
 
   // Step 1: Translate Marathi → English via Gemini
