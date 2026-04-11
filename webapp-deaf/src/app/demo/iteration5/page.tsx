@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useState } from "react";
 
-// Actual DS-D model output for "एक लिटर दूध द्या." (WER = 0.00)
-const DS_D_RAW = "एक लिटर दूध द्या ⁇";
-const CORRECTED_TEXT = "एक लिटर दूध द्या";
+// Actual DS-D model output for "दोन पॅकेट दूध द्या." (WER = 0.00)
+const DS_D_RAW = "दोन पकेट दूध द्या ⁇";
+const CORRECTED_TEXT = "दोन पॅकेट दूध द्या";
 
 function Spinner() {
   return (
@@ -47,7 +47,7 @@ export default function Iteration5Page() {
     setError(null);
 
     // Simulate ASR latency, then immediately call TTS — no transcript shown
-    await new Promise((r) => setTimeout(r, 3000));
+    await new Promise((r) => setTimeout(r, 2000));
     await speakMarathi();
     setStage("done");
   }
