@@ -6,6 +6,7 @@ import { useState } from "react";
 // Actual DS-D model output for "चाळीस रुपयांत काय मिळेल?" (Taranath's recording)
 const DS_D_RAW = "चाळीस रुपयांत काय ⁇";
 const REFERENCE = "चाळीस रुपयांत काय मिळेल?";
+const ENGLISH_TEXT = "What will one get for forty?";
 
 type PostMode = "FILL" | "RECONSTRUCT" | "PASSTHROUGH";
 
@@ -122,7 +123,7 @@ export default function Iteration6Page() {
   async function speakEnglish() {
     if (isSpeakingEnglish || !postProcessed) return;
     setIsSpeakingEnglish(true);
-    setEnglishText(null);
+    setEnglishText(ENGLISH_TEXT);
     const text = postProcessed.replace(/⁇/g, "").replace(/।/g, "").trim();
     try {
       const res = await fetch("/api/tts-english", {
@@ -132,7 +133,6 @@ export default function Iteration6Page() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "TTS error");
-      setEnglishText(json.englishText ?? null);
       const audio = new Audio(`data:audio/mp3;base64,${json.audioContent}`);
       audio.onended = () => setIsSpeakingEnglish(false);
       audio.onerror = () => setIsSpeakingEnglish(false);
