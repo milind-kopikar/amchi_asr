@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useState } from "react";
 
-// Actual DS-D model output for "दोन पॅकेट दूध द्या." (WER = 0.00)
-const DS_D_RAW = "दोन पकेट दूध द्या ⁇";
-const FALLBACK = "दोन पॅकेट दूध द्या";
+// Actual DS-D model output for "चाळीस रुपयांत काय मिळेल?" (Taranath's recording)
+const DS_D_RAW = "चाळीस रुपयांत काय ⁇";
+const FALLBACK = "चाळीस रुपयांत काय मिळेल?";
 
 type PostMode = "FILL" | "RECONSTRUCT" | "PASSTHROUGH";
 
