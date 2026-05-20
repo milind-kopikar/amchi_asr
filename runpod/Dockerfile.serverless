@@ -1,48 +1,86 @@
-# Amchi ASR RunPod Serverless worker
-# Build from repo root: docker build -f runpod/Dockerfile.serverless -t amchi-asr-runpod .
-# The checkpoint is NOT in the image by default. Either:
-#   A) Copy it into the image: cp results/.../checkpoints/xxx.ckpt checkpoint.ckpt then add: COPY checkpoint.ckpt /app/checkpoint.ckpt
-#   B) Attach a RunPod Network Volume with the checkpoint and set env CHECKPOINT_PATH to that path (e.g. /runpod-volume/checkpoint.ckpt)
+# Amchi Konkani ASR — RunPod Serverless worker
+#
+# Build from repo root:
+#   # First, generate the dictionary JSON (one-time, or whenever the dict changes):
+#   python3 scripts/build_amchi_dict.py
+#
+#   # Then build the image:
+#   docker build -f runpod/Dockerfile.serverless -t milindkopi/amchi-asr-runpod:latest .
+#
+# The checkpoint is NOT baked into this image.
+# Set CHECKPOINT_URL to the public Cloudflare R2 URL when creating the endpoint.
+# The handler downloads it to /tmp on first worker start.
+#
+# Required env vars when running the endpoint:
+#   CHECKPOINT_URL    — public R2 URL for konkani_asr-epoch=88-val_wer=0.334.ckpt
+#   GEMINI_API_KEY    — optional; required for Gemini post-processing
+#                       (without it the handler returns raw ASR with mode="SKIPPED")
+#
+# Optional:
+#   AMCHI_DICT_PATH   — override the baked-in dictionary path. Defaults to
+#                       /app/data/amchi_konkani_dict.json (which we COPY below).
 
 FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
+
+# System deps: Python 3.11, ffmpeg (audio decode), build tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3.11 python3.11-venv python3-pip python3.11-dev \
-    ffmpeg build-essential \
+    ffmpeg build-essential wget \
     && rm -rf /var/lib/apt/lists/*
 
-# Use python3.11
+# Make python3.11 the default python
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 \
-    && update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
+    && update-alternatives --install /usr/bin/python  python  /usr/bin/python3.11 1
 
 WORKDIR /app
 
-# PyTorch CUDA 11.8 (matches your training env)
+# ── 1. PyTorch (CUDA 11.8 — matches training environment) ──────────────────
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
-    && pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+    && pip install --no-cache-dir \
+       torch torchvision torchaudio \
+       --index-url https://download.pytorch.org/whl/cu118
 
-# NeMo and deps (upstream; Python 3.11)
+# ── 2. NeMo ASR (upstream, Python 3.11 compatible) ─────────────────────────
+#    Use [asr] only — not [all] — to keep the image lean (~8 GB vs ~15 GB).
+#    --ignore-installed blinker avoids a known conflict on Ubuntu 22.04.
 RUN pip install --no-cache-dir Cython \
-    && pip install --no-cache-dir "nemo_toolkit[all]" pynini librosa omegaconf
+    && pip install --no-cache-dir \
+       "nemo_toolkit[asr]" \
+       --ignore-installed blinker \
+       librosa omegaconf
 
-# RunPod SDK
-RUN pip install --no-cache-dir runpod
+# ── 3. Gemini post-processing + utilities ───────────────────────────────────
+#    google-genai = Gemini Python SDK used by scripts/amchi_postprocess_asr.py
+#    jiwer        = WER metric used by the post-processor's safety valve
+#    runpod       = serverless SDK
+RUN pip install --no-cache-dir \
+    google-genai \
+    jiwer \
+    runpod
 
-# Repo code (handler, scripts, patches)
+# ── 4. Repo code (handler, scripts, patches, dictionary) ───────────────────
+#    The dictionary JSON must exist at data/amchi_konkani_dict.json before
+#    `docker build` — generate it with `python3 scripts/build_amchi_dict.py`.
 COPY . /app
 
-# Apply conv_asr patch (required for NeMo hybrid model)
+# Fail the build early if the dictionary wasn't generated. Better to find out
+# at build time than at the first inference request.
+RUN test -f /app/data/amchi_konkani_dict.json \
+    || (echo "ERROR: /app/data/amchi_konkani_dict.json is missing." \
+        "Run 'python3 scripts/build_amchi_dict.py' before building this image." \
+        && exit 1)
+
+# ── 5. Apply conv_asr patch ─────────────────────────────────────────────────
+#    The upstream NeMo hybrid CTC/RNNT model requires a patched conv_asr.py
+#    to load fine-tuned checkpoints correctly. See patches/conv_asr_fixed.py.
 RUN python3 -c "\
 import nemo.collections.asr.modules.conv_asr as m; \
 import shutil; \
 shutil.copy('/app/patches/conv_asr_fixed.py', m.__file__); \
-print('Patched', m.__file__) \
+print('conv_asr patch applied to', m.__file__) \
 "
 
-# Optional: embed checkpoint in image (copy to repo root first: cp results/.../marathi_amchi_20epoch-epoch=18-val_wer=0.550.ckpt checkpoint.ckpt)
-# COPY checkpoint.ckpt /app/checkpoint.ckpt
-
-ENV CHECKPOINT_PATH=/app/checkpoint.ckpt
-
+# ── Entry point ──────────────────────────────────────────────────────────────
 CMD ["python3", "runpod/handler.py"]

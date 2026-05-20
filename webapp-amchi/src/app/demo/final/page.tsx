@@ -1,17 +1,16 @@
 "use client";
 
 /**
- * Deaf Speech ASR demo page — LIVE recording variant.
+ * Amchi Konkani ASR demo page — LIVE recording variant.
  *
- * Replaces the previous hardcoded transcription flow with:
  *   1. ``useMediaRecorder`` hook captures audio from the mic
  *   2. ``audioBlobToBase64Wav`` converts the browser-native blob to 16 kHz mono WAV
- *   3. POST /api/transcribe forwards to the RunPod DS-D endpoint
+ *   3. POST /api/transcribe forwards to the RunPod Run S endpoint
  *   4. Display raw ASR + corrected text + post-processing mode
- *   5. TTS playback of the corrected text (Marathi + English via existing routes)
+ *   5. /api/tts translates the corrected Konkani to English and plays it back
  *
- * Falls back to displaying an error if any step fails (mic permission,
- * conversion, RunPod outage).
+ * No live Konkani TTS (Google Cloud does not support Amchi Konkani directly),
+ * so the audio playback is the English translation.
  */
 
 import Link from "next/link";
@@ -79,9 +78,8 @@ export default function FinalPage() {
   const recorder = useMediaRecorder();
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [transcribed, setTranscribed] = useState<TranscribeResponse | null>(null);
-  const [postProcessed, setPostProcessed] = useState<string>("");  // editable copy
+  const [postProcessed, setPostProcessed] = useState<string>("");
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isSpeakingEnglish, setIsSpeakingEnglish] = useState(false);
   const [englishText, setEnglishText] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -113,7 +111,7 @@ export default function FinalPage() {
     }
   }
 
-  async function speakMarathi() {
+  async function speakEnglish() {
     if (isSpeaking || !postProcessed) return;
     setIsSpeaking(true);
     setError(null);
@@ -126,6 +124,7 @@ export default function FinalPage() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "TTS error");
+      if (json.translation) setEnglishText(json.translation);
       const audio = new Audio(`data:audio/mp3;base64,${json.audioContent}`);
       audio.onended = () => setIsSpeaking(false);
       audio.onerror = () => { setIsSpeaking(false); setError("Playback failed."); };
@@ -136,41 +135,15 @@ export default function FinalPage() {
     }
   }
 
-  async function speakEnglish() {
-    if (isSpeakingEnglish || !postProcessed) return;
-    setIsSpeakingEnglish(true);
-    setError(null);
-    const text = postProcessed.replace(/⁇/g, "").replace(/।/g, "").trim();
-    try {
-      const res = await fetch("/api/tts-english", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),  // skipTranslation omitted → Gemini translates
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "TTS-English error");
-      if (json.translation) setEnglishText(json.translation);
-      const audio = new Audio(`data:audio/mp3;base64,${json.audioContent}`);
-      audio.onended = () => setIsSpeakingEnglish(false);
-      audio.onerror = () => setIsSpeakingEnglish(false);
-      await audio.play();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "English TTS error");
-      setIsSpeakingEnglish(false);
-    }
-  }
-
   function resetAll() {
     recorder.reset();
     setTranscribed(null);
     setPostProcessed("");
     setIsSpeaking(false);
-    setIsSpeakingEnglish(false);
     setEnglishText(null);
     setError(null);
   }
 
-  // Derived UI state
   const showTranscribe = recorder.status === "ready" && !transcribed && !isTranscribing;
   const showResults = !!transcribed;
 
@@ -179,21 +152,15 @@ export default function FinalPage() {
       <header className="border-b border-gray-200 bg-white">
         <div className="max-w-lg mx-auto px-4 py-5 flex items-center gap-3">
           <Link href="/" className="text-gray-400 hover:text-gray-600 text-sm">← Back</Link>
-          <div className="flex items-center gap-2">
-            <div>
-              <h1 className="text-lg font-bold text-gray-900">Final Product</h1>
-              <p className="text-xs text-gray-500">Record → transcribe (live ASR) → speak</p>
-            </div>
-            <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium shrink-0">
-              BEST ⭐
-            </span>
+          <div>
+            <h1 className="text-lg font-bold text-gray-900">Amchi Konkani — Live Demo</h1>
+            <p className="text-xs text-gray-500">Record → ASR (Run S) → corrected transcript → English</p>
           </div>
         </div>
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-8 space-y-6">
         <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-          {/* Idle / Ready (no recording yet, or recording done but not transcribed) */}
           {(recorder.status === "idle" || recorder.status === "error") && !transcribed && (
             <button
               onClick={recorder.start}
@@ -253,7 +220,6 @@ export default function FinalPage() {
             </button>
           )}
 
-          {/* Recording metadata once available */}
           {recorder.audioBlob && !transcribed && (
             <div className="text-xs text-gray-500 text-center">
               Captured {(recorder.audioBlob.size / 1024).toFixed(1)} KB &middot; {recorder.audioBlob.type}
@@ -264,11 +230,10 @@ export default function FinalPage() {
             <p className="text-xs text-red-600">{recorder.error}</p>
           )}
 
-          {/* Results */}
           {showResults && transcribed && (
             <div className="space-y-4 pt-2">
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                <p className="text-xs text-gray-400 uppercase tracking-widest mb-2">Raw ASR output (DS-D model)</p>
+                <p className="text-xs text-gray-400 uppercase tracking-widest mb-2">Raw ASR output (Run S model)</p>
                 <RawText text={transcribed.raw} />
                 <p className="text-xs text-gray-400 mt-2">
                   <span className="text-red-500 font-bold">⁇</span> = token the model could not decode
@@ -296,22 +261,13 @@ export default function FinalPage() {
               </div>
 
               {postProcessed && (
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={speakMarathi}
-                    disabled={isSpeaking}
-                    className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-medium py-3 px-4 rounded-xl transition-colors text-sm"
-                  >
-                    {isSpeaking ? <><Spinner /> Speaking…</> : "🔊 Speak in Marathi"}
-                  </button>
-                  <button
-                    onClick={speakEnglish}
-                    disabled={isSpeakingEnglish}
-                    className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-medium py-3 px-4 rounded-xl transition-colors text-sm"
-                  >
-                    {isSpeakingEnglish ? <><Spinner /> Speaking…</> : "🔊 Speak in English"}
-                  </button>
-                </div>
+                <button
+                  onClick={speakEnglish}
+                  disabled={isSpeaking}
+                  className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-medium py-3 px-4 rounded-xl transition-colors text-sm"
+                >
+                  {isSpeaking ? <><Spinner /> Speaking…</> : "🔊 Translate to English & speak"}
+                </button>
               )}
 
               {englishText && (
