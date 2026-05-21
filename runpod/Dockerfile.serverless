@@ -82,5 +82,14 @@ shutil.copy('/app/patches/conv_asr_fixed.py', m.__file__); \
 print('conv_asr patch applied to', m.__file__) \
 "
 
+# ── 6. Staged smoke checks ──────────────────────────────────────────────────
+#    Each check is its own RUN so a build failure points at the exact
+#    broken component. The smoke script's source lives in the repo (and is
+#    unit-tested in tests/test_runpod_smoke.py).
+RUN python3 scripts/runpod_smoke.py --check imports    --variant amchi
+RUN python3 scripts/runpod_smoke.py --check patch      --variant amchi
+RUN python3 scripts/runpod_smoke.py --check dictionary --variant amchi
+RUN python3 scripts/runpod_smoke.py --check handler    --variant amchi
+
 # ── Entry point ──────────────────────────────────────────────────────────────
 CMD ["python3", "runpod/handler.py"]

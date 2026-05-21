@@ -1,0 +1,201 @@
+# Build and push the two RunPod ASR Docker images.
+#
+# Triggered on:
+#   - push to master              (canonical "latest" tag)
+#   - push to feat/* branches     (commit-SHA-tagged only)
+#   - manual workflow_dispatch    (any branch, builds both)
+#
+# Strategy
+# --------
+# Both Dockerfiles build in parallel matrix jobs (saves wall time, the two
+# images are independent). The "deaf" build is the canary — by convention the
+# user stands up the deaf RunPod endpoint first; if its build is green AND
+# its endpoint works end-to-end, only THEN proceed to creating the amchi
+# endpoint. The workflow itself doesn't enforce this — it pushes both images
+# regardless — but documents the recommended rollout order in the job
+# summaries.
+#
+# The staged smoke checks inside each Dockerfile (RUN python scripts/runpod_smoke.py)
+# mean a broken layer fails the build at the exact problematic step.
+# No need for a separate "smoke" job — it's baked in.
+#
+# Required repository secrets (configure once via GitHub UI):
+#   DOCKERHUB_USERNAME   Docker Hub login (e.g. "milindkopi")
+#   DOCKERHUB_TOKEN      Docker Hub PAT with read+write+delete scope
+#
+# See docs/RUNPOD_GITHUB_ACTIONS_SETUP.md for the one-time setup steps.
+
+name: Build RunPod ASR images
+
+on:
+  push:
+    branches:
+      - master
+      - "feat/**"
+    paths:
+      - "runpod/**"
+      - "scripts/amchi_inference.py"
+      - "scripts/deaf_speech_inference.py"
+      - "scripts/amchi_postprocess_asr.py"
+      - "scripts/postprocess_asr.py"
+      - "scripts/runpod_smoke.py"
+      - "scripts/build_amchi_dict.py"
+      - "patches/conv_asr_fixed.py"
+      - ".github/workflows/build-runpod.yml"
+  workflow_dispatch:
+
+env:
+  REGISTRY: docker.io
+
+jobs:
+  # ────────────────────────────────────────────────────────────────
+  # Run Python unit tests first. If they fail, don't waste 25 min
+  # building Docker images for code that's already broken.
+  # ────────────────────────────────────────────────────────────────
+  unit-tests:
+    name: Unit tests (Python)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-mock jiwer
+
+      - name: Run the unit test suite
+        # Exclude pre-existing tests that depend on the full training env
+        # (NeMo, manifests, tokenizers) — those run in the training pipeline,
+        # not here. Integration tests are skip-by-default.
+        run: |
+          pytest tests/test_build_amchi_dict.py \
+                 tests/test_handler_amchi.py \
+                 tests/test_prewarm_runpod.py \
+                 tests/test_runpod_smoke.py \
+                 -v
+
+  # ────────────────────────────────────────────────────────────────
+  # Build both Docker images in parallel. Each job is independent
+  # so a broken Amchi build does not block the Deaf image.
+  # ────────────────────────────────────────────────────────────────
+  docker-build:
+    name: Build & push (${{ matrix.variant }})
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: deaf
+            dockerfile: runpod/Dockerfile.deaf
+            image: milindkopi/deaf-speech-asr-runpod
+            requires_dict: false
+          - variant: amchi
+            dockerfile: runpod/Dockerfile.serverless
+            image: milindkopi/amchi-asr-runpod
+            requires_dict: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python (for building the dictionary, amchi only)
+        if: matrix.requires_dict
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build Amchi Konkani dictionary JSON
+        if: matrix.requires_dict
+        # The Dockerfile fails the build if data/amchi_konkani_dict.json is
+        # missing. We generate it from the Konkani dictionary Railway API.
+        # If Railway is unreachable, allow a fallback to the committed CSV
+        # in the konkani_dictionary repo — but that's a separate repo so
+        # this CI uses the Railway source.
+        run: |
+          python scripts/build_amchi_dict.py --out data/amchi_konkani_dict.json
+          ls -la data/
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Compute the image tags. The "latest" tag only floats on master;
+      # feature branches get a commit-SHA-only tag so they can be pinned.
+      - name: Compute image tags
+        id: tags
+        run: |
+          SHA_TAG="${{ matrix.image }}:${{ github.sha }}"
+          if [ "${{ github.ref }}" = "refs/heads/master" ]; then
+            echo "tags=${SHA_TAG},${{ matrix.image }}:latest" >> "$GITHUB_OUTPUT"
+          else
+            BRANCH=$(echo "${{ github.ref_name }}" | tr '/' '-')
+            echo "tags=${SHA_TAG},${{ matrix.image }}:${BRANCH}" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Build the image. The Dockerfile's staged RUN python scripts/runpod_smoke.py
+      # commands run as part of the build, so a broken layer fails here with
+      # a clear "[N/M] <check> FAIL: <reason>" message in the logs.
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.tags.outputs.tags }}
+          cache-from: type=gha,scope=${{ matrix.variant }}
+          cache-to: type=gha,scope=${{ matrix.variant }},mode=max
+
+      # Post-build summary that appears in the GitHub Actions UI.
+      - name: Job summary
+        if: always()
+        run: |
+          echo "## ${{ matrix.variant }} image" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Tags: \`${{ steps.tags.outputs.tags }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ matrix.variant }}" = "deaf" ]; then
+            echo "**Canary** — stand up this RunPod endpoint first." >> $GITHUB_STEP_SUMMARY
+            echo "If it works end-to-end, proceed to the amchi endpoint." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Build only after the deaf endpoint is verified working." >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # ────────────────────────────────────────────────────────────────
+  # Final summary — links to the pushed tags and recommended next
+  # steps. Shows up under the workflow run header.
+  # ────────────────────────────────────────────────────────────────
+  summary:
+    name: Rollout checklist
+    needs: docker-build
+    if: ${{ always() && needs.docker-build.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Write summary
+        run: |
+          {
+            echo "# RunPod ASR images built ✅"
+            echo ""
+            echo "Recommended rollout (deaf is the canary):"
+            echo ""
+            echo "1. Create / update the **deaf** RunPod endpoint with image \`milindkopi/deaf-speech-asr-runpod:${{ github.sha }}\`"
+            echo "2. Run \`scripts/test_deaf_endpoint.py\` against it — verify a sample transcription"
+            echo "3. Open the demo webapp \`/demo/live\` and confirm end-to-end works"
+            echo "4. Then create / update the **amchi** RunPod endpoint with image \`milindkopi/amchi-asr-runpod:${{ github.sha }}\`"
+            echo "5. Repeat the smoke test for amchi"
+            echo ""
+            echo "See \`docs/RUNPOD_GITHUB_ACTIONS_SETUP.md\` and the master plan."
+          } >> $GITHUB_STEP_SUMMARY
