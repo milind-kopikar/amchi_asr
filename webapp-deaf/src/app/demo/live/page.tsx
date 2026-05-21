@@ -1,25 +1,53 @@
 "use client";
 
+/**
+ * Deaf Speech ASR demo page — LIVE recording variant.
+ *
+ * Replaces the previous hardcoded transcription flow with:
+ *   1. ``useMediaRecorder`` hook captures audio from the mic
+ *   2. ``audioBlobToBase64Wav`` converts the browser-native blob to 16 kHz mono WAV
+ *   3. POST /api/transcribe forwards to the RunPod DS-D endpoint
+ *   4. Display raw ASR + corrected text + post-processing mode
+ *   5. TTS playback of the corrected text (Marathi + English via existing routes)
+ *
+ * Falls back to displaying an error if any step fails (mic permission,
+ * conversion, RunPod outage).
+ */
+
 import Link from "next/link";
 import { useState } from "react";
 
-// Actual DS-D model output for "चाळीस रुपयांत काय मिळेल?" (Taranath's recording)
-const DS_D_RAW = "चाळीस रुपयांत काय ⁇";
-const CORRECTED = "चाळीस रुपयांत काय";
-const ENGLISH_TEXT = "What will one get for forty";
+import { useMediaRecorder } from "@/lib/useMediaRecorder";
+import { audioBlobToBase64Wav } from "@/lib/wav-encoder";
 
-type PostMode = "FILL" | "RECONSTRUCT" | "PASSTHROUGH";
+type PostMode = "FILL" | "RECONSTRUCT" | "PASSTHROUGH" | "SKIPPED" | "SKIP" | "PP_ERROR" | "UNKNOWN";
 
-const MODE_LABELS: Record<PostMode, string> = {
+const MODE_LABELS: Record<string, string> = {
   FILL: "Filled gaps",
   RECONSTRUCT: "Reconstructed",
   PASSTHROUGH: "No changes needed",
+  SKIPPED: "Post-processing skipped",
+  SKIP: "Empty input",
+  PP_ERROR: "Post-processing failed (raw shown)",
+  UNKNOWN: "Mode unknown",
 };
-const MODE_COLORS: Record<PostMode, string> = {
+
+const MODE_COLORS: Record<string, string> = {
   FILL: "bg-blue-100 text-blue-800 border border-blue-200",
   RECONSTRUCT: "bg-orange-100 text-orange-800 border border-orange-200",
   PASSTHROUGH: "bg-green-100 text-green-800 border border-green-200",
+  SKIPPED: "bg-gray-100 text-gray-700 border border-gray-200",
+  SKIP: "bg-gray-100 text-gray-700 border border-gray-200",
+  PP_ERROR: "bg-amber-100 text-amber-800 border border-amber-200",
+  UNKNOWN: "bg-gray-100 text-gray-700 border border-gray-200",
 };
+
+interface TranscribeResponse {
+  raw: string;
+  corrected: string;
+  mode: PostMode;
+  latency_ms: { asr: number; postprocess: number; total: number };
+}
 
 function Spinner() {
   return (
@@ -31,6 +59,7 @@ function Spinner() {
 }
 
 function RawText({ text }: { text: string }) {
+  if (!text) return <span className="text-gray-400 italic">(no output)</span>;
   const parts = text.split("⁇");
   return (
     <span style={{ fontFamily: "Noto Sans Devanagari, sans-serif" }} className="text-xl leading-relaxed">
@@ -46,38 +75,42 @@ function RawText({ text }: { text: string }) {
   );
 }
 
-type Stage = "idle" | "recording" | "stopped" | "transcribing" | "done";
-
 export default function FinalPage() {
-  const [stage, setStage] = useState<Stage>("idle");
-  const [postProcessed, setPostProcessed] = useState<string>("");
-  const [postMode, setPostMode] = useState<PostMode>("PASSTHROUGH");
+  const recorder = useMediaRecorder();
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [transcribed, setTranscribed] = useState<TranscribeResponse | null>(null);
+  const [postProcessed, setPostProcessed] = useState<string>("");  // editable copy
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isSpeakingEnglish, setIsSpeakingEnglish] = useState(false);
   const [englishText, setEnglishText] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  function handleRecord() {
-    setStage("recording");
+  async function handleTranscribe() {
+    if (!recorder.audioBlob) {
+      setError("No recording available — please record first.");
+      return;
+    }
+    setIsTranscribing(true);
     setError(null);
     setEnglishText(null);
-    setPostProcessed("");
-  }
 
-  function handleStop() {
-    setStage("stopped");
-  }
-
-  async function handleTranscribe() {
-    if (stage !== "stopped") return;
-    setStage("transcribing");
-    setError(null);
-
-    await new Promise((r) => setTimeout(r, 2000));
-
-    setPostProcessed(CORRECTED);
-    setPostMode("PASSTHROUGH");
-    setStage("done");
+    try {
+      const audioBase64 = await audioBlobToBase64Wav(recorder.audioBlob);
+      const res = await fetch("/api/transcribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ audio_base64: audioBase64 }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? `Transcribe HTTP ${res.status}`);
+      const result = json as TranscribeResponse;
+      setTranscribed(result);
+      setPostProcessed(result.corrected || result.raw);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Transcribe failed");
+    } finally {
+      setIsTranscribing(false);
+    }
   }
 
   async function speakMarathi() {
@@ -106,15 +139,17 @@ export default function FinalPage() {
   async function speakEnglish() {
     if (isSpeakingEnglish || !postProcessed) return;
     setIsSpeakingEnglish(true);
-    setEnglishText(ENGLISH_TEXT);
+    setError(null);
+    const text = postProcessed.replace(/⁇/g, "").replace(/।/g, "").trim();
     try {
       const res = await fetch("/api/tts-english", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: ENGLISH_TEXT, skipTranslation: true }),
+        body: JSON.stringify({ text }),  // skipTranslation omitted → Gemini translates
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "TTS error");
+      if (!res.ok) throw new Error(json.error ?? "TTS-English error");
+      if (json.translation) setEnglishText(json.translation);
       const audio = new Audio(`data:audio/mp3;base64,${json.audioContent}`);
       audio.onended = () => setIsSpeakingEnglish(false);
       audio.onerror = () => setIsSpeakingEnglish(false);
@@ -125,14 +160,19 @@ export default function FinalPage() {
     }
   }
 
-  function reset() {
-    setStage("idle");
+  function resetAll() {
+    recorder.reset();
+    setTranscribed(null);
     setPostProcessed("");
     setIsSpeaking(false);
     setIsSpeakingEnglish(false);
     setEnglishText(null);
     setError(null);
   }
+
+  // Derived UI state
+  const showTranscribe = recorder.status === "ready" && !transcribed && !isTranscribing;
+  const showResults = !!transcribed;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -142,7 +182,7 @@ export default function FinalPage() {
           <div className="flex items-center gap-2">
             <div>
               <h1 className="text-lg font-bold text-gray-900">Final Product</h1>
-              <p className="text-xs text-gray-500">Record → edit transcript → speak</p>
+              <p className="text-xs text-gray-500">Record → transcribe (live ASR) → speak</p>
             </div>
             <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium shrink-0">
               BEST ⭐
@@ -152,22 +192,26 @@ export default function FinalPage() {
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-8 space-y-6">
-        {/* Controls */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-
-          {/* Record / Stop / Record Again */}
-          {(stage === "idle" || stage === "stopped") && (
+          {/* Idle / Ready (no recording yet, or recording done but not transcribed) */}
+          {(recorder.status === "idle" || recorder.status === "error") && !transcribed && (
             <button
-              onClick={handleRecord}
+              onClick={recorder.start}
               className="w-full flex items-center justify-center gap-3 bg-red-600 hover:bg-red-700 text-white font-semibold py-4 px-6 rounded-xl transition-colors"
             >
               <span className="text-xl">🎙</span> Record
             </button>
           )}
 
-          {stage === "recording" && (
+          {recorder.status === "requesting" && (
+            <div className="w-full flex items-center justify-center gap-3 bg-yellow-50 border border-yellow-200 text-yellow-800 font-semibold py-4 px-6 rounded-xl">
+              <Spinner /> Requesting microphone…
+            </div>
+          )}
+
+          {recorder.status === "recording" && (
             <button
-              onClick={handleStop}
+              onClick={recorder.stop}
               className="w-full flex items-center justify-center gap-3 bg-red-600 hover:bg-red-700 text-white font-semibold py-4 px-6 rounded-xl transition-colors"
             >
               <span className="inline-block w-5 h-5 bg-white rounded-sm" />
@@ -179,53 +223,64 @@ export default function FinalPage() {
             </button>
           )}
 
-          {stage === "transcribing" && (
-            <div className="w-full flex items-center justify-center gap-3 bg-red-100 border border-red-200 text-red-700 font-semibold py-4 px-6 rounded-xl">
+          {recorder.status === "stopping" && (
+            <div className="w-full flex items-center justify-center gap-3 bg-gray-100 text-gray-700 font-semibold py-4 px-6 rounded-xl">
+              <Spinner /> Finishing recording…
+            </div>
+          )}
+
+          {showTranscribe && (
+            <button
+              onClick={handleTranscribe}
+              className="w-full flex items-center justify-center gap-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-4 px-6 rounded-xl transition-colors"
+            >
+              Transcribe
+            </button>
+          )}
+
+          {isTranscribing && (
+            <div className="w-full flex items-center justify-center gap-3 bg-purple-100 border border-purple-200 text-purple-700 font-semibold py-4 px-6 rounded-xl">
               <Spinner /> Transcribing…
             </div>
           )}
 
-          {stage === "done" && (
+          {showResults && (
             <button
-              onClick={reset}
+              onClick={resetAll}
               className="w-full flex items-center justify-center gap-3 bg-red-600 hover:bg-red-700 text-white font-semibold py-4 px-6 rounded-xl transition-colors"
             >
               <span className="text-xl">🎙</span> Record Again
             </button>
           )}
 
-          {/* Transcribe button */}
-          {(stage === "idle" || stage === "recording" || stage === "stopped") && (
-            <button
-              onClick={handleTranscribe}
-              disabled={stage !== "stopped"}
-              className="w-full flex items-center justify-center gap-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-xl transition-colors"
-            >
-              Transcribe
-            </button>
+          {/* Recording metadata once available */}
+          {recorder.audioBlob && !transcribed && (
+            <div className="text-xs text-gray-500 text-center">
+              Captured {(recorder.audioBlob.size / 1024).toFixed(1)} KB &middot; {recorder.audioBlob.type}
+            </div>
           )}
 
-          {/* Transcript results */}
-          {stage === "done" && (
+          {recorder.error && (
+            <p className="text-xs text-red-600">{recorder.error}</p>
+          )}
+
+          {/* Results */}
+          {showResults && transcribed && (
             <div className="space-y-4 pt-2">
-              {/* Raw ASR */}
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                 <p className="text-xs text-gray-400 uppercase tracking-widest mb-2">Raw ASR output (DS-D model)</p>
-                <RawText text={DS_D_RAW} />
+                <RawText text={transcribed.raw} />
                 <p className="text-xs text-gray-400 mt-2">
                   <span className="text-red-500 font-bold">⁇</span> = token the model could not decode
                 </p>
               </div>
 
-              {/* Editable post-processed */}
               <div className="bg-white border-2 border-purple-200 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-xs text-gray-400 uppercase tracking-widest">Corrected transcript</p>
-                  {postProcessed && (
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${MODE_COLORS[postMode]}`}>
-                      {MODE_LABELS[postMode]}
-                    </span>
-                  )}
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${MODE_COLORS[transcribed.mode] ?? MODE_COLORS.UNKNOWN}`}>
+                    {MODE_LABELS[transcribed.mode] ?? transcribed.mode}
+                  </span>
                 </div>
                 <textarea
                   value={postProcessed}
@@ -233,15 +288,14 @@ export default function FinalPage() {
                   className="w-full text-xl font-medium text-gray-900 bg-transparent resize-none focus:outline-none focus:ring-2 focus:ring-purple-300 rounded-lg p-1 -ml-1"
                   style={{ fontFamily: "Noto Sans Devanagari, sans-serif" }}
                   rows={2}
-                  disabled={stage !== "done"}
                 />
-                {stage === "done" && (
-                  <p className="text-xs text-purple-500 mt-1">✎ Edit before speaking if needed</p>
-                )}
+                <p className="text-xs text-purple-500 mt-1">✎ Edit before speaking if needed</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Latency: ASR {transcribed.latency_ms.asr}ms · Post-proc {transcribed.latency_ms.postprocess}ms
+                </p>
               </div>
 
-              {/* TTS buttons */}
-              {stage === "done" && postProcessed && (
+              {postProcessed && (
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={speakMarathi}
@@ -271,7 +325,6 @@ export default function FinalPage() {
             </div>
           )}
         </div>
-
       </main>
     </div>
   );
