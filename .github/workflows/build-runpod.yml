@@ -115,12 +115,14 @@ jobs:
       - name: Build Amchi Konkani dictionary JSON
         if: matrix.requires_dict
         # The Dockerfile fails the build if data/amchi_konkani_dict.json is
-        # missing. We generate it from the Konkani dictionary Railway API.
-        # If Railway is unreachable, allow a fallback to the committed CSV
-        # in the konkani_dictionary repo — but that's a separate repo so
-        # this CI uses the Railway source.
+        # missing. The original build_amchi_dict.py pulled the dictionary
+        # from a Railway endpoint, but that endpoint has been 404 since
+        # 2026-05. We now build from the committed SQL dump
+        # (konkani_dictionary_export.sql) using the in-repo fallback, which
+        # is what the RunPod verification pod also uses. This makes the CI
+        # build self-contained — no external service dependency at build time.
         run: |
-          python scripts/build_amchi_dict.py --out data/amchi_konkani_dict.json
+          python scripts/build_amchi_dict_from_sql.py --out data/amchi_konkani_dict.json
           ls -la data/
 
       - name: Set up Docker Buildx
