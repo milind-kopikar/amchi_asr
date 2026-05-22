@@ -4,6 +4,15 @@
 broader refactor — the next thing after this passes is the GitHub Actions Docker
 build (see [docs/RUNPOD_GITHUB_ACTIONS_SETUP.md](RUNPOD_GITHUB_ACTIONS_SETUP.md)).
 
+## ⚠️ Resume note — 2026-05-22 mid-session
+
+A previous Claude session got the pod through env setup and as far as launching
+the deaf verifier (it was at "Loading model" when the user stepped away). See
+[§ Resume state](#resume-state-2026-05-22) at the bottom of this doc for the exact
+state, the four pod-specific gotchas that were already worked around, and the
+two-command resume sequence. **Read that section first** — it will save you from
+re-discovering those gotchas.
+
 ## Task in one line
 
 Run [scripts/verify_inference.py](../scripts/verify_inference.py) end-to-end for
@@ -158,3 +167,148 @@ Report back to the user with:
 4. Anything unexpected
 
 Then the user will trigger the GitHub Actions Docker build from their laptop.
+
+---
+
+## <a name="resume-state-2026-05-22"></a>Resume state — 2026-05-22
+
+Pod: `/workspace/amchi_asr`, GPU `NVIDIA A40`, driver `570.195.03 / CUDA 12.8`,
+Python **3.12.3** (not 3.11 — the doc above expected 3.11; nothing else changed).
+Branch `feat/live-asr-demo-recording`, commit `51d05a1`. Clean working tree.
+
+### What's already done
+
+| Step | State | Notes |
+|---|---|---|
+| `git clone` | ✅ pre-existing | Repo already at `/workspace/amchi_asr`. |
+| `.venv` created on Python 3.12 | ✅ | At `.venv/`. Activate with `source .venv/bin/activate`. |
+| `pip install "nemo_toolkit[asr]" librosa omegaconf jiwer google-genai runpod --ignore-installed blinker` | ✅ | **No ResolutionImpossible** on Python 3.12. Resolver landed on: `nemo_toolkit-2.7.3`, `torch-2.12.0`, `numba-0.65.1`, `lightning-2.4.0`, `pytorch-lightning-2.6.4`, `numpy-2.4.6`. `numba-cuda` was **not** pulled in. |
+| `conv_asr_fixed.py` patch | ✅ | Copied over `.venv/lib/python3.12/site-packages/nemo/collections/asr/modules/conv_asr.py`. |
+| Konkani dictionary build | ✅ via SQL workaround | See [§ Gotcha 2](#gotcha-2-railway-dict-endpoint-404) — Railway endpoint returned 404; built `data/amchi_konkani_dict.json` (3,643 entries) from the in-repo `konkani_dictionary_export.sql` dump. |
+| `runpod_smoke.py --variant deaf` | ⚠️ 3/4 PASS | imports / patch / dictionary PASS. **Handler check FAILS** because the pip-installed `runpod` SDK shadows the local `runpod/` directory ([§ Gotcha 3](#gotcha-3-runpod-sdk-shadows-local-runpod)). This does **not** affect the verifier — verifier only imports from `scripts.*`. Smoke check for amchi was not run; same gotcha will apply. |
+| `verify_inference.py --variant deaf` | ❌ **EXIT 2** | Got past checkpoint download (~1.3 GB downloaded to `/tmp/deaf_checkpoint.ckpt`), audio download, then **failed at model load** with `No CUDA GPU detected` — torch 2.12.0 is compiled against CUDA 13 but the pod driver is CUDA 12.8. This is the current blocker — see [§ Gotcha 4](#gotcha-4-torch-cu13-vs-driver-cu128). |
+| `verify_inference.py --variant amchi` | ⏸️ not run | Blocked by Gotcha 4. |
+
+### Resume commands (after fixing Gotcha 4)
+
+```bash
+cd /workspace/amchi_asr
+source .venv/bin/activate
+
+# Run from the repo root with PYTHONPATH set — required by Gotcha 1.
+PYTHONPATH=. python3 scripts/verify_inference.py --variant deaf  --num-samples 5
+PYTHONPATH=. python3 scripts/verify_inference.py --variant amchi --num-samples 5
+```
+
+The checkpoint is already cached at `/tmp/deaf_checkpoint.ckpt`; the verifier
+will reuse it on the next run.
+
+### Pod-specific gotchas (already worked around — read before doing anything)
+
+#### <a name="gotcha-1-scripts-not-on-syspath"></a>Gotcha 1 — `from scripts.X import Y` needs `PYTHONPATH=.`
+
+`scripts/verify_inference.py` does `from scripts.runpod_http import …` but
+`scripts/` has no `__init__.py` and Python 3 does not auto-add the cwd. Running
+the script directly puts `scripts/` (the script's own directory) on
+`sys.path[0]`, so `import scripts` fails. **Always run with
+`PYTHONPATH=.` from the repo root** — the original runbook's
+`python3 scripts/verify_inference.py …` will `ModuleNotFoundError` without it.
+
+`setup.py` declares `packages=['scripts']` which suggests the original author
+intended `scripts/` to be a regular package; the missing `__init__.py` looks
+like an oversight. The runbook's prohibition on editing `scripts/*` to make
+the verifier pass is why I used `PYTHONPATH` instead of adding `__init__.py`.
+If you want a more permanent fix, `pip install -e .` (from the repo root)
+plus a `scripts/__init__.py` would let you drop the `PYTHONPATH=` prefix.
+
+#### <a name="gotcha-2-railway-dict-endpoint-404"></a>Gotcha 2 — Railway dictionary endpoint returns 404
+
+`scripts/build_amchi_dict.py` defaults to
+`https://konkanicollector-production.up.railway.app/api/dictionary?limit=5000`,
+which currently 404s. The Railway base URL works (the audio-recorder webapp
+loads), but `/api/dictionary` is not deployed (or has been removed).
+
+Workaround used: extracted the Devanagari column from the in-repo SQL dump
+`konkani_dictionary_export.sql` (which the dump's header claims has 4,381
+entries — the simple regex extractor recovered 3,643 unique rows, skipping
+~700 that contained embedded single-quotes the regex didn't escape). The
+output JSON lives at `data/amchi_konkani_dict.json`.
+
+If the resume needs a complete dictionary, either: (a) bring `/api/dictionary`
+back up on Railway; or (b) parse the SQL dump with a proper tokenizer rather
+than the regex shortcut used here.
+
+#### <a name="gotcha-3-runpod-sdk-shadows-local-runpod"></a>Gotcha 3 — installed `runpod` SDK shadows local `runpod/` directory
+
+`pip install runpod` (correctly, we want the SDK) installs the package at
+`.venv/lib/python3.12/site-packages/runpod/`. The repo also has a local
+`runpod/` directory that contains `handler.py` / `handler_deaf.py`, with no
+`__init__.py`. Python's import resolution prefers the SDK regular package
+over the local namespace package, so `from runpod.handler_deaf import handler`
+in `scripts/runpod_smoke.py` raises `ModuleNotFoundError`.
+
+This is what made the smoke-test handler check fail. **It does not affect the
+verifier** — `verify_inference.py` only imports from `scripts.*`. It will
+affect the production Docker handler at runtime; the Dockerfile likely COPYs
+local `runpod/` into a path that does take precedence, but that's a separate
+investigation for the Docker-build phase.
+
+Workaround for smoke-test alone would be to set `PYTHONPATH` cleverly or
+add `runpod/__init__.py` locally — neither was done because the smoke test
+is informational, not the gate.
+
+#### <a name="gotcha-4-torch-cu13-vs-driver-cu128"></a>Gotcha 4 — **CURRENT BLOCKER**: torch 2.12 (cu13) vs driver cu12.8
+
+`pip install nemo_toolkit[asr]` (unpinned) resolved to `torch-2.12.0`, which
+on Python 3.12 pulls in the CUDA-13 wheel — confirmed by the
+`nvidia-cublas-13.1.1.3`, `nvidia-cuda-runtime-13.0.96`,
+`nvidia-cudnn-cu13-9.20.0.48` packages in the install list. The pod's NVIDIA
+driver is `570.195.03` with `CUDA Version: 12.8`, which is too old for the
+CUDA-13 runtime. PyTorch logs:
+
+```
+UserWarning: CUDA initialization: The NVIDIA driver on your system is too
+old (found version 12080).
+ERROR: model load failed: No CUDA GPU detected. Inference on CPU is too
+slow for this test.
+```
+
+I did **not** auto-pin torch and re-install, because:
+
+1. The user's standing instruction was "if pip install nemo_toolkit[asr]
+   fails with ResolutionImpossible or any package fails to build from
+   source, stop and report back." Pip succeeded; nothing built from source.
+   But the resulting torch is unusable on this driver, which is a related
+   class of failure I want explicit approval to fix.
+2. The handoff doc itself recommends `torch 2.10.0+cu128`, which would
+   resolve this. The likely fix is one of:
+   - `pip install --upgrade-strategy only-if-needed torch==2.10.0+cu128 torchaudio==2.10.0+cu128 --index-url https://download.pytorch.org/whl/cu128`
+   - Or upgrade the pod's NVIDIA driver / pick a pod template with a
+     newer driver (570 → 580+).
+   - Or `pip install nemo_toolkit[asr]==2.7.0` (note the doc's
+     suggestion to pin exactly 2.7.0 if 2.7.3 misbehaves), which **may**
+     bring in an older torch as a side effect, though that's speculative.
+
+**Recommended next action when resuming:** explicitly install
+`torch==2.10.0+cu128` (or whichever torch the training environment used)
+into the existing venv from the PyTorch cu128 wheel index, then retry the
+verifier. Do not delete the venv — the rest of the dep tree is fine, and
+the conv_asr patch will need to be re-applied if `nemo_toolkit` is touched.
+
+### Files / locations to know
+
+- `data/amchi_konkani_dict.json` — built dict (3,643 entries from SQL dump).
+- `/tmp/deaf_checkpoint.ckpt` — cached deaf checkpoint (1.3 GB), safe to reuse.
+- `/tmp/deaf_audio/` — 5 cached test audio samples, safe to reuse.
+- `/tmp/verify_deaf.log` — last verifier run's full stdout/stderr.
+- `.venv/lib/python3.12/site-packages/scripts/` — **removed**; NeMo 2.7.3 ships a top-level `scripts/` package that shadowed the repo's local `scripts/`. If you reinstall `nemo_toolkit`, you'll need to `rm -rf` it again. (Filed under "NeMo packaging bug" — `find /workspace/amchi_asr/.venv/lib/python3.12/site-packages/scripts -maxdepth 1` to confirm it's gone, or to find it again after a reinstall.)
+
+### Things explicitly NOT done
+
+- Did not edit any file in `scripts/`, `runpod/`, or `patches/` — per the
+  handoff's no-edit rule.
+- Did not pin `lightning==2.4.0` or `numba-cuda` — per the user's standing
+  rule for Python 3.12 (the Colab-only fixes).
+- Did not retry / pin torch to fix Gotcha 4 — waiting for user okay.
+- Did not run the amchi verifier — blocked by Gotcha 4.
+- Did not push, build Docker, or stop the pod.
