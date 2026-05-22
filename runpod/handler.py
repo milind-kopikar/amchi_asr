@@ -49,6 +49,10 @@ import time
 import urllib.request
 from typing import Optional
 
+# Shared HTTP helpers — every external fetch (audio_url, checkpoint download)
+# must set a User-Agent or Cloudflare returns 403 on R2 .r2.dev URLs.
+# See scripts/runpod_http.py for the rationale and the test seam contract.
+
 # ---------------------------------------------------------------------------
 # Path setup — add repo root so we can import scripts/
 # ---------------------------------------------------------------------------
@@ -109,9 +113,10 @@ def _decode_audio_input(inp: dict) -> tuple[Optional[bytes], Optional[dict]]:
             return None, {"error": f"Invalid audio_base64: {exc}"}
     elif inp.get("audio_url"):
         try:
-            with urllib.request.urlopen(inp["audio_url"],
-                                       timeout=URL_FETCH_TIMEOUT_SECONDS) as resp:
-                wav_bytes = resp.read()
+            from scripts.runpod_http import fetch_url_bytes
+            wav_bytes = fetch_url_bytes(
+                inp["audio_url"], timeout=URL_FETCH_TIMEOUT_SECONDS,
+            )
         except Exception as exc:
             return None, {"error": f"Failed to fetch audio_url: {exc}"}
     else:
@@ -150,7 +155,8 @@ def _resolve_checkpoint_path() -> Optional[str]:
         local = os.path.join(tempfile.gettempdir(), "amchi_checkpoint.ckpt")
         if not os.path.isfile(local):
             logger.info("Downloading checkpoint from CHECKPOINT_URL …")
-            urllib.request.urlretrieve(url_env, local)
+            from scripts.runpod_http import download_url_to_path
+            download_url_to_path(url_env, local)
             size_mb = os.path.getsize(local) / (1024 * 1024)
             logger.info("Downloaded %.0f MB → %s", size_mb, local)
         else:

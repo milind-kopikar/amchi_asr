@@ -85,7 +85,8 @@ def _resolve_checkpoint() -> str:
             logger.info("Using cached checkpoint at %s", local)
         else:
             logger.info("Downloading checkpoint from CHECKPOINT_URL …")
-            urllib.request.urlretrieve(url_env, local)
+            from scripts.runpod_http import download_url_to_path
+            download_url_to_path(url_env, local)
             size_mb = os.path.getsize(local) / (1024 * 1024)
             logger.info("Downloaded %.0f MB → %s", size_mb, local)
         _RESOLVED_CKPT_PATH = local
@@ -136,8 +137,8 @@ def handler(job: dict) -> dict:
 
     elif inp.get("audio_url"):
         try:
-            with urllib.request.urlopen(inp["audio_url"], timeout=30) as resp:
-                wav_bytes = resp.read()
+            from scripts.runpod_http import fetch_url_bytes
+            wav_bytes = fetch_url_bytes(inp["audio_url"], timeout=30)
         except Exception as exc:
             return {"error": f"Failed to fetch audio_url: {exc}"}
 
