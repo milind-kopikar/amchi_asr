@@ -15,35 +15,44 @@ FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# System deps: Python 3.11, ffmpeg (audio decode), build tools
+# System deps: Python 3.11, ffmpeg (audio decode), build tools.
+# We deliberately do NOT install `python3-pip` — that package's pip belongs
+# to Ubuntu 22.04's Python 3.10, so any subsequent `pip install ...` would
+# put packages in 3.10's site-packages while `python3` (switched via
+# update-alternatives below) runs 3.11. The mismatch surfaces as obscure
+# AttributeError on 3.11-only symbols (e.g. sys.get_int_max_str_digits).
+# We instead bootstrap pip for 3.11 specifically via ensurepip.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3.11 python3.11-venv python3-pip python3.11-dev \
+    python3.11 python3.11-venv python3.11-dev \
     ffmpeg build-essential wget \
     && rm -rf /var/lib/apt/lists/*
 
-# Make python3.11 the default python
+# Make python3.11 the default python AND bootstrap a 3.11-bound pip. Every
+# subsequent install uses `python3.11 -m pip` so the Python and its pip
+# are guaranteed to match.
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 \
-    && update-alternatives --install /usr/bin/python  python  /usr/bin/python3.11 1
+    && update-alternatives --install /usr/bin/python  python  /usr/bin/python3.11 1 \
+    && python3.11 -m ensurepip --upgrade \
+    && python3.11 -m pip install --no-cache-dir --upgrade pip setuptools wheel
 
 WORKDIR /app
 
 # ── 1. PyTorch (CUDA 11.8 — matches training environment) ──────────────────
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
-    && pip install --no-cache-dir \
+RUN python3.11 -m pip install --no-cache-dir \
        torch torchvision torchaudio \
        --index-url https://download.pytorch.org/whl/cu118
 
 # ── 2. NeMo ASR (upstream, Python 3.11 compatible) ─────────────────────────
 #    Use [asr] only — not [all] — to keep the image lean (~8 GB vs ~15 GB).
 #    --ignore-installed blinker avoids a known conflict on Ubuntu 22.04.
-RUN pip install --no-cache-dir Cython \
-    && pip install --no-cache-dir \
+RUN python3.11 -m pip install --no-cache-dir Cython \
+    && python3.11 -m pip install --no-cache-dir \
        "nemo_toolkit[asr]" \
        --ignore-installed blinker \
        librosa omegaconf
 
 # ── 3. Gemini post-processing + utilities ───────────────────────────────────
-RUN pip install --no-cache-dir \
+RUN python3.11 -m pip install --no-cache-dir \
     google-genai \
     jiwer \
     runpod
@@ -54,7 +63,7 @@ COPY . /app
 # ── 5. Apply conv_asr patch ─────────────────────────────────────────────────
 #    The upstream NeMo hybrid CTC/RNNT model requires a patched conv_asr.py
 #    to load fine-tuned checkpoints correctly. See patches/conv_asr_fixed.py.
-RUN python3 -c "\
+RUN python3.11 -c "\
 import nemo.collections.asr.modules.conv_asr as m; \
 import shutil; \
 shutil.copy('/app/patches/conv_asr_fixed.py', m.__file__); \
@@ -65,9 +74,9 @@ print('conv_asr patch applied to', m.__file__) \
 #    Each check is its own RUN so a build failure points at the exact
 #    broken component. The smoke script's source lives in the repo (and is
 #    unit-tested in tests/test_runpod_smoke.py).
-RUN python3 scripts/runpod_smoke.py --check imports --variant deaf
-RUN python3 scripts/runpod_smoke.py --check patch   --variant deaf
-RUN python3 scripts/runpod_smoke.py --check handler --variant deaf
+RUN python3.11 scripts/runpod_smoke.py --check imports --variant deaf
+RUN python3.11 scripts/runpod_smoke.py --check patch   --variant deaf
+RUN python3.11 scripts/runpod_smoke.py --check handler --variant deaf
 
 # ── Entry point ──────────────────────────────────────────────────────────────
-CMD ["python3", "runpod/handler_deaf.py"]
+CMD ["python3.11", "runpod/handler_deaf.py"]
