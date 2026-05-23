@@ -96,11 +96,11 @@ jobs:
         include:
           - variant: deaf
             dockerfile: runpod/Dockerfile.deaf
-            image: milindkopi/deaf-speech-asr-runpod
+            image: milindkopigithub/deaf-speech-asr-runpod
             requires_dict: false
           - variant: amchi
             dockerfile: runpod/Dockerfile.serverless
-            image: milindkopi/amchi-asr-runpod
+            image: milindkopigithub/amchi-asr-runpod
             requires_dict: true
 
     steps:
@@ -193,10 +193,10 @@ jobs:
             echo ""
             echo "Recommended rollout (deaf is the canary):"
             echo ""
-            echo "1. Create / update the **deaf** RunPod endpoint with image \`milindkopi/deaf-speech-asr-runpod:${{ github.sha }}\`"
+            echo "1. Create / update the **deaf** RunPod endpoint with image \`milindkopigithub/deaf-speech-asr-runpod:${{ github.sha }}\`"
             echo "2. Run \`scripts/test_deaf_endpoint.py\` against it — verify a sample transcription"
             echo "3. Open the demo webapp \`/demo/live\` and confirm end-to-end works"
-            echo "4. Then create / update the **amchi** RunPod endpoint with image \`milindkopi/amchi-asr-runpod:${{ github.sha }}\`"
+            echo "4. Then create / update the **amchi** RunPod endpoint with image \`milindkopigithub/amchi-asr-runpod:${{ github.sha }}\`"
             echo "5. Repeat the smoke test for amchi"
             echo ""
             echo "See \`docs/RUNPOD_GITHUB_ACTIONS_SETUP.md\` and the master plan."

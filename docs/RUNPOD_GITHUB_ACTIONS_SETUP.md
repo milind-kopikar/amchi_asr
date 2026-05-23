@@ -23,8 +23,8 @@ One-time setup before the workflow can push successfully:
 You can let the first push auto-create the repos, but they default to
 **public**. Pre-creating them lets you mark them private if you prefer.
 
-- `milindkopi/amchi-asr-runpod` — RunPod worker for the Amchi Konkani ASR
-- `milindkopi/deaf-speech-asr-runpod` — RunPod worker for the Deaf Speech ASR
+- `milindkopigithub/amchi-asr-runpod` — RunPod worker for the Amchi Konkani ASR
+- `milindkopigithub/deaf-speech-asr-runpod` — RunPod worker for the Deaf Speech ASR
 
 Either way, the workflow pushes images tagged with the commit SHA and (on
 master) with `:latest`.
@@ -74,11 +74,11 @@ failure inline.
 Per the rollout summary that the workflow emits:
 
 1. Create / update the **deaf** RunPod endpoint pointing at
-   `milindkopi/deaf-speech-asr-runpod:<sha-or-latest>`
+   `milindkopigithub/deaf-speech-asr-runpod:<sha-or-latest>`
 2. Verify with `scripts/test_deaf_endpoint.py`
 3. Verify in the webapp at `/demo/live`
 4. *Then* create / update the **amchi** endpoint with
-   `milindkopi/amchi-asr-runpod:<sha-or-latest>`
+   `milindkopigithub/amchi-asr-runpod:<sha-or-latest>`
 
 Don't do both endpoints at once — if both are broken in the same way
 (e.g. shared NeMo install regression), the canary approach saves you

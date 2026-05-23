@@ -5,7 +5,7 @@
 #   python3 scripts/build_amchi_dict.py
 #
 #   # Then build the image:
-#   docker build -f runpod/Dockerfile.serverless -t milindkopi/amchi-asr-runpod:latest .
+#   docker build -f runpod/Dockerfile.serverless -t milindkopigithub/amchi-asr-runpod:latest .
 #
 # The checkpoint is NOT baked into this image.
 # Set CHECKPOINT_URL to the public Cloudflare R2 URL when creating the endpoint.
