@@ -235,6 +235,16 @@ def check_handler(variant: str = "amchi") -> None:
             "Was the repo COPYed into /app correctly?"
         )
 
+    # Make sure the handler's grandparent directory (the repo root) is on
+    # sys.path. The handler does this itself at module load, but if its
+    # body fails before reaching that line (e.g., due to a syntax error
+    # higher up, or because a `from scripts...` line is mis-ordered), the
+    # error message points at the missing top-level package rather than at
+    # the real cause. Belt and suspenders.
+    handler_repo_root = os.path.dirname(os.path.dirname(os.path.abspath(handler_path)))
+    if handler_repo_root not in sys.path:
+        sys.path.insert(0, handler_repo_root)
+
     import importlib.util  # local import — only needed in this check
     try:
         spec = importlib.util.spec_from_file_location(module_name, handler_path)
