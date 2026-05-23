@@ -33,8 +33,14 @@ import sys
 import time
 from pathlib import Path
 
-import google.genai as genai
 from jiwer import wer as compute_wer, cer as compute_cer
+
+# google.genai is imported lazily inside main(); it's only needed when this
+# module is invoked as a CLI. Importing it at module top breaks unit tests
+# in environments where google-genai isn't installed (e.g., the GitHub
+# Actions test job), even though load_dictionary / postprocess_sample /
+# call_gemini all take the genai client as a parameter and do not touch
+# the genai symbol directly.
 
 # Fix Windows console encoding
 if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
@@ -366,7 +372,9 @@ def main():
         samples = samples[: args.limit]
     print(f"Loaded {len(samples)} samples from {args.input}")
 
-    # Init Gemini
+    # Init Gemini (lazy-imported so non-CLI callers can import this module
+    # without needing google-genai installed).
+    import google.genai as genai
     client = genai.Client(api_key=args.api_key)
     print(f"Gemini client initialized (model: {GEMINI_MODEL})")
     print()

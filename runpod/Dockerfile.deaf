@@ -11,47 +11,44 @@
 #   CHECKPOINT_URL   — public R2 URL for konkani_asr-epoch=21-val_wer=0.720.ckpt
 #   GEMINI_API_KEY   — Gemini API key for post-processing
 
-FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
+# Ubuntu 24.04 + CUDA 12.8 — matches what the RunPod verification pod ran.
+# That pod transcribed both deaf and amchi held-out samples at CER=0.0000
+# (see docs/RUNPOD_VERIFY_HANDOFF.md), so this combination is end-to-end
+# verified.  Ubuntu 24.04 ships Python 3.12.3 as the system python, with a
+# properly-functioning python3-pip — so no deadsnakes/get-pip.py dance.
+FROM nvidia/cuda:12.8.0-cudnn-runtime-ubuntu24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# System deps: Python 3.11, ffmpeg (audio decode), build tools
+# System deps: python3 (3.12 on 24.04), python3-pip, ffmpeg (audio decode),
+# build tools. No version juggling — the OS's python3 IS the right Python.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3.11 python3.11-venv python3-pip python3.11-dev \
-    ffmpeg build-essential wget \
-    && rm -rf /var/lib/apt/lists/*
-
-# Make python3.11 the default python
-RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 \
-    && update-alternatives --install /usr/bin/python  python  /usr/bin/python3.11 1
+        python3 python3-venv python3-pip python3-dev \
+        ffmpeg build-essential wget curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && python3 --version \
+    && python3 -m pip --version
 
 WORKDIR /app
 
-# ── 1. PyTorch (CUDA 11.8 — matches training environment) ──────────────────
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
-    && pip install --no-cache-dir \
-       torch torchvision torchaudio \
-       --index-url https://download.pytorch.org/whl/cu118
+# ── 1. PyTorch + NeMo, installed together in ONE pip pass ──────────────────
+#
+# Why in one pass: installing torch and nemo separately lets pip's resolver
+# pick mismatched torchvision/torchaudio wheels (LEARNINGS.md §6), surfacing
+# at runtime as `RuntimeError: operator torchvision::nms does not exist`.
+# Pinning torch + torchaudio explicitly to cu128 wheels, while letting nemo
+# pull its own deps in the same resolution, is what the pod verified.
+RUN python3 -m pip install --no-cache-dir --break-system-packages \
+        "torch==2.10.0+cu128" "torchaudio==2.10.0+cu128" \
+        "nemo_toolkit[asr]" \
+        librosa omegaconf jiwer google-genai runpod \
+        --extra-index-url https://download.pytorch.org/whl/cu128 \
+        --ignore-installed blinker
 
-# ── 2. NeMo ASR (upstream, Python 3.11 compatible) ─────────────────────────
-#    Use [asr] only — not [all] — to keep the image lean (~8 GB vs ~15 GB).
-#    --ignore-installed blinker avoids a known conflict on Ubuntu 22.04.
-RUN pip install --no-cache-dir Cython \
-    && pip install --no-cache-dir \
-       "nemo_toolkit[asr]" \
-       --ignore-installed blinker \
-       librosa omegaconf
-
-# ── 3. Gemini post-processing + utilities ───────────────────────────────────
-RUN pip install --no-cache-dir \
-    google-genai \
-    jiwer \
-    runpod
-
-# ── 4. Repo code (handler, scripts, patches) ────────────────────────────────
+# ── 2. Repo code (handler, scripts, patches) ────────────────────────────────
 COPY . /app
 
-# ── 5. Apply conv_asr patch ─────────────────────────────────────────────────
+# ── 3. Apply conv_asr patch ─────────────────────────────────────────────────
 #    The upstream NeMo hybrid CTC/RNNT model requires a patched conv_asr.py
 #    to load fine-tuned checkpoints correctly. See patches/conv_asr_fixed.py.
 RUN python3 -c "\
@@ -60,6 +57,14 @@ import shutil; \
 shutil.copy('/app/patches/conv_asr_fixed.py', m.__file__); \
 print('conv_asr patch applied to', m.__file__) \
 "
+
+# ── 4. Staged smoke checks ──────────────────────────────────────────────────
+#    Each check is its own RUN so a build failure points at the exact
+#    broken component. The smoke script's source lives in the repo (and is
+#    unit-tested in tests/test_runpod_smoke.py).
+RUN python3 scripts/runpod_smoke.py --check imports --variant deaf
+RUN python3 scripts/runpod_smoke.py --check patch   --variant deaf
+RUN python3 scripts/runpod_smoke.py --check handler --variant deaf
 
 # ── Entry point ──────────────────────────────────────────────────────────────
 CMD ["python3", "runpod/handler_deaf.py"]
