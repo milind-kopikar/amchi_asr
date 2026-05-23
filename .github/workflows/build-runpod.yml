@@ -41,6 +41,7 @@ on:
       - "scripts/runpod_smoke.py"
       - "scripts/build_amchi_dict.py"
       - "patches/conv_asr_fixed.py"
+      - ".dockerignore"
       - ".github/workflows/build-runpod.yml"
   workflow_dispatch:
 

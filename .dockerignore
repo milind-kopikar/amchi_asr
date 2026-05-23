@@ -8,6 +8,12 @@ venv
 venv_py311
 env
 data/
+# Exception: the CI workflow generates this JSON in the runner workspace
+# (see .github/workflows/build-runpod.yml: "Build Amchi Konkani dictionary JSON")
+# right before `docker build`. The amchi Dockerfile fails fast if the file
+# is missing from /app/data/, so we need to let it through the broad `data/`
+# exclusion. Audio/checkpoints in data/ still get filtered out.
+!data/amchi_konkani_dict.json
 results/
 models/
 *.ckpt
