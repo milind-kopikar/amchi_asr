@@ -146,71 +146,84 @@ class TestCheckHandler:
         with pytest.raises(RuntimeError, match="Unknown variant"):
             runpod_smoke.check_handler("klingon")
 
-    def test_handler_module_import_failure_raises(self):
-        """If the handler module path is unimportable, the error names it."""
-        # Temporarily map a fake variant to a non-existent module.
+    def _make_fake_variant(self, tmp_path, body: str, variant: str = "fake"):
+        """Write a tiny handler.py to tmp_path and return a VARIANT_CONFIG patch dict."""
+        handler_file = tmp_path / f"{variant}_handler.py"
+        handler_file.write_text(body, encoding="utf-8")
+        return {
+            variant: {
+                "handler_module": f"fake.{variant}",
+                "handler_path": str(handler_file),
+                "needs_dictionary": False,
+            }
+        }
+
+    def test_handler_module_import_failure_raises(self, tmp_path):
+        """If the handler source file is missing, the error names the path."""
+        # Patch in a variant whose handler_path doesn't exist on disk.
+        missing_path = str(tmp_path / "does_not_exist.py")
         with mock.patch.dict(
             runpod_smoke.VARIANT_CONFIG,
-            {"bogus": {"handler_module": "this.does.not.exist", "needs_dictionary": False}},
+            {"bogus": {
+                "handler_module": "this.does.not.exist",
+                "handler_path": missing_path,
+                "needs_dictionary": False,
+            }},
             clear=False,
         ):
-            with pytest.raises(RuntimeError, match="Failed to import this.does.not.exist"):
+            with pytest.raises(RuntimeError, match="Handler source file not found"):
                 runpod_smoke.check_handler("bogus")
 
-    def test_handler_must_be_callable(self):
-        """If the module imports but exports no callable 'handler', we fail."""
-        fake_module = type(sys)("fake_handler_module")
-        fake_module.handler = "not callable"
-        with mock.patch.dict(sys.modules, {"fake.handler.module": fake_module}):
-            with mock.patch.dict(
-                runpod_smoke.VARIANT_CONFIG,
-                {"fake": {"handler_module": "fake.handler.module", "needs_dictionary": False}},
-                clear=False,
-            ):
-                with pytest.raises(RuntimeError, match="does not export a callable"):
-                    runpod_smoke.check_handler("fake")
+    def test_handler_load_failure_raises(self, tmp_path):
+        """If the handler source file is syntactically broken, the error names the module."""
+        patch_cfg = self._make_fake_variant(
+            tmp_path, "this is not valid python !!!", variant="brokensyntax"
+        )
+        with mock.patch.dict(runpod_smoke.VARIANT_CONFIG, patch_cfg, clear=False):
+            with pytest.raises(RuntimeError, match="Failed to load fake.brokensyntax"):
+                runpod_smoke.check_handler("brokensyntax")
 
-    def test_handler_must_return_dict(self):
+    def test_handler_must_be_callable(self, tmp_path):
+        """If the module loads but exports no callable 'handler', we fail."""
+        patch_cfg = self._make_fake_variant(
+            tmp_path, "handler = 'not callable'\n", variant="notcallable"
+        )
+        with mock.patch.dict(runpod_smoke.VARIANT_CONFIG, patch_cfg, clear=False):
+            with pytest.raises(RuntimeError, match="does not export a callable"):
+                runpod_smoke.check_handler("notcallable")
+
+    def test_handler_must_return_dict(self, tmp_path):
         """A handler that returns a non-dict on empty input fails the check."""
-        fake_module = type(sys)("fake_handler_module2")
-        fake_module.handler = lambda job: "I am not a dict"
-        with mock.patch.dict(sys.modules, {"fake.handler.module2": fake_module}):
-            with mock.patch.dict(
-                runpod_smoke.VARIANT_CONFIG,
-                {"fake": {"handler_module": "fake.handler.module2", "needs_dictionary": False}},
-                clear=False,
-            ):
-                with pytest.raises(RuntimeError, match="expected dict"):
-                    runpod_smoke.check_handler("fake")
+        patch_cfg = self._make_fake_variant(
+            tmp_path,
+            "def handler(job):\n    return 'I am not a dict'\n",
+            variant="notdict",
+        )
+        with mock.patch.dict(runpod_smoke.VARIANT_CONFIG, patch_cfg, clear=False):
+            with pytest.raises(RuntimeError, match="expected dict"):
+                runpod_smoke.check_handler("notdict")
 
-    def test_handler_must_produce_error_field(self):
-        """A handler that returns {} (no error key) on empty input fails."""
-        fake_module = type(sys)("fake_handler_module3")
-        fake_module.handler = lambda job: {"transcription": "I made one up"}
-        with mock.patch.dict(sys.modules, {"fake.handler.module3": fake_module}):
-            with mock.patch.dict(
-                runpod_smoke.VARIANT_CONFIG,
-                {"fake": {"handler_module": "fake.handler.module3", "needs_dictionary": False}},
-                clear=False,
-            ):
-                with pytest.raises(RuntimeError, match="did not produce an 'error'"):
-                    runpod_smoke.check_handler("fake")
+    def test_handler_must_produce_error_field(self, tmp_path):
+        """A handler that returns a dict without an 'error' key on empty input fails."""
+        patch_cfg = self._make_fake_variant(
+            tmp_path,
+            "def handler(job):\n    return {'transcription': 'I made one up'}\n",
+            variant="noerror",
+        )
+        with mock.patch.dict(runpod_smoke.VARIANT_CONFIG, patch_cfg, clear=False):
+            with pytest.raises(RuntimeError, match="did not produce an 'error'"):
+                runpod_smoke.check_handler("noerror")
 
-    def test_handler_raising_exception_is_caught(self):
+    def test_handler_raising_exception_is_caught(self, tmp_path):
         """A handler that raises (rather than returning an error-dict) fails the check."""
-        fake_module = type(sys)("fake_handler_module4")
-
-        def boom(job):
-            raise ValueError("model not configured")
-        fake_module.handler = boom
-        with mock.patch.dict(sys.modules, {"fake.handler.module4": fake_module}):
-            with mock.patch.dict(
-                runpod_smoke.VARIANT_CONFIG,
-                {"fake": {"handler_module": "fake.handler.module4", "needs_dictionary": False}},
-                clear=False,
-            ):
-                with pytest.raises(RuntimeError, match="raised an exception on empty input"):
-                    runpod_smoke.check_handler("fake")
+        patch_cfg = self._make_fake_variant(
+            tmp_path,
+            "def handler(job):\n    raise ValueError('model not configured')\n",
+            variant="raises",
+        )
+        with mock.patch.dict(runpod_smoke.VARIANT_CONFIG, patch_cfg, clear=False):
+            with pytest.raises(RuntimeError, match="raised an exception on empty input"):
+                runpod_smoke.check_handler("raises")
 
 
 # ---------------------------------------------------------------------------

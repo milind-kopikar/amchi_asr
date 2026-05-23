@@ -79,14 +79,24 @@ DEFAULT_DICT_FALLBACK = str(REPO_ROOT / "data" / "amchi_konkani_dict.json")
 # Order matters: each check assumes the prior ones have already passed.
 CHECK_ORDER = ("imports", "patch", "dictionary", "handler")
 
-# Map variant → which handler module / what checks to skip
+# Map variant → which handler module / what checks to skip.
+#
+# `handler_module` is the dotted name we'd ideally use for import_module.
+# `handler_path` is the absolute filesystem path to the handler script,
+# used by check_handler() when the dotted import is blocked by the
+# `runpod` PyPI SDK shadowing the local `runpod/` directory (both want
+# the top-level package name `runpod`, and the installed SDK wins because
+# it's a regular package while the local directory is an implicit
+# namespace package).
 VARIANT_CONFIG = {
     "amchi": {
         "handler_module": "runpod.handler",
+        "handler_path": str(REPO_ROOT / "runpod" / "handler.py"),
         "needs_dictionary": True,
     },
     "deaf": {
         "handler_module": "runpod.handler_deaf",
+        "handler_path": str(REPO_ROOT / "runpod" / "handler_deaf.py"),
         "needs_dictionary": False,
     },
 }
@@ -199,20 +209,43 @@ def check_dictionary(dict_path: str | None = None) -> None:
 
 
 def check_handler(variant: str = "amchi") -> None:
-    """Verify the handler module imports and gracefully handles empty input.
+    """Verify the handler module loads and gracefully handles empty input.
 
     Calling ``handler({})`` should return a dict containing an ``"error"`` key,
     NOT raise an exception. This guarantees the handler's early-validation
     path is wired up correctly without needing a model or audio.
+
+    The handler is loaded by absolute file path via
+    ``importlib.util.spec_from_file_location`` rather than by dotted name —
+    the dotted name ``runpod.handler_deaf`` collides with the installed
+    ``runpod`` PyPI SDK (the SDK is a regular package and shadows our local
+    namespace-package ``runpod/`` directory). The dotted name is preserved
+    in the ``module_name`` argument to spec_from_file_location so any
+    introspection / error messages still show ``runpod.handler_*``.
     """
     if variant not in VARIANT_CONFIG:
         raise RuntimeError(f"Unknown variant {variant!r}; expected one of {list(VARIANT_CONFIG)}")
-    module_name = VARIANT_CONFIG[variant]["handler_module"]
+    cfg = VARIANT_CONFIG[variant]
+    module_name = cfg["handler_module"]
+    handler_path = cfg["handler_path"]
 
+    if not os.path.isfile(handler_path):
+        raise RuntimeError(
+            f"Handler source file not found at {handler_path}. "
+            "Was the repo COPYed into /app correctly?"
+        )
+
+    import importlib.util  # local import — only needed in this check
     try:
-        mod = importlib.import_module(module_name)
+        spec = importlib.util.spec_from_file_location(module_name, handler_path)
+        if spec is None or spec.loader is None:
+            raise RuntimeError(f"spec_from_file_location returned None for {handler_path}")
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
     except Exception as exc:
-        raise RuntimeError(f"Failed to import {module_name}: {exc}") from exc
+        raise RuntimeError(
+            f"Failed to load {module_name} from {handler_path}: {exc}"
+        ) from exc
 
     if not hasattr(mod, "handler") or not callable(mod.handler):
         raise RuntimeError(f"{module_name} does not export a callable 'handler' function")
