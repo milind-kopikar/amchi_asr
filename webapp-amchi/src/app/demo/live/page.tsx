@@ -3,21 +3,37 @@
 /**
  * Amchi Konkani ASR demo page — LIVE recording variant.
  *
- *   1. ``useMediaRecorder`` hook captures audio from the mic
- *   2. ``audioBlobToBase64Wav`` converts the browser-native blob to 16 kHz mono WAV
- *   3. POST /api/transcribe forwards to the RunPod Run S endpoint
- *   4. Display raw ASR + corrected text + post-processing mode
- *   5. /api/tts translates the corrected Konkani to English and plays it back
+ *   1. useMediaRecorder captures audio from the mic
+ *   2. audioBlobToBase64Wav converts the browser blob to 16 kHz mono WAV
+ *   3. POST /api/transcribe → RunPod Run S → {raw, corrected, mode, latency_ms}
+ *   4. POST /api/feedback/init creates a feedback row + uploads the WAV
+ *      to R2. The returned id is used for all subsequent updates and
+ *      events on this recording.
+ *   5. The user can edit either box, thumbs-up/down either box, and pick
+ *      which box to TTS. Every interaction is recorded:
+ *        - per-row state via /api/feedback/update (last value wins)
+ *        - per-click event via /api/events (every click captured)
+ *   6. After at least one transcription, a survey link appears at the
+ *      bottom that opens /demo/live/survey.
  *
- * No live Konkani TTS (Google Cloud does not support Amchi Konkani directly),
- * so the audio playback is the English translation.
+ * No live Amchi Konkani TTS (Google Cloud doesn't support it). TTS
+ * goes via /api/tts which Gemini-translates to English then synthesises.
+ * Same /api/tts endpoint is called for both Raw and Corrected — only
+ * the `text` field changes.
  */
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useMediaRecorder } from "@/lib/useMediaRecorder";
 import { audioBlobToBase64Wav } from "@/lib/wav-encoder";
+import { getSessionId } from "@/lib/session";
+import {
+  initFeedback,
+  updateFeedback,
+  recordEvent,
+  type ThumbValue,
+} from "@/lib/feedback-client";
 
 type PostMode = "FILL" | "RECONSTRUCT" | "PASSTHROUGH" | "SKIPPED" | "SKIP" | "PP_ERROR" | "UNKNOWN";
 
@@ -48,6 +64,8 @@ interface TranscribeResponse {
   latency_ms: { asr: number; postprocess: number; total: number };
 }
 
+const AMCHI_TTS_LANGUAGE = "gemini-amchi-en"; // marker for the tts_language column
+
 function Spinner() {
   return (
     <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -57,31 +75,102 @@ function Spinner() {
   );
 }
 
-function RawText({ text }: { text: string }) {
-  if (!text) return <span className="text-gray-400 italic">(no output)</span>;
-  const parts = text.split("⁇");
+function cleanForTts(text: string): string {
+  // Strip NeMo's undecodable marker and stray danda before sending to Gemini.
+  return text.replace(/⁇/g, "").replace(/।/g, "").trim();
+}
+
+/**
+ * Thumbs button group. Returns null (no rating), "up", or "down".
+ * Clicking the active value clears it; clicking the other toggles.
+ */
+function Thumbs({
+  value,
+  disabled,
+  onChange,
+}: {
+  value: ThumbValue;
+  disabled?: boolean;
+  onChange: (next: ThumbValue) => void;
+}) {
+  const baseBtn =
+    "flex items-center justify-center w-9 h-9 rounded-full text-lg transition-colors disabled:opacity-40";
   return (
-    <span style={{ fontFamily: "Noto Sans Devanagari, sans-serif" }} className="text-xl leading-relaxed">
-      {parts.map((part, i) => (
-        <span key={i}>
-          {part}
-          {i < parts.length - 1 && (
-            <span className="text-red-500 font-bold" title="Undecodable token">⁇</span>
-          )}
-        </span>
-      ))}
-    </span>
+    <div className="flex items-center gap-2" role="group" aria-label="rate transcription">
+      <button
+        type="button"
+        disabled={disabled}
+        aria-pressed={value === "up"}
+        aria-label="thumbs up"
+        onClick={() => onChange(value === "up" ? null : "up")}
+        className={`${baseBtn} ${
+          value === "up"
+            ? "bg-emerald-100 text-emerald-700 ring-2 ring-emerald-300"
+            : "bg-gray-100 hover:bg-gray-200 text-gray-600"
+        }`}
+      >
+        👍
+      </button>
+      <button
+        type="button"
+        disabled={disabled}
+        aria-pressed={value === "down"}
+        aria-label="thumbs down"
+        onClick={() => onChange(value === "down" ? null : "down")}
+        className={`${baseBtn} ${
+          value === "down"
+            ? "bg-rose-100 text-rose-700 ring-2 ring-rose-300"
+            : "bg-gray-100 hover:bg-gray-200 text-gray-600"
+        }`}
+      >
+        👎
+      </button>
+    </div>
   );
 }
 
-export default function FinalPage() {
+export default function LivePage() {
   const recorder = useMediaRecorder();
+  const [sessionId, setSessionId] = useState<string>("");
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [transcribed, setTranscribed] = useState<TranscribeResponse | null>(null);
+  const [feedbackId, setFeedbackId] = useState<string | null>(null);
+
+  // Editable text for each card — initialised after transcribe.
+  const [editedRaw, setEditedRaw] = useState<string>("");
   const [postProcessed, setPostProcessed] = useState<string>("");
-  const [isSpeaking, setIsSpeaking] = useState(false);
+
+  // Thumbs ratings for each card.
+  const [thumbRaw, setThumbRaw] = useState<ThumbValue>(null);
+  const [thumbCorrected, setThumbCorrected] = useState<ThumbValue>(null);
+
+  // TTS playback — which side is currently speaking (null = idle).
+  const [speakingFor, setSpeakingFor] = useState<"raw" | "corrected" | null>(null);
+
   const [englishText, setEnglishText] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Show the survey link once at least one transcription has completed
+  // this session.
+  const [hasEverTranscribed, setHasEverTranscribed] = useState(false);
+
+  // Resolve the session id once on mount (sessionStorage access must
+  // happen client-side).
+  useEffect(() => {
+    setSessionId(getSessionId());
+  }, []);
+
+  // ────────────────────────────────────────────────────────────────────────
+  // Recording → transcribing → init feedback
+  // ────────────────────────────────────────────────────────────────────────
+
+  function handleRecordClick() {
+    // Fire-and-forget product event. No await — Record should feel instant.
+    if (sessionId) {
+      recordEvent({ session_id: sessionId, event_type: "record_click" });
+    }
+    recorder.start();
+  }
 
   async function handleTranscribe() {
     if (!recorder.audioBlob) {
@@ -91,6 +180,10 @@ export default function FinalPage() {
     setIsTranscribing(true);
     setError(null);
     setEnglishText(null);
+
+    if (sessionId) {
+      recordEvent({ session_id: sessionId, event_type: "transcribe_click" });
+    }
 
     try {
       const audioBase64 = await audioBlobToBase64Wav(recorder.audioBlob);
@@ -103,7 +196,29 @@ export default function FinalPage() {
       if (!res.ok) throw new Error(json.error ?? `Transcribe HTTP ${res.status}`);
       const result = json as TranscribeResponse;
       setTranscribed(result);
+      setEditedRaw(result.raw);
       setPostProcessed(result.corrected || result.raw);
+      setHasEverTranscribed(true);
+
+      // Best-effort init of the feedback row. If this fails we still let
+      // the user see + interact with the transcription, but the
+      // subsequent thumbs/edit/TTS clicks will be no-ops (gated below
+      // by `feedbackId !== null`).
+      try {
+        const init = await initFeedback({
+          audio_base64: audioBase64,
+          raw: result.raw,
+          corrected: result.corrected,
+          mode: result.mode,
+          latency_ms: result.latency_ms,
+          session_id: sessionId,
+          user_agent: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
+        });
+        setFeedbackId(init.id);
+      } catch (initErr) {
+        // Don't surface to the user — feedback logging is best-effort.
+        console.warn("feedback init failed:", initErr);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Transcribe failed");
     } finally {
@@ -111,11 +226,77 @@ export default function FinalPage() {
     }
   }
 
-  async function speakEnglish() {
-    if (isSpeaking || !postProcessed) return;
-    setIsSpeaking(true);
+  // ────────────────────────────────────────────────────────────────────────
+  // Per-card user interactions (edit, thumbs, TTS)
+  // ────────────────────────────────────────────────────────────────────────
+
+  function handleEditedRawBlur() {
+    if (!feedbackId || !transcribed) return;
+    // Only persist if the user actually changed the text.
+    if (editedRaw === transcribed.raw) return;
+    updateFeedback({ id: feedbackId, edited_raw: editedRaw });
+    recordEvent({
+      session_id: sessionId,
+      feedback_id: feedbackId,
+      event_type: "edit_blur",
+      event_target: "raw",
+      event_value: String(editedRaw.length),
+    });
+  }
+
+  function handleEditedCorrectedBlur() {
+    if (!feedbackId || !transcribed) return;
+    if (postProcessed === transcribed.corrected) return;
+    updateFeedback({ id: feedbackId, edited_corrected: postProcessed });
+    recordEvent({
+      session_id: sessionId,
+      feedback_id: feedbackId,
+      event_type: "edit_blur",
+      event_target: "corrected",
+      event_value: String(postProcessed.length),
+    });
+  }
+
+  function handleThumb(target: "raw" | "corrected", next: ThumbValue) {
+    if (target === "raw") setThumbRaw(next);
+    else setThumbCorrected(next);
+
+    if (!feedbackId) return;
+    const field = target === "raw" ? "thumb_raw" : "thumb_corrected";
+    updateFeedback({ id: feedbackId, [field]: next });
+    recordEvent({
+      session_id: sessionId,
+      feedback_id: feedbackId,
+      event_type: "thumb_click",
+      event_target: target,
+      event_value: next ?? "clear",
+    });
+  }
+
+  async function speakFor(which: "raw" | "corrected") {
+    if (speakingFor) return;
+    const sourceText = which === "raw" ? editedRaw : postProcessed;
+    const text = cleanForTts(sourceText);
+    if (!text) return;
+
+    setSpeakingFor(which);
     setError(null);
-    const text = postProcessed.replace(/⁇/g, "").replace(/।/g, "").trim();
+
+    if (feedbackId) {
+      updateFeedback({
+        id: feedbackId,
+        tts_choice: which,
+        tts_language: AMCHI_TTS_LANGUAGE,
+      });
+      recordEvent({
+        session_id: sessionId,
+        feedback_id: feedbackId,
+        event_type: "tts_click",
+        event_target: which,
+        event_value: "english",
+      });
+    }
+
     try {
       const res = await fetch("/api/tts", {
         method: "POST",
@@ -126,20 +307,33 @@ export default function FinalPage() {
       if (!res.ok) throw new Error(json.error ?? "TTS error");
       if (json.translation) setEnglishText(json.translation);
       const audio = new Audio(`data:audio/mp3;base64,${json.audioContent}`);
-      audio.onended = () => setIsSpeaking(false);
-      audio.onerror = () => { setIsSpeaking(false); setError("Playback failed."); };
+      audio.onended = () => setSpeakingFor(null);
+      audio.onerror = () => {
+        setSpeakingFor(null);
+        setError("Playback failed.");
+      };
       await audio.play();
     } catch (err) {
       setError(err instanceof Error ? err.message : "TTS error");
-      setIsSpeaking(false);
+      setSpeakingFor(null);
+    }
+  }
+
+  function handleSurveyLinkClick() {
+    if (sessionId) {
+      recordEvent({ session_id: sessionId, event_type: "survey_link_click" });
     }
   }
 
   function resetAll() {
     recorder.reset();
     setTranscribed(null);
+    setFeedbackId(null);
+    setEditedRaw("");
     setPostProcessed("");
-    setIsSpeaking(false);
+    setThumbRaw(null);
+    setThumbCorrected(null);
+    setSpeakingFor(null);
     setEnglishText(null);
     setError(null);
   }
@@ -163,7 +357,7 @@ export default function FinalPage() {
         <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
           {(recorder.status === "idle" || recorder.status === "error") && !transcribed && (
             <button
-              onClick={recorder.start}
+              onClick={handleRecordClick}
               className="w-full flex items-center justify-center gap-3 bg-red-600 hover:bg-red-700 text-white font-semibold py-4 px-6 rounded-xl transition-colors"
             >
               <span className="text-xl">🎙</span> Record
@@ -232,14 +426,35 @@ export default function FinalPage() {
 
           {showResults && transcribed && (
             <div className="space-y-4 pt-2">
+              {/* ────── Raw ASR card ────── */}
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                <p className="text-xs text-gray-400 uppercase tracking-widest mb-2">Raw ASR output (Run S model)</p>
-                <RawText text={transcribed.raw} />
-                <p className="text-xs text-gray-400 mt-2">
-                  <span className="text-red-500 font-bold">⁇</span> = token the model could not decode
+                <p className="text-xs text-gray-400 uppercase tracking-widest mb-2">
+                  Raw ASR output (Run S model)
                 </p>
+                <textarea
+                  value={editedRaw}
+                  onChange={(e) => setEditedRaw(e.target.value)}
+                  onBlur={handleEditedRawBlur}
+                  className="w-full text-xl font-medium text-gray-900 bg-transparent resize-none focus:outline-none focus:ring-2 focus:ring-gray-300 rounded-lg p-1 -ml-1"
+                  style={{ fontFamily: "Noto Sans Devanagari, sans-serif" }}
+                  rows={2}
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  ✎ Edit if needed · <span className="text-red-500 font-bold">⁇</span> = undecoded token
+                </p>
+                <div className="flex items-center justify-between mt-3">
+                  <Thumbs value={thumbRaw} onChange={(v) => handleThumb("raw", v)} />
+                  <button
+                    onClick={() => speakFor("raw")}
+                    disabled={speakingFor !== null || !editedRaw}
+                    className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-medium py-2 px-3 rounded-lg transition-colors text-xs"
+                  >
+                    {speakingFor === "raw" ? <><Spinner /> Speaking…</> : "🔊 Translate & speak"}
+                  </button>
+                </div>
               </div>
 
+              {/* ────── Corrected card ────── */}
               <div className="bg-white border-2 border-purple-200 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-xs text-gray-400 uppercase tracking-widest">Corrected transcript</p>
@@ -250,6 +465,7 @@ export default function FinalPage() {
                 <textarea
                   value={postProcessed}
                   onChange={(e) => setPostProcessed(e.target.value)}
+                  onBlur={handleEditedCorrectedBlur}
                   className="w-full text-xl font-medium text-gray-900 bg-transparent resize-none focus:outline-none focus:ring-2 focus:ring-purple-300 rounded-lg p-1 -ml-1"
                   style={{ fontFamily: "Noto Sans Devanagari, sans-serif" }}
                   rows={2}
@@ -258,17 +474,17 @@ export default function FinalPage() {
                 <p className="text-xs text-gray-400 mt-1">
                   Latency: ASR {transcribed.latency_ms.asr}ms · Post-proc {transcribed.latency_ms.postprocess}ms
                 </p>
+                <div className="flex items-center justify-between mt-3">
+                  <Thumbs value={thumbCorrected} onChange={(v) => handleThumb("corrected", v)} />
+                  <button
+                    onClick={() => speakFor("corrected")}
+                    disabled={speakingFor !== null || !postProcessed}
+                    className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-medium py-2 px-3 rounded-lg transition-colors text-xs"
+                  >
+                    {speakingFor === "corrected" ? <><Spinner /> Speaking…</> : "🔊 Translate & speak"}
+                  </button>
+                </div>
               </div>
-
-              {postProcessed && (
-                <button
-                  onClick={speakEnglish}
-                  disabled={isSpeaking}
-                  className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-medium py-3 px-4 rounded-xl transition-colors text-sm"
-                >
-                  {isSpeaking ? <><Spinner /> Speaking…</> : "🔊 Translate to English & speak"}
-                </button>
-              )}
 
               {englishText && (
                 <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
@@ -281,6 +497,19 @@ export default function FinalPage() {
             </div>
           )}
         </div>
+
+        {/* Survey link — visible after the first transcription only. */}
+        {hasEverTranscribed && (
+          <div className="text-center pt-2">
+            <Link
+              href="/demo/live/survey"
+              onClick={handleSurveyLinkClick}
+              className="text-sm text-purple-700 hover:text-purple-900 underline underline-offset-2"
+            >
+              📝 Tell us what you think
+            </Link>
+          </div>
+        )}
       </main>
     </div>
   );
