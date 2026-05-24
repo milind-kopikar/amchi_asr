@@ -16,7 +16,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { getSessionId } from "@/lib/session";
+import { getSessionId, adoptSessionId } from "@/lib/session";
 import { submitSurvey, recordEvent } from "@/lib/feedback-client";
 
 type Score = 1 | 2 | 3 | 4 | 5;
@@ -93,8 +93,17 @@ export default function SurveyPage() {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Resolve session id with priority:
+  //   1. ?s=<id> query param (link from /demo/live carries the recording session)
+  //   2. existing sessionStorage value (same-tab navigation)
+  //   3. generate a fresh id (genuine new session)
+  //
+  // adoptSessionId() handles the priority + persists the chosen id back
+  // to sessionStorage so subsequent calls are consistent.
   useEffect(() => {
-    setSessionId(getSessionId());
+    const params = new URLSearchParams(window.location.search);
+    const fromUrl = params.get("s") || undefined;
+    setSessionId(adoptSessionId(fromUrl));
   }, []);
 
   async function onSubmit(e: React.FormEvent) {

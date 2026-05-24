@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it, beforeEach, vi } from "vitest";
-import { getSessionId, _resetSessionForTests } from "./session";
+import { getSessionId, adoptSessionId, _resetSessionForTests } from "./session";
 
 describe("getSessionId", () => {
     beforeEach(() => {
@@ -98,5 +98,72 @@ describe("getSessionId", () => {
         const b = getSessionId();
         expect(a).toBe(b);
         expect(a.length).toBeGreaterThan(0);
+    });
+});
+
+describe("adoptSessionId", () => {
+    beforeEach(() => {
+        _resetSessionForTests();
+        vi.unstubAllGlobals();
+    });
+
+    it("adopts a candidate id verbatim", () => {
+        const store: Record<string, string> = {};
+        vi.stubGlobal("window", {
+            sessionStorage: {
+                getItem: (k: string) => (k in store ? store[k] : null),
+                setItem: (k: string, v: string) => { store[k] = v; },
+                removeItem: (k: string) => { delete store[k]; },
+            },
+        });
+        const id = adoptSessionId("from-url-abc");
+        expect(id).toBe("from-url-abc");
+        // Persisted so getSessionId() returns the same id afterwards.
+        expect(getSessionId()).toBe("from-url-abc");
+    });
+
+    it("falls back to getSessionId() when candidate is missing/empty", () => {
+        const a = adoptSessionId();
+        const b = adoptSessionId("");
+        const c = adoptSessionId(undefined);
+        expect(a).toBe(b);
+        expect(b).toBe(c);
+        expect(a.length).toBeGreaterThan(0);
+    });
+
+    it("overrides an existing sessionStorage value when given a candidate", () => {
+        const store: Record<string, string> = { asr_demo_session_id: "old-id" };
+        vi.stubGlobal("window", {
+            sessionStorage: {
+                getItem: (k: string) => (k in store ? store[k] : null),
+                setItem: (k: string, v: string) => { store[k] = v; },
+                removeItem: (k: string) => { delete store[k]; },
+            },
+        });
+        expect(getSessionId()).toBe("old-id");
+        const adopted = adoptSessionId("new-id-from-url");
+        expect(adopted).toBe("new-id-from-url");
+        expect(store["asr_demo_session_id"]).toBe("new-id-from-url");
+        expect(getSessionId()).toBe("new-id-from-url");
+    });
+
+    it("caps absurdly long candidates at 128 chars", () => {
+        const long = "x".repeat(500);
+        const adopted = adoptSessionId(long);
+        expect(adopted.length).toBe(128);
+    });
+
+    it("falls back to in-memory when sessionStorage.setItem throws", () => {
+        vi.stubGlobal("window", {
+            sessionStorage: {
+                getItem: () => null,
+                setItem: () => { throw new Error("denied"); },
+                removeItem: () => {},
+            },
+        });
+        const id = adoptSessionId("safari-private-id");
+        expect(id).toBe("safari-private-id");
+        // Subsequent getSessionId() should also return the same (from in-memory).
+        expect(getSessionId()).toBe("safari-private-id");
     });
 });

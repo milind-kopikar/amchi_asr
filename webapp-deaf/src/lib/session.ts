@@ -63,6 +63,42 @@ export function getSessionId(): string {
 }
 
 /**
+ * Adopt a session id supplied externally (e.g., via a `?s=` URL query
+ * param when navigating from /demo/live to /demo/live/survey). The
+ * priority is:
+ *
+ *   1. If `candidate` is a non-empty string, use it and persist it back
+ *      to sessionStorage. This is what makes new-tab navigation work —
+ *      the recording-page session_id survives the link click.
+ *   2. Else fall back to the existing sessionStorage value (same-tab
+ *      navigation already has the right id).
+ *   3. Else generate a fresh id (e.g., user landed on the survey
+ *      page directly, no recording context).
+ *
+ * Returns the chosen id. Idempotent — calling repeatedly with the same
+ * `candidate` is safe.
+ */
+export function adoptSessionId(candidate?: string): string {
+    if (candidate && typeof candidate === "string" && candidate.length > 0) {
+        // Sanity-cap the candidate length to defend against absurdly long
+        // query strings. UUIDs are 36 chars; anything beyond ~128 is junk.
+        const adopted = candidate.slice(0, 128);
+        if (typeof window !== "undefined") {
+            try {
+                window.sessionStorage.setItem(STORAGE_KEY, adopted);
+            } catch {
+                // sessionStorage broken — fall back to in-memory.
+                inMemoryId = adopted;
+            }
+        } else {
+            inMemoryId = adopted;
+        }
+        return adopted;
+    }
+    return getSessionId();
+}
+
+/**
  * For tests only — clears both the storage and in-memory caches so a
  * fresh id is generated next call. Not exported in production usage.
  */

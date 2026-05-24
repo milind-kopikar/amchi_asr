@@ -518,7 +518,7 @@ export default function LivePage() {
         {hasEverTranscribed && (
           <div className="text-center pt-2">
             <Link
-              href="/demo/live/survey"
+              href={sessionId ? `/demo/live/survey?s=${encodeURIComponent(sessionId)}` : "/demo/live/survey"}
               onClick={handleSurveyLinkClick}
               className="text-sm text-purple-700 hover:text-purple-900 underline underline-offset-2"
             >
