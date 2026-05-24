@@ -428,19 +428,27 @@ export default function LivePage() {
             <div className="space-y-4 pt-2">
               {/* ────── Raw ASR card ────── */}
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                <p className="text-xs text-gray-400 uppercase tracking-widest mb-2">
-                  Raw ASR output (Run S model)
-                </p>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs text-gray-400 uppercase tracking-widest">
+                    Raw ASR output (Run S model)
+                  </p>
+                  {editedRaw !== transcribed.raw && (
+                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                      edited
+                    </span>
+                  )}
+                </div>
                 <textarea
                   value={editedRaw}
                   onChange={(e) => setEditedRaw(e.target.value)}
                   onBlur={handleEditedRawBlur}
-                  className="w-full text-xl font-medium text-gray-900 bg-transparent resize-none focus:outline-none focus:ring-2 focus:ring-gray-300 rounded-lg p-1 -ml-1"
+                  aria-label="Editable raw ASR transcription"
+                  className="w-full text-xl font-medium text-gray-900 bg-white border border-gray-300 hover:border-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none resize-none rounded-lg p-3 transition-colors"
                   style={{ fontFamily: "Noto Sans Devanagari, sans-serif" }}
                   rows={2}
                 />
-                <p className="text-xs text-gray-400 mt-1">
-                  ✎ Edit if needed · <span className="text-red-500 font-bold">⁇</span> = undecoded token
+                <p className="text-xs text-gray-500 mt-1">
+                  ✎ Tap the box above to edit · <span className="text-red-500 font-bold">⁇</span> = undecoded token
                 </p>
                 <div className="flex items-center justify-between mt-3">
                   <Thumbs value={thumbRaw} onChange={(v) => handleThumb("raw", v)} />
@@ -456,21 +464,29 @@ export default function LivePage() {
 
               {/* ────── Corrected card ────── */}
               <div className="bg-white border-2 border-purple-200 rounded-xl p-4">
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-2 gap-2">
                   <p className="text-xs text-gray-400 uppercase tracking-widest">Corrected transcript</p>
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${MODE_COLORS[transcribed.mode] ?? MODE_COLORS.UNKNOWN}`}>
-                    {MODE_LABELS[transcribed.mode] ?? transcribed.mode}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {postProcessed !== transcribed.corrected && (
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                        edited
+                      </span>
+                    )}
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${MODE_COLORS[transcribed.mode] ?? MODE_COLORS.UNKNOWN}`}>
+                      {MODE_LABELS[transcribed.mode] ?? transcribed.mode}
+                    </span>
+                  </div>
                 </div>
                 <textarea
                   value={postProcessed}
                   onChange={(e) => setPostProcessed(e.target.value)}
                   onBlur={handleEditedCorrectedBlur}
-                  className="w-full text-xl font-medium text-gray-900 bg-transparent resize-none focus:outline-none focus:ring-2 focus:ring-purple-300 rounded-lg p-1 -ml-1"
+                  aria-label="Editable corrected transcription"
+                  className="w-full text-xl font-medium text-gray-900 bg-white border border-purple-300 hover:border-purple-400 focus:border-purple-600 focus:ring-2 focus:ring-purple-200 focus:outline-none resize-none rounded-lg p-3 transition-colors"
                   style={{ fontFamily: "Noto Sans Devanagari, sans-serif" }}
                   rows={2}
                 />
-                <p className="text-xs text-purple-500 mt-1">✎ Edit before speaking if needed</p>
+                <p className="text-xs text-purple-600 mt-1">✎ Tap the box above to edit before speaking</p>
                 <p className="text-xs text-gray-400 mt-1">
                   Latency: ASR {transcribed.latency_ms.asr}ms · Post-proc {transcribed.latency_ms.postprocess}ms
                 </p>
