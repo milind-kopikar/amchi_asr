@@ -26,6 +26,32 @@ function fakeFetchThrowing(message: string): typeof fetch {
   };
 }
 
+/**
+ * Factory: build a fake fetch that returns one JSON body per call, in order
+ * (used to simulate a /runsync response followed by one or more /status
+ * polls). Throws if called more times than there are bodies.
+ */
+function fakeFetchSequence(bodies: unknown[]): typeof fetch {
+  let call = 0;
+  return async () => {
+    if (call >= bodies.length) {
+      throw new Error(`fakeFetchSequence: no response configured for call #${call + 1}`);
+    }
+    const body = bodies[call];
+    call += 1;
+    return new Response(JSON.stringify(body), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  };
+}
+
+/** Factory: build a fake fetch that always returns the same JSON body (used for infinite-poll tests). */
+function fakeFetchAlwaysReturning(body: unknown): typeof fetch {
+  return async () =>
+    new Response(JSON.stringify(body), { status: 200, headers: { "Content-Type": "application/json" } });
+}
+
 describe("callRunpodTranscribe — validation", () => {
   it("rejects missing api key", async () => {
     const result = await callRunpodTranscribe("", "endpoint-id", "QUFB", {
@@ -188,6 +214,89 @@ describe("callRunpodTranscribe — error paths", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error).toContain("Audio too large");
+    }
+  });
+});
+
+describe("callRunpodTranscribe — cold-start polling", () => {
+  it("typical: polls /status and succeeds once the job reaches COMPLETED", async () => {
+    const result = await callRunpodTranscribe("k", "e", "QUFB", {
+      fetchFn: fakeFetchSequence([
+        { id: "job-1", status: "IN_PROGRESS" },
+        { id: "job-1", status: "IN_PROGRESS" },
+        {
+          id: "job-1",
+          status: "COMPLETED",
+          output: { raw: "x", corrected: "y", mode: "FILL", latency_ms: { asr: 1, postprocess: 2, total: 3 } },
+        },
+      ]),
+      pollIntervalMs: 5,
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.output.corrected).toBe("y");
+    }
+  });
+
+  it("polls GET /v2/{endpoint}/status/{id} with the Authorization header", async () => {
+    const calls: { url: string; method?: string; headers?: Record<string, string> }[] = [];
+    const fetchFn: typeof fetch = async (url, init) => {
+      calls.push({ url: url.toString(), method: init?.method, headers: init?.headers as Record<string, string> });
+      if (calls.length === 1) {
+        return new Response(JSON.stringify({ id: "job-9", status: "IN_QUEUE" }), { status: 200 });
+      }
+      return new Response(
+        JSON.stringify({
+          id: "job-9",
+          status: "COMPLETED",
+          output: { raw: "a", corrected: "b", mode: "PASSTHROUGH", latency_ms: { asr: 0, postprocess: 0, total: 0 } },
+        }),
+        { status: 200 },
+      );
+    };
+    await callRunpodTranscribe("my-key", "endpoint-xyz", "QUFB", { fetchFn, pollIntervalMs: 5 });
+
+    expect(calls[1]?.url).toBe("https://api.runpod.ai/v2/endpoint-xyz/status/job-9");
+    expect(calls[1]?.method).toBe("GET");
+    expect(calls[1]?.headers?.Authorization).toBe("Bearer my-key");
+  });
+
+  it("edge: gives up with a 504 if the job never leaves IN_QUEUE before the deadline", async () => {
+    const result = await callRunpodTranscribe("k", "e", "QUFB", {
+      fetchFn: fakeFetchAlwaysReturning({ id: "job-2", status: "IN_QUEUE" }),
+      timeoutMs: 20,
+      pollIntervalMs: 5,
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.status).toBe(504);
+      expect(result.error).toContain("job-2");
+    }
+  });
+
+  it("malformed: a pending status with no job id cannot be polled and is reported", async () => {
+    const result = await callRunpodTranscribe("k", "e", "QUFB", {
+      fetchFn: fakeFetchAlwaysReturning({ status: "IN_PROGRESS" }),
+      pollIntervalMs: 5,
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toContain("no job id");
+    }
+  });
+
+  it("a FAILED status reached mid-poll is reported without further polling", async () => {
+    const result = await callRunpodTranscribe("k", "e", "QUFB", {
+      fetchFn: fakeFetchSequence([
+        { id: "job-3", status: "IN_PROGRESS" },
+        { id: "job-3", status: "FAILED", error: "CUDA OOM" },
+      ]),
+      pollIntervalMs: 5,
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toContain("FAILED");
+      expect(result.error).toContain("CUDA OOM");
     }
   });
 });

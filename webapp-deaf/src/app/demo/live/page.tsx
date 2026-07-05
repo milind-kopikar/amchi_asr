@@ -446,6 +446,10 @@ export default function LivePage() {
             <p className="text-xs text-red-600">{recorder.error}</p>
           )}
 
+          {error && !showResults && (
+            <p className="text-xs text-red-600">{error}</p>
+          )}
+
           {showResults && transcribed && (
             <div className="space-y-4 pt-2">
               {/* ────── Raw ASR card ────── */}
