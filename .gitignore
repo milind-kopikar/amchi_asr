@@ -23,6 +23,14 @@ ffmpeg/
 ffmpeg.zip
 amchi_konkani_code.zip
 
+# Nested clone of the wavesurfer.js fork -- versioned in its own repo
+# (github.com/milind-kopikar/wavesurfer), not here.
+wavesurfer/
+
+# Demo/presentation video assets (too large for a normal git push;
+# some files exceed GitHub's 100MB per-file limit)
+sample_videos/
+
 # Data folders (large audio/text data)
 story0_corpus/
 story1_corpus/
